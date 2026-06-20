@@ -1,0 +1,173 @@
+export interface CarouselProduct {
+  id: number;
+  number: string;
+  name: string;
+  subtitle: string;
+  price: string;
+  material: string;
+  fit: string;
+  origin: string;
+  image: string;
+}
+
+export const newArrivals: CarouselProduct[] = [
+  {
+    id: 1,
+    number: "001",
+    name: "RAW INDIGO TRUCKER",
+    subtitle: "Heavy Selvedge Jacket",
+    price: "₹29,900",
+    material: "14oz Japanese Selvedge Denim",
+    fit: "Relaxed trucker silhouette",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 2,
+    number: "002",
+    name: "SELVEDGE STRAIGHT",
+    subtitle: "Rigid Fit Jeans",
+    price: "₹23,200",
+    material: "12oz Cone Mills Selvedge",
+    fit: "Straight, high-rise",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jeans.png",
+  },
+  {
+    id: 3,
+    number: "003",
+    name: "BRASS HARDWARE KIT",
+    subtitle: "Oxidized Rivet Set",
+    price: "₹9,900",
+    material: "Forged solid brass alloy",
+    fit: "Universal hardware sizing",
+    origin: "Cast in Japan",
+    image: "/images/product-hardware.png",
+  },
+  {
+    id: 4,
+    number: "004",
+    name: "MIDNIGHT SELVEDGE VEST",
+    subtitle: "Raw Indigo Vest",
+    price: "₹19,900",
+    material: "14.5oz Kuroki Mills Selvedge",
+    fit: "Regular fit utility vest",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 5,
+    number: "005",
+    name: "INDIGO SASHIKO SHIRT",
+    subtitle: "Sashiko Weave Shirt",
+    price: "₹15,900",
+    material: "Indigo-dyed heavy sashiko weave",
+    fit: "Relaxed workshirt fit",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jeans.png",
+  },
+  {
+    id: 6,
+    number: "006",
+    name: "NAAMI RAW OVERALLS",
+    subtitle: "Raw Selvedge Overalls",
+    price: "₹34,900",
+    material: "13oz Japanese Raw Denim",
+    fit: "Classic bib overalls",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 7,
+    number: "007",
+    name: "RIVETED DENIM TOTE",
+    subtitle: "Extra Heavy Canvas Tote",
+    price: "₹12,500",
+    material: "18oz raw loom-state duck canvas",
+    fit: "Large daily tote bag",
+    origin: "Cast hardware assembled locally",
+    image: "/images/product-hardware.png",
+  },
+];
+
+export const bestsellers: CarouselProduct[] = [
+  {
+    id: 11,
+    number: "011",
+    name: "CLASSIC SELVEDGE SLIM",
+    subtitle: "14oz Japanese Denim",
+    price: "₹24,000",
+    material: "14oz Nihon Menpu red-line selvedge",
+    fit: "Slim tapered, mid-rise",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jeans.png",
+  },
+  {
+    id: 12,
+    number: "012",
+    name: "RAW DENIM TRENCH",
+    subtitle: "Double-breasted Coat",
+    price: "₹43,000",
+    material: "12oz showerproof raw canvas denim",
+    fit: "Tailored long trench coat",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 13,
+    number: "013",
+    name: "BRASS BUTTON CHAMBRAY",
+    subtitle: "Utility Work Shirt",
+    price: "₹14,900",
+    material: "8oz organic cotton chambray",
+    fit: "Traditional utility cut",
+    origin: "Assembled in Portugal",
+    image: "/images/product-hardware.png",
+  },
+  {
+    id: 14,
+    number: "014",
+    name: "SELVEDGE DENIM KIMONO",
+    subtitle: "Traditional Silhouette",
+    price: "₹31,500",
+    material: "10oz raw Japanese shuttle-loom denim",
+    fit: "Kimono collar, relaxed drape",
+    origin: "Handcrafted in Japan",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 15,
+    number: "015",
+    name: "NAAMI TYPE II JACKET",
+    subtitle: "Modified Trucker Jacket",
+    price: "₹28,200",
+    material: "14.5oz Cone Mills deadstock denim",
+    fit: "Boxy Type II vintage fit",
+    origin: "Handcrafted in Portugal",
+    image: "/images/product-jacket.png",
+  },
+  {
+    id: 16,
+    number: "016",
+    name: "VINTAGE WASH STRAIGHT",
+    subtitle: "Slow Washed Selvedge",
+    price: "₹25,600",
+    material: "13.5oz washed shuttle-loom denim",
+    fit: "Slow aged straight leg fit",
+    origin: "Finished in Portugal",
+    image: "/images/product-jeans.png",
+  },
+  {
+    id: 17,
+    number: "017",
+    name: "OXIDIZED BRASS BELT",
+    subtitle: "Full Grain Leather Belt",
+    price: "₹11,600",
+    material: "Double-shoulder full grain harness leather",
+    fit: "Universal buckle sizing",
+    origin: "Cast brass buckle handcrafted in Japan",
+    image: "/images/product-hardware.png",
+  },
+];
+
+export const allProducts = [...newArrivals, ...bestsellers];
