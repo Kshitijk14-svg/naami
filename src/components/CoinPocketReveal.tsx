@@ -105,11 +105,11 @@ export default function CoinPocketReveal() {
             The Hidden
             <br />
             <span className="italic" style={{ color: "#8B1A1A" }}>
-              Selvedge Detail
+              Button Detail
             </span>
           </h2>
           <p className="font-sans text-[12.5px] text-[#111111]/70 leading-relaxed mb-8 max-w-md">
-            True luxury is discrete. We build features that reward discovery. Pull down the custom red-line selvedge loop on the watch pocket to extract the certified loom run details directly from Okayama mills.
+            True luxury is discrete. We build features that reward discovery. Pull down the fabric loop to extract the hand-stitched origin card directly from our atelier in Lisbon.
           </p>
 
           <div className="flex items-center gap-4">
@@ -126,7 +126,7 @@ export default function CoinPocketReveal() {
                 className="font-sans font-bold text-[9px] text-[#111111]/40 tracking-wider uppercase hover:text-[#8B1A1A] transition-colors cursor-pointer"
                 data-cursor-text="RESET"
               >
-                ✕ Re-hide Certificate
+                ✕ Re-hide Card
               </button>
             )}
           </div>
@@ -212,7 +212,7 @@ export default function CoinPocketReveal() {
                 <div>
                   <div className="flex justify-between items-baseline mb-2">
                     <span className="font-sans font-bold text-[10px] text-[#8B1A1A] tracking-widest">
-                      NAAMI ORIGIN SPEC
+                      NAAMI ATELIER CARD
                     </span>
                     <span className="font-sans text-[9px] text-[#111111]/40">
                       AW26
@@ -226,11 +226,11 @@ export default function CoinPocketReveal() {
                 {/* Specs list */}
                 <div className="flex flex-col gap-3.5 my-4 font-sans text-[11.5px]">
                   {[
-                    ["Mill Source", "Kurabo, Okayama"],
-                    ["Dye Type", "24x Pure Awa Indigo"],
-                    ["Weft Cotton", "100% Organic Long-Staple"],
-                    ["Loom Speed", "Slow shuttle tensioned"],
-                    ["Denim Weight", "14.5oz Raw Loom-state"],
+                    ["Fabric Source", "Albini, Bergamo"],
+                    ["Button Source", "Philippines, shell nacre"],
+                    ["Thread Count", "120s Egyptian cotton"],
+                    ["Seam Type", "Double-needle felled"],
+                    ["Construction", "Hand-finished Lisbon"],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between border-b border-black/5 pb-1.5">
                       <span className="font-bold text-[#111111]/35">{label}</span>

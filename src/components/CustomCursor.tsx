@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 export default function CustomCursor() {
+  const pathname = usePathname();
   const svgRef = useRef<SVGSVGElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
@@ -132,6 +134,8 @@ export default function CustomCursor() {
       cancelAnimationFrame(raf);
     };
   }, []);
+
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <>

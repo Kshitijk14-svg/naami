@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { allProducts } from "@/models/products";
 import { useCartStore } from "@/models/cartStore";
-import CustomCursor from "@/components/CustomCursor";
 import EvanliteFooter from "@/components/EvanliteFooter";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -40,66 +39,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   return (
     <main
-      className="relative w-full min-h-screen flex flex-col justify-between"
+      className="relative w-full min-h-screen flex flex-col justify-between pt-20"
       style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
     >
-      {/* Slinger Medallion follow-cursor */}
-      <CustomCursor />
-
-      {/* ── Header Navigation ──────────────────────────────────── */}
-      <header
-        className="w-full h-20 flex justify-between items-center px-6 md:px-12 border-b border-black/5"
-        style={{
-          zIndex: 40,
-          backgroundColor: "#F4F0E6",
-        }}
-      >
-        <Link
-          href="/"
-          className="font-serif uppercase font-semibold hover:opacity-75 transition-opacity"
-          style={{
-            fontSize: "1.15rem",
-            letterSpacing: "0.18em",
-            color: "#8B1A1A",
-          }}
-          data-cursor-text="BACK"
-        >
-          Naami
-        </Link>
-
-        {/* Navigation */}
-        <nav className="flex items-center gap-8">
-          <Link
-            href="/"
-            className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-            data-cursor-text="HOME"
-          >
-            Home
-          </Link>
-          <span className="hidden md:block opacity-20">|</span>
-          <button
-            onClick={incrementItems}
-            className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] cursor-pointer text-[10px]"
-            data-cursor-text="CART"
-          >
-            Cart
-            {cartItemsCount > 0 && (
-              <span
-                className="flex items-center justify-center rounded-full font-bold"
-                style={{
-                  width: 16,
-                  height: 16,
-                  fontSize: "8px",
-                  backgroundColor: "#8B1A1A",
-                  color: "#F4F0E6",
-                }}
-              >
-                {cartItemsCount}
-              </span>
-            )}
-          </button>
-        </nav>
-      </header>
 
       {/* ── Product Split Section ─────────────────────────────── */}
       <section className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-20 gap-12 md:gap-16 items-stretch">
@@ -191,9 +133,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               }}
             >
               {[
-                ["Fabric Detail", product.material],
-                ["Cut & Silhouette", product.fit],
-                ["Origin Tag", product.origin],
+                ["Fabric & Weave", product.material],
+                ["Collar & Silhouette", product.fit],
+                ["Origin Atelier", product.origin],
               ].map(([label, value]) => (
                 <div
                   key={label}

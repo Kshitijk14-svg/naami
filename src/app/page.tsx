@@ -5,7 +5,6 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import BrandLoader from "@/components/BrandLoader";
-import CustomCursor from "@/components/CustomCursor";
 import HotspotBanner from "@/components/HotspotBanner";
 import ProductCarousel from "@/components/ProductCarousel";
 import EvanliteFooter from "@/components/EvanliteFooter";
@@ -37,20 +36,20 @@ export default function Home() {
   const heroSlides = [
     {
       image: "/images/hero-1.png",
-      title: "RAW INDIGO TRUCKER",
-      subtitle: "14oz Japanese Selvedge Jacket",
+      title: "OXFORD STRIPE SHIRT",
+      subtitle: "120s Egyptian Cotton Oxford",
       tag: "Naami // AW26 Collection — 001",
     },
     {
       image: "/images/hero-2.png",
-      title: "SELVEDGE STRAIGHT FIT",
-      subtitle: "Rigid Fit Portuguese Denim",
+      title: "LINEN NATURAL CAMP",
+      subtitle: "8oz European Linen",
       tag: "Naami // AW26 Collection — 002",
     },
     {
       image: "/images/hero-3.png",
-      title: "INDIGO SASHIKO SHIRT",
-      subtitle: "Indigo-dyed Sashiko Weave",
+      title: "SASHIKO BORO OVERSHIRT",
+      subtitle: "Hand-stitched Sashiko Weave",
       tag: "Naami // AW26 Collection — 003",
     },
   ];
@@ -75,7 +74,6 @@ export default function Home() {
 
   const heroTitleRef = useRef<HTMLDivElement>(null);
   const heroSubRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -104,18 +102,7 @@ export default function Home() {
         }
       );
 
-      // Header entrance
-      gsap.fromTo(
-        headerRef.current,
-        { opacity: 0, y: -10 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          ease: "power2.out",
-          delay: 3.4,
-        }
-      );
+
 
 
 
@@ -176,77 +163,6 @@ export default function Home() {
 
       {/* Cinematic unzipping loader */}
       <BrandLoader />
-
-      {/* Sling medallion follower */}
-      <CustomCursor />
-
-      {/* ── Header Navigation ──────────────────────────────────── */}
-      <header
-        ref={headerRef}
-        className="fixed top-0 left-0 w-full h-20 flex justify-between items-center px-6 md:px-12"
-        style={{
-          zIndex: 40,
-          background:
-            "linear-gradient(to bottom, rgba(244,240,230,0.85) 0%, transparent 100%)",
-          backdropFilter: "blur(2px)",
-          opacity: 0,
-        }}
-      >
-        {/* Brand wordmark */}
-        <div
-          className="font-serif uppercase font-semibold"
-          style={{
-            fontSize: "1.15rem",
-            letterSpacing: "0.18em",
-            color: "#8B1A1A", // Brand Crimson
-          }}
-        >
-          Naami
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex items-center gap-8">
-          {[
-            { label: "Collections", cursorText: "VIEW" },
-            { label: "Journal", cursorText: "READ" },
-            { label: "Stockists", cursorText: "FIND" },
-          ].map(({ label, cursorText }) => (
-            <a
-              key={label}
-              href="#"
-              className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em]"
-              style={{ fontSize: "10px", color: "#111111" }}
-              data-cursor-text={cursorText}
-            >
-              {label}
-            </a>
-          ))}
-
-          {/* Cart */}
-          <button
-            onClick={incrementItems}
-            className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] cursor-pointer"
-            style={{ fontSize: "10px", color: "#111111" }}
-            data-cursor-text="CART"
-          >
-            Cart
-            {cartItemsCount > 0 && (
-              <span
-                className="flex items-center justify-center rounded-full font-bold"
-                style={{
-                  width: 16,
-                  height: 16,
-                  fontSize: "8px",
-                  backgroundColor: "#8B1A1A",
-                  color: "#F4F0E6",
-                }}
-              >
-                {cartItemsCount}
-              </span>
-            )}
-          </button>
-        </nav>
-      </header>
 
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
@@ -518,15 +434,15 @@ export default function Home() {
               lineHeight: 1.55,
             }}
           >
-            &ldquo;True luxury is found in the weight of the weave and the
-            history oxidized in every brass rivet. We build armor for the modern
-            minimalist.&rdquo;
+            &ldquo;True luxury is found in the fall of a collar and the quiet
+            confidence of a perfectly pressed placket. We build refinement for
+            the modern gentleman.&rdquo;
           </p>
           <div
             className="font-sans font-bold uppercase tracking-[0.2em]"
             style={{ fontSize: "9px", color: "rgba(17,17,17,0.45)" }}
           >
-            — The Manufacturing Philosophy
+            — The Atelier Philosophy
           </div>
 
           {/* Selvedge rule */}

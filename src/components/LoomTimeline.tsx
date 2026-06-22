@@ -126,7 +126,7 @@ export default function LoomTimeline() {
         style={{ willChange: "transform" }}
       >
         
-        {/* PANEL 1: Warp & Weft Weaving */}
+        {/* PANEL 1: Weave & The Count */}
         <section
           className="w-screen h-full flex flex-col md:flex-row items-center justify-between px-12 md:px-24 py-20 relative"
           style={{ backgroundColor: "#F4F0E6" }}
@@ -137,7 +137,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#8B1A1A" }}
             >
-              Okayama Heritage // Stage 01
+              Albini Heritage // Stage 01
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -148,10 +148,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              The Warp & The Weft
+              The Weave & The Count
             </h2>
             <p className="font-sans text-[12.5px] text-[#111111]/90 leading-relaxed mb-8 max-w-md">
-              Before it is denim, it is raw cotton thread. We align thousands of long-staple ecru cotton strands on the loom frame, tensioned perfectly to support the weaving of heavy-weight selvedge armor.
+              Before it is a shirt, it is raw thread count. We weave 100-count to 140-count Egyptian long-staple cotton yarns into tight poplin and Oxford constructions, tensioned to hold their structure through decades of wearing and washing.
             </p>
             <div className="flex items-center gap-3">
               <span className="font-sans font-bold text-[9px] text-[#111111]/60 tracking-widest">
@@ -208,7 +208,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#8B1A1A" }}
             >
-              Okayama Heritage // Stage 02
+              Heritage Craft // Stage 02
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -219,10 +219,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              The Vintage Shuttle
+              The Cutting Table
             </h2>
             <p className="font-sans text-[12.5px] text-[#111111]/90 leading-relaxed mb-8 max-w-md">
-              We weave on vintage Toyoda shuttle looms. Running at a slow, rhythmic clatter, the wooden shuttle carries the thread back and forth continuously, locking the edges with the signature self-finished red selvedge line.
+              Each shirt panel is hand-cut from a single length of cloth on a long table by a single artisan. Pattern pieces are aligned with the grain of the fabric to ensure the finished shirt hangs perfectly and the check patterns align at every seam.
             </p>
           </div>
 
@@ -265,12 +265,12 @@ export default function LoomTimeline() {
           className="w-screen h-full flex flex-col md:flex-row items-center justify-between px-12 md:px-24 py-20 relative overflow-hidden"
           style={{ backgroundColor: "#F4F0E6" }}
         >
-          {/* Dynamic Indigo Saturation Background Overlay */}
+          {/* Warm mahogany overlay — evokes fabric pressing/heat */}
           <div
             ref={vatOverlayRef}
             className="absolute inset-0 z-0 pointer-events-none"
             style={{
-              backgroundColor: "#1A2B4C", // Deep Indigo
+              backgroundColor: "#2C1810",
               mixBlendMode: "multiply",
               opacity: 0.95,
             }}
@@ -282,7 +282,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#D4AF37" }}
             >
-              Okayama Heritage // Stage 03
+              Heritage Craft // Stage 03
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -293,10 +293,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              Indigo Fermentation
+              The Finishing Hand
             </h2>
             <p className="font-sans text-[12.5px] text-[#FAF8F5]/90 leading-relaxed mb-8 max-w-md">
-              The spun threads are hand-dipped into natural indigo fermentation vats. Oxygenation turns the ecru fibers into raw, deep, dark blue indigo—a slow process repeated dozens of times to build deep color layers.
+              Each shirt passes through the hands of a finishing specialist who steams the placket flat, presses the collar roll with a curved iron, and attaches the mother-of-pearl buttons by hand. This final stage cannot be mechanised.
             </p>
           </div>
 

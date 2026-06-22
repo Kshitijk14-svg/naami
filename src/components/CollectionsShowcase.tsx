@@ -48,35 +48,35 @@ export default function CollectionsShowcase() {
       {/* Asymmetric Editorial Layout Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-stretch reveal-stagger-container">
 
-        {/* ROW 1: Portrait Collection 01 - Raw Indigo Series (Left) */}
+        {/* ROW 1: Portrait Collection 01 - Oxford Whites (Left) */}
         <div className="md:col-span-6 flex flex-col reveal-stagger-item">
           <PortraitCollectionCard
             number="01"
-            name="RAW INDIGO SERIES"
-            tag="THE RIGID BASE"
-            description="14oz unwashed Japanese selvedge denim built to break in uniquely to your body's contour lines."
+            name="OXFORD WHITES"
+            tag="THE CLEAN SLATE"
+            description="100% Egyptian cotton Oxford cloth woven on heritage shuttle looms. Each shirt builds to a unique softness through careful long-term wear."
             image="/images/hero-1.png"
           />
         </div>
 
-        {/* ROW 1: Portrait Collection 02 - Japanese Sashiko Weaves (Right) */}
+        {/* ROW 1: Portrait Collection 02 - Linen Naturals (Right) */}
         <div className="md:col-span-6 flex flex-col reveal-stagger-item">
           <PortraitCollectionCard
             number="02"
-            name="JAPANESE SASHIKO"
-            tag="THE TEXTURAL DEPTH"
-            description="Traditional sashiko stitching techniques applied to heavy-duty workwear shirts and heritage vests."
+            name="LINEN NATURALS"
+            tag="THE WOVEN LIGHT"
+            description="European flax spun into 8oz linen, garment-dyed in natural earth pigments. The fabric breathes and softens with every wash cycle."
             image="/images/hero-3.png"
           />
         </div>
 
-        {/* ROW 2: Landscape Collection 03 - Oxidized Brass Hardware (Full Width) */}
+        {/* ROW 2: Landscape Collection 03 - Chambray Blues (Full Width) */}
         <div className="md:col-span-12 mt-4 md:mt-8 reveal-stagger-item">
           <LandscapeCollectionCard
             number="03"
-            name="OXIDIZED BRASS"
-            tag="THE CORROSIVE DETAIL"
-            description="Individually cast solid brass rivets and buttons aged through slow oxidation for vintage texture."
+            name="CHAMBRAY BLUES"
+            tag="THE WORKWEAR ROOT"
+            description="Cone Mills chambray woven in the American South. Heavy-duty utility with mother-of-pearl shell buttons, felled seams, and box-pleat back for unrestricted movement."
             image="/images/product-hardware.png"
           />
         </div>

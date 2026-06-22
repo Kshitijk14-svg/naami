@@ -11,10 +11,10 @@ const footerData: FooterColumn[] = [
   {
     title: "Collections",
     links: [
-      { label: "Raw Indigo Trucker", href: "#" },
-      { label: "Selvedge Straight Jeans", href: "#" },
-      { label: "Indigo Sashiko Shirt", href: "#" },
-      { label: "Midnight Denim Vest", href: "#" },
+      { label: "Oxford Stripe Shirt", href: "#" },
+      { label: "Linen Natural Camp", href: "#" },
+      { label: "Sashiko Boro Overshirt", href: "#" },
+      { label: "Chambray Work Shirt", href: "#" },
       { label: "Bestseller Classics", href: "#" },
     ],
   },
@@ -22,17 +22,17 @@ const footerData: FooterColumn[] = [
     title: "Philosophy",
     links: [
       { label: "Loom Heritage", href: "#" },
-      { label: "Heavy Weave Care", href: "#" },
-      { label: "Oxidized Brass", href: "#" },
-      { label: "Sustainable Indigo", href: "#" },
+      { label: "Shirt Care Guide", href: "#" },
+      { label: "Mother-of-Pearl Buttons", href: "#" },
+      { label: "Natural Dye Process", href: "#" },
       { label: "Studio Manufacture", href: "#" },
     ],
   },
   {
     title: "Customer Care",
     links: [
-      { label: "Loom Guarantee", href: "#" },
-      { label: "Rivet Servicing", href: "#" },
+      { label: "Atelier Guarantee", href: "#" },
+      { label: "Button & Thread Service", href: "#" },
       { label: "Secure Payments", href: "#" },
       { label: "Returns & Exchanges", href: "#" },
       { label: "Global Stockists", href: "#" },

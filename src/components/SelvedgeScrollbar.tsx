@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function SelvedgeScrollbar() {
+  const pathname = usePathname();
   const ribbonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ribbonRef.current) return;
 
-    // Map scroll progress to scaleY of the ribbon
     ScrollTrigger.create({
       start: "top top",
       end: "bottom bottom",
@@ -27,6 +28,8 @@ export default function SelvedgeScrollbar() {
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
+
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <div

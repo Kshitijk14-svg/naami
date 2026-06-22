@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 import SelvedgeScrollbar from "@/components/SelvedgeScrollbar";
 import CustomCursor from "@/components/CustomCursor";
 
@@ -16,10 +17,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NAAMI — Bespoke Selvedge Denim",
+  title: "NAAMI — Bespoke Handcrafted Shirts",
   description:
-    "High-end bespoke denim crafted from Japanese and Cone Mills selvedge cloth. Luxury minimalist fashion for the modern wardrobe.",
-  keywords: "luxury denim, selvedge, bespoke, indigo, raw denim, fashion",
+    "High-end bespoke shirts crafted from Egyptian cotton, Japanese linen, and heritage weaves. Luxury editorial fashion for the modern wardrobe.",
+  keywords: "luxury shirts, bespoke shirts, Oxford cloth, chambray, linen shirts, heritage weave, fashion",
 };
 
 export default function RootLayout({
@@ -37,6 +38,7 @@ export default function RootLayout({
         style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
         suppressHydrationWarning
       >
+        <Navbar />
         {children}
         {/* Selvedge scroll indicator — fixed right-edge denim detail */}
         <SelvedgeScrollbar />

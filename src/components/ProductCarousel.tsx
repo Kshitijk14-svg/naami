@@ -748,9 +748,9 @@ function ProductDetailContent({
           }}
         >
           {[
-            ["Fabric Detail", product.material],
-            ["Cut & Silhouette", product.fit],
-            ["Origin Tag", product.origin],
+            ["Fabric & Weave", product.material],
+            ["Collar & Silhouette", product.fit],
+            ["Origin Atelier", product.origin],
           ].map(([label, value]) => (
             <div
               key={label}
