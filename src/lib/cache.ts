@@ -30,6 +30,9 @@ export const CACHE_KEYS = {
   COLLECTIONS_ALL: "collections:all",
   COLLECTION_BY_ID: (id: number) => `collections:${id}`,
   SEARCH_RESULTS: (q: string) => `search:${q.toLowerCase().trim()}`,
+  BLOG_ALL: "blog:all",
+  BLOG_BY_SLUG: (slug: string) => `blog:${slug}`,
+  DESIGN_SETTINGS: "design:settings",
 } as const;
 
 // ─── Cache TTLs (seconds) ──────────────────────────────────────────────────────
@@ -39,4 +42,6 @@ export const CACHE_TTL = {
   CATEGORIES: 600,
   COLLECTIONS: 600,
   SEARCH: 60,
+  BLOG: 300,
+  DESIGN: 3600,
 } as const;

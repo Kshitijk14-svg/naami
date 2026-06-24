@@ -18,12 +18,7 @@ function makeOrderId(): string {
   return `ORD-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 }
 
-/**
- * Create an order atomically: validates coupon, increments usedCount,
- * inserts order + items — all in a single PostgreSQL transaction.
- * Any violation rolls back everything.
- */
-export async function createOrder(input: {
+export interface CreateOrderInput {
   userId: number;
   items: {
     productId: number;
@@ -34,14 +29,25 @@ export async function createOrder(input: {
   }[];
   totalInr: number;
   couponCode?: string;
-}) {
+  shippingName?: string;
+  shippingEmail?: string;
+  shippingPhone?: string;
+  shippingAddress?: string; // JSON string
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+}
+
+/**
+ * Create an order atomically: validates coupon, increments usedCount,
+ * locks product rows (deadlock prevention), inserts order + items, decrements stock.
+ * Any violation rolls back everything.
+ */
+export async function createOrder(input: CreateOrderInput) {
   return db.transaction(async (tx) => {
     let couponId: number | null = null;
 
     if (input.couponCode) {
-      // FOR UPDATE locks the coupon row for the duration of the transaction,
-      // preventing two concurrent orders from both reading usedCount < usageLimit
-      // before either increments it (TOCTOU race / double-spend).
+      // FOR UPDATE prevents TOCTOU double-spend race on coupon usedCount
       const [coupon] = await tx
         .select()
         .from(coupons)
@@ -66,9 +72,7 @@ export async function createOrder(input: {
         .where(eq(coupons.id, coupon.id));
     }
 
-    // Lock product rows in ascending ID order before any stock check/decrement.
-    // Consistent ordering across concurrent transactions prevents circular waits
-    // (the root cause of deadlocks on multi-product orders).
+    // Lock product rows in ascending ID order — consistent ordering prevents deadlocks
     const sortedProductIds = [...new Set(input.items.map((i) => i.productId))].sort(
       (a, b) => a - b
     );
@@ -89,6 +93,12 @@ export async function createOrder(input: {
         totalInr: input.totalInr,
         couponId,
         status: "pending",
+        shippingName: input.shippingName ?? null,
+        shippingEmail: input.shippingEmail ?? null,
+        shippingPhone: input.shippingPhone ?? null,
+        shippingAddress: input.shippingAddress ?? null,
+        razorpayOrderId: input.razorpayOrderId ?? null,
+        razorpayPaymentId: input.razorpayPaymentId ?? null,
       })
       .returning();
 
@@ -102,6 +112,14 @@ export async function createOrder(input: {
         size: item.size ?? null,
       }))
     );
+
+    // Decrement stock for each product
+    for (const item of input.items) {
+      await tx
+        .update(products)
+        .set({ stock: sql`${products.stock} - ${item.quantity}` })
+        .where(eq(products.id, item.productId));
+    }
 
     return order;
   });
@@ -121,11 +139,7 @@ export async function getOrdersByStatus(status: string) {
 }
 
 export async function getOrderById(id: string) {
-  const rows = await db
-    .select()
-    .from(orders)
-    .where(eq(orders.id, id))
-    .limit(1);
+  const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
@@ -140,8 +154,5 @@ export async function updateOrderStatus(id: string, status: string) {
 }
 
 export async function getOrderItems(orderId: string) {
-  return db
-    .select()
-    .from(orderItems)
-    .where(eq(orderItems.orderId, orderId));
+  return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
 }

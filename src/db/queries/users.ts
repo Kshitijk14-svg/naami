@@ -5,9 +5,18 @@ import { ROLE_ASSIGNMENTS } from "@/models/roles";
 
 export type UserRow = typeof users.$inferSelect;
 
+export async function getUserByEmail(email: string): Promise<UserRow | null> {
+  const rows = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email.toLowerCase().trim()))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
 export async function getOrCreateUser(
   email: string,
-  name?: string
+  name?: string | null
 ): Promise<UserRow> {
   const normalized = email.toLowerCase().trim();
 
@@ -25,13 +34,4 @@ export async function getOrCreateUser(
     .values({ email: normalized, name: name ?? null, role })
     .returning();
   return created;
-}
-
-export async function getUserByEmail(email: string): Promise<UserRow | null> {
-  const rows = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email.toLowerCase().trim()))
-    .limit(1);
-  return rows[0] ?? null;
 }

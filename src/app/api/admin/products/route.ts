@@ -1,44 +1,49 @@
-import { NextRequest } from 'next/server';
-import { verifyAdminRequest } from '@/lib/adminAuth';
-import { getAllProducts, createProduct } from '@/models/productStore';
-
-function formatPrice(priceINR: number): string {
-  return `₹${priceINR.toLocaleString('en-IN')}`;
-}
+import { NextRequest } from "next/server";
+import { verifyAdminRequest } from "@/lib/adminAuth";
+import {
+  getAllProducts,
+  createProduct,
+  formatProduct,
+  setProductSizes,
+} from "@/db/queries/products";
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyAdminRequest(request, ['admin', 'super_admin']);
+  const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
 
-  return Response.json(getAllProducts());
+  const all = await getAllProducts();
+  return Response.json(all.map(formatProduct));
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyAdminRequest(request, ['admin', 'super_admin']);
+  const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
 
   const body = await request.json();
-  const { name, priceINR, stock, ...rest } = body;
+  const priceInr: number = body.priceINR ?? body.priceInr;
 
-  if (!name || typeof priceINR !== 'number' || typeof stock !== 'number') {
-    return Response.json({ error: 'name, priceINR, and stock are required' }, { status: 400 });
+  if (!body.name || typeof priceInr !== "number" || typeof body.stock !== "number") {
+    return Response.json({ error: "name, priceINR, and stock are required" }, { status: 400 });
   }
 
-  const product = createProduct({
-    name,
-    priceINR,
-    stock,
-    price: formatPrice(priceINR),
+  const product = await createProduct({
+    name: body.name,
+    priceInr,
+    stock: body.stock,
     isPublished: body.isPublished ?? true,
-    number: rest.number ?? '',
-    subtitle: rest.subtitle ?? '',
-    material: rest.material ?? '',
-    fit: rest.fit ?? '',
-    origin: rest.origin ?? '',
-    image: rest.image ?? '/images/product-jacket.png',
-    category: rest.category,
-    sizes: rest.sizes,
+    number: body.number ?? "",
+    subtitle: body.subtitle ?? "",
+    material: body.material ?? "",
+    fit: body.fit ?? "",
+    origin: body.origin ?? "",
+    image: body.image ?? "/images/product-jacket.png",
+    categoryId: body.categoryId ?? null,
+    lowStockThreshold: body.lowStockThreshold ?? 5,
   });
 
-  return Response.json(product, { status: 201 });
+  if (body.sizes && Array.isArray(body.sizes)) {
+    await setProductSizes(product.id, body.sizes);
+  }
+
+  return Response.json(formatProduct(product), { status: 201 });
 }

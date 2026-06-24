@@ -30,7 +30,7 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideTextRef = useRef<HTMLDivElement>(null);
 
-  const heroSlides = [
+  const DEFAULT_HERO_SLIDES = [
     {
       image: "/images/hero-1.png",
       title: "OXFORD STRIPE SHIRT",
@@ -50,6 +50,24 @@ export default function Home() {
       tag: "Naami // AW26 Collection — 003",
     },
   ];
+
+  const [heroSlides, setHeroSlides] = useState(DEFAULT_HERO_SLIDES);
+
+  useEffect(() => {
+    fetch("/api/public/design-settings")
+      .then((r) => r.json())
+      .then((s: Record<string, string>) => {
+        const slides = [1, 2, 3].map((n, i) => ({
+          image: s[`hero_image_${n}`] || DEFAULT_HERO_SLIDES[i].image,
+          title: s[`hero_title_${n}`] || DEFAULT_HERO_SLIDES[i].title,
+          subtitle: s[`hero_subtitle_${n}`] || DEFAULT_HERO_SLIDES[i].subtitle,
+          tag: s[`hero_tag_${n}`] || DEFAULT_HERO_SLIDES[i].tag,
+        }));
+        setHeroSlides(slides);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);

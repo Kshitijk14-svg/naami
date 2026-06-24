@@ -42,9 +42,12 @@ export async function redisGet<T>(key: string): Promise<T | null> {
   } catch (err) {
     if (err instanceof CircuitOpenError) {
       console.warn("[redis] Circuit open — treating as cache miss");
-      return null;
+    } else {
+      // Connection/DNS/timeout errors must never take down the request path —
+      // the circuit breaker has already recorded this failure; fall through to DB.
+      console.warn("[redis] Read failed — treating as cache miss:", err);
     }
-    throw err;
+    return null;
   }
 }
 
@@ -72,9 +75,9 @@ export async function redisSet(
   } catch (err) {
     if (err instanceof CircuitOpenError) {
       console.warn("[redis] Circuit open — cache write skipped");
-      return;
+    } else {
+      console.warn("[redis] Write failed — cache write skipped:", err);
     }
-    throw err;
   }
 }
 
@@ -94,9 +97,9 @@ export async function redisDel(...keys: string[]): Promise<void> {
   } catch (err) {
     if (err instanceof CircuitOpenError) {
       console.warn("[redis] Circuit open — cache invalidation skipped");
-      return;
+    } else {
+      console.warn("[redis] Delete failed — cache invalidation skipped:", err);
     }
-    throw err;
   }
 }
 
@@ -147,8 +150,9 @@ export async function checkRateLimit(
   } catch (err) {
     if (err instanceof CircuitOpenError) {
       console.warn("[redis] Circuit open — rate limit failing open");
-      return null;
+    } else {
+      console.warn("[redis] Rate limit check failed — failing open:", err);
     }
-    throw err;
+    return null;
   }
 }

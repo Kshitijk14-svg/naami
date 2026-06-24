@@ -21,7 +21,6 @@ export default function Navbar() {
   const router = useRouter();
   const navbarRef = useRef<HTMLElement>(null);
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
-  const incrementItems = useCartStore((state) => state.incrementItems);
   const [session, setSession] = useState<SessionData | null>(null);
 
   // Fetch auth state once on mount. We skip re-fetching on every pathname
@@ -108,6 +107,14 @@ export default function Navbar() {
         >
           About
         </Link>
+        <Link
+          href="/journal"
+          className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
+          style={{ color: "#111111" }}
+          data-cursor-text="READ"
+        >
+          Journal
+        </Link>
 
         {/* Auth: profile dropdown when signed in, sign-in link when not */}
         {session?.authenticated ? (
@@ -128,9 +135,9 @@ export default function Navbar() {
         )}
 
         {/* Cart */}
-        <button
-          onClick={incrementItems}
-          className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] cursor-pointer text-[10px]"
+        <Link
+          href="/cart"
+          className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
           style={{ color: "#111111" }}
           data-cursor-text="CART"
         >
@@ -149,7 +156,7 @@ export default function Navbar() {
               {cartItemsCount}
             </span>
           )}
-        </button>
+        </Link>
       </nav>
     </header>
   );

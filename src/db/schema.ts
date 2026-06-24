@@ -41,12 +41,8 @@ export const users = pgTable(
     email: varchar("email", { length: 320 }).notNull().unique(),
     name: text("name"),
     role: roleEnum("role").notNull().default("customer"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)]
 );
@@ -60,16 +56,12 @@ export const categories = pgTable(
     name: varchar("name", { length: 100 }).notNull(),
     slug: varchar("slug", { length: 100 }).notNull().unique(),
     description: text("description"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("categories_slug_idx").on(t.slug)]
 );
 
 // ─── 3. products ──────────────────────────────────────────────────────────────
-// price (formatted string) is NOT stored — computed at API layer via toLocaleString('en-IN')
-// This removes the transitive dependency: id → priceInr → price
 
 export const products = pgTable(
   "products",
@@ -85,15 +77,10 @@ export const products = pgTable(
     priceInr: integer("price_inr").notNull(),
     stock: integer("stock").notNull().default(0),
     isPublished: boolean("is_published").notNull().default(true),
-    categoryId: integer("category_id").references(() => categories.id, {
-      onDelete: "set null",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    lowStockThreshold: integer("low_stock_threshold").notNull().default(5),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("products_published_idx").on(t.isPublished),
@@ -101,14 +88,12 @@ export const products = pgTable(
   ]
 );
 
-// ─── 4. product_sizes — extracted repeating group (1NF fix) ───────────────────
+// ─── 4. product_sizes ─────────────────────────────────────────────────────────
 
 export const productSizes = pgTable(
   "product_sizes",
   {
-    productId: integer("product_id")
-      .notNull()
-      .references(() => products.id, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
     size: varchar("size", { length: 10 }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.productId, t.size] })]
@@ -124,26 +109,17 @@ export const collections = pgTable("collections", {
   description: text("description").notNull().default(""),
   image: text("image").notNull().default("/images/product-jacket.png"),
   isPublished: boolean("is_published").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ─── 6. collection_products — extracted repeating group (1NF fix) ──────────────
-// Replaces Collection.productIds: number[]
+// ─── 6. collection_products ───────────────────────────────────────────────────
 
 export const collectionProducts = pgTable(
   "collection_products",
   {
-    collectionId: integer("collection_id")
-      .notNull()
-      .references(() => collections.id, { onDelete: "cascade" }),
-    productId: integer("product_id")
-      .notNull()
-      .references(() => products.id, { onDelete: "cascade" }),
+    collectionId: integer("collection_id").notNull().references(() => collections.id, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.collectionId, t.productId] })]
 );
@@ -162,35 +138,30 @@ export const coupons = pgTable(
     usedCount: integer("used_count").notNull().default(0),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("coupons_code_idx").on(t.code)]
 );
 
 // ─── 8. orders ────────────────────────────────────────────────────────────────
-// customerEmail/customerName are NOT stored here (transitive dep via userId).
-// Read them via JOIN with users when needed.
 
 export const orders = pgTable(
   "orders",
   {
     id: varchar("id", { length: 20 }).primaryKey(),
-    userId: integer("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "restrict" }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
     status: orderStatusEnum("status").notNull().default("pending"),
     totalInr: integer("total_inr").notNull(),
-    couponId: integer("coupon_id").references(() => coupons.id, {
-      onDelete: "set null",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    couponId: integer("coupon_id").references(() => coupons.id, { onDelete: "set null" }),
+    // Shipping snapshot — captured at order time, nullable for existing orders
+    shippingName: varchar("shipping_name", { length: 200 }),
+    shippingEmail: varchar("shipping_email", { length: 320 }),
+    shippingPhone: varchar("shipping_phone", { length: 20 }),
+    shippingAddress: text("shipping_address"), // JSON: {line1,line2?,city,state,pincode}
+    razorpayOrderId: varchar("razorpay_order_id", { length: 100 }),
+    razorpayPaymentId: varchar("razorpay_payment_id", { length: 100 }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("orders_user_idx").on(t.userId),
@@ -200,19 +171,14 @@ export const orders = pgTable(
 );
 
 // ─── 9. order_items ───────────────────────────────────────────────────────────
-// unit_price_inr and product_name are INTENTIONAL snapshots — not a 3NF violation.
-// Without them, price changes or product deletions would corrupt order history.
 
 export const orderItems = pgTable(
   "order_items",
   {
     id: serial("id").primaryKey(),
-    orderId: varchar("order_id", { length: 20 })
-      .notNull()
-      .references(() => orders.id, { onDelete: "cascade" }),
-    productId: integer("product_id")
-      .notNull()
-      .references(() => products.id, { onDelete: "restrict" }),
+    orderId: varchar("order_id", { length: 20 }).notNull().references(() => orders.id, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "restrict" }),
+    // Intentional snapshot: preserve name and price at time of purchase
     productName: varchar("product_name", { length: 200 }).notNull(),
     unitPriceInr: integer("unit_price_inr").notNull(),
     quantity: integer("quantity").notNull(),
@@ -224,7 +190,7 @@ export const orderItems = pgTable(
   ]
 );
 
-// ─── 10. otp_codes — PostgreSQL fallback when Redis daily quota exceeded ───────
+// ─── 10. otp_codes ────────────────────────────────────────────────────────────
 
 export const otpCodes = pgTable("otp_codes", {
   email: varchar("email", { length: 320 }).primaryKey(),
@@ -232,12 +198,59 @@ export const otpCodes = pgTable("otp_codes", {
   name: text("name"),
   attempts: integer("attempts").notNull().default(0),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ─── Drizzle relations (for .with() query builder) ────────────────────────────
+// ─── 11. blog_posts ───────────────────────────────────────────────────────────
+
+export const blogPosts = pgTable(
+  "blog_posts",
+  {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 200 }).notNull(),
+    slug: varchar("slug", { length: 200 }).notNull().unique(),
+    excerpt: text("excerpt"),
+    content: text("content").notNull().default(""),
+    coverImage: text("cover_image"),
+    isPublished: boolean("is_published").notNull().default(false),
+    // publishedAt differs from createdAt — drafts have createdAt but null publishedAt
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("blog_posts_slug_idx").on(t.slug),
+    index("blog_posts_published_idx").on(t.isPublished, t.publishedAt),
+  ]
+);
+
+// ─── 12. design_settings ─────────────────────────────────────────────────────
+// BCNF key-value store: key → value, key → updatedAt. No non-trivial dependencies.
+
+export const designSettings = pgTable("design_settings", {
+  key: varchar("key", { length: 100 }).primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── 13. abandoned_carts ─────────────────────────────────────────────────────
+// Snapshot of cart state at checkout entry. email is NOT a FK to users because
+// the cart may be abandoned before account creation. items is a JSON snapshot.
+
+export const abandonedCarts = pgTable(
+  "abandoned_carts",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 320 }).notNull(),
+    items: text("items").notNull(), // JSON: CartItem[]
+    reminderSentAt: timestamp("reminder_sent_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("abandoned_carts_email_idx").on(t.email)]
+);
+
+// ─── Drizzle relations ────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
@@ -248,39 +261,24 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
-  category: one(categories, {
-    fields: [products.categoryId],
-    references: [categories.id],
-  }),
+  category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
   sizes: many(productSizes),
   collectionProducts: many(collectionProducts),
   orderItems: many(orderItems),
 }));
 
 export const productSizesRelations = relations(productSizes, ({ one }) => ({
-  product: one(products, {
-    fields: [productSizes.productId],
-    references: [products.id],
-  }),
+  product: one(products, { fields: [productSizes.productId], references: [products.id] }),
 }));
 
 export const collectionsRelations = relations(collections, ({ many }) => ({
   collectionProducts: many(collectionProducts),
 }));
 
-export const collectionProductsRelations = relations(
-  collectionProducts,
-  ({ one }) => ({
-    collection: one(collections, {
-      fields: [collectionProducts.collectionId],
-      references: [collections.id],
-    }),
-    product: one(products, {
-      fields: [collectionProducts.productId],
-      references: [products.id],
-    }),
-  })
-);
+export const collectionProductsRelations = relations(collectionProducts, ({ one }) => ({
+  collection: one(collections, { fields: [collectionProducts.collectionId], references: [collections.id] }),
+  product: one(products, { fields: [collectionProducts.productId], references: [products.id] }),
+}));
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
   user: one(users, { fields: [orders.userId], references: [users.id] }),
@@ -290,8 +288,5 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
-  product: one(products, {
-    fields: [orderItems.productId],
-    references: [products.id],
-  }),
+  product: one(products, { fields: [orderItems.productId], references: [products.id] }),
 }));

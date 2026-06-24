@@ -3,11 +3,13 @@ export interface CarouselProduct {
   number: string;
   name: string;
   subtitle: string;
-  price: string;
+  price: string;   // display string e.g. "₹29,900"
+  priceInr: number; // integer for cart calculations
   material: string;
   fit: string;
   origin: string;
   image: string;
+  sizes?: string[];
 }
 
 export const newArrivals: CarouselProduct[] = [
@@ -17,10 +19,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "OXFORD STRIPE SHIRT",
     subtitle: "120s Egyptian Cotton Oxford",
     price: "₹29,900",
+    priceInr: 29900,
     material: "120s Egyptian long-staple cotton",
     fit: "Relaxed tuck-in silhouette",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jacket.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 2,
@@ -28,10 +32,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "LINEN NATURAL CAMP",
     subtitle: "8oz European Linen",
     price: "₹23,200",
+    priceInr: 23200,
     material: "European flax 8oz plain weave",
     fit: "Camp collar relaxed",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jeans.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 3,
@@ -39,10 +45,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "MOTHER-OF-PEARL BUTTON SET",
     subtitle: "Hand-polished Shell Buttons",
     price: "₹9,900",
+    priceInr: 9900,
     material: "Hand-polished nacre shell",
     fit: "Universal 4-hole 15mm",
     origin: "Sourced in Philippines",
     image: "/images/product-hardware.png",
+    sizes: ["One Size"],
   },
   {
     id: 4,
@@ -50,10 +58,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "CHAMBRAY WORK SHIRT",
     subtitle: "7oz Cone Mills Chambray",
     price: "₹19,900",
+    priceInr: 19900,
     material: "7oz organic Cone Mills chambray",
     fit: "Classic utility fit",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jacket.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 5,
@@ -61,10 +71,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "SASHIKO BORO OVERSHIRT",
     subtitle: "Hand-stitched Sashiko Weave",
     price: "₹15,900",
+    priceInr: 15900,
     material: "Indigo-dyed heavy sashiko weave",
     fit: "Relaxed workshirt fit",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jeans.png",
+    sizes: ["S", "M", "L", "XL", "XXL"],
   },
   {
     id: 6,
@@ -72,10 +84,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "NAAMI DRESS SHIRT",
     subtitle: "100s Sea Island Cotton Poplin",
     price: "₹34,900",
+    priceInr: 34900,
     material: "100s Sea Island cotton poplin",
     fit: "Slim spread collar",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jacket.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 7,
@@ -83,10 +97,12 @@ export const newArrivals: CarouselProduct[] = [
     name: "GURKHA COLLAR SHIRT",
     subtitle: "10oz Khadi Cotton",
     price: "₹12,500",
+    priceInr: 12500,
     material: "10oz handspun khadi cotton",
     fit: "Gurkha mandarin collar",
     origin: "Assembled in India",
     image: "/images/product-hardware.png",
+    sizes: ["S", "M", "L", "XL"],
   },
 ];
 
@@ -97,10 +113,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "TUXEDO BANDED SHIRT",
     subtitle: "80s Pima Poplin",
     price: "₹24,000",
+    priceInr: 24000,
     material: "80s Superfine pima poplin",
     fit: "Banded collar slim",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jeans.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 12,
@@ -108,10 +126,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "NAAMI KURTA SHIRT",
     subtitle: "Chanderi Silk-Cotton",
     price: "₹43,000",
+    priceInr: 43000,
     material: "Double-layered pure Chanderi silk-cotton",
     fit: "Traditional kurta cut",
     origin: "Handcrafted in India",
     image: "/images/product-jacket.png",
+    sizes: ["S", "M", "L", "XL"],
   },
   {
     id: 13,
@@ -119,10 +139,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "EVERYDAY CHAMBRAY",
     subtitle: "8oz Organic Chambray",
     price: "₹14,900",
+    priceInr: 14900,
     material: "8oz organic cotton chambray",
     fit: "Traditional utility cut",
     origin: "Assembled in Portugal",
     image: "/images/product-hardware.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 14,
@@ -130,10 +152,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "HAORI OVERSHIRT",
     subtitle: "Japanese Shuttle-loom Cotton",
     price: "₹31,500",
+    priceInr: 31500,
     material: "10oz raw Japanese shuttle-loom cotton",
     fit: "Haori collar relaxed drape",
     origin: "Handcrafted in Japan",
     image: "/images/product-jacket.png",
+    sizes: ["S", "M", "L", "XL"],
   },
   {
     id: 15,
@@ -141,10 +165,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "NAAMI HENLEY SHIRT",
     subtitle: "14.5oz Slub Cotton",
     price: "₹28,200",
+    priceInr: 28200,
     material: "14.5oz slub cotton",
     fit: "Boxy henley placket",
     origin: "Handcrafted in Portugal",
     image: "/images/product-jacket.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 16,
@@ -152,10 +178,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "STONEWASH POPLIN",
     subtitle: "Washed Shuttle-loom",
     price: "₹25,600",
+    priceInr: 25600,
     material: "13.5oz washed shuttle-loom cotton",
     fit: "Easy straight fit",
     origin: "Finished in Portugal",
     image: "/images/product-jeans.png",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
     id: 17,
@@ -163,10 +191,12 @@ export const bestsellers: CarouselProduct[] = [
     name: "NAAMI COLLAR STAY SET",
     subtitle: "Sterling Silver",
     price: "₹11,600",
+    priceInr: 11600,
     material: "Sterling silver stays",
     fit: "Universal shirt sizing",
     origin: "Cast in Japan",
     image: "/images/product-hardware.png",
+    sizes: ["One Size"],
   },
 ];
 

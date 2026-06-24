@@ -24,6 +24,8 @@ const TILES: Tile[] = [
   { label: "Categories",  href: "/admin/categories",  description: "Manage the product taxonomy and navigation labels.",           roles: ["admin", "super_admin"] },
   { label: "Coupons",     href: "/admin/coupons",     description: "Issue discount codes and manage promotional campaigns.",       roles: ["admin", "super_admin"] },
   { label: "Orders",      href: "/admin/orders",      description: "View and update the status of all customer orders.",           roles: ["staff", "admin", "super_admin"] },
+  { label: "Blog",        href: "/admin/blog",        description: "Write and publish journal stories for the NAAMI editorial.",      roles: ["admin", "super_admin"] },
+  { label: "Design",      href: "/admin/design",      description: "Update hero images, titles, and tags on the home page.",          roles: ["admin", "super_admin"] },
 ];
 
 export default function AdminPage() {
