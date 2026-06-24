@@ -228,23 +228,23 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
     };
   }, []);
 
-  // Set up auto-scrolling
+  // Auto-scroll: run only while the carousel is visible in the viewport.
+  // IntersectionObserver pauses the RAF loop when scrolled past, saving CPU
+  // for two always-mounted carousels on the home page.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
     let lastTime = performance.now();
-    const speed = 0.07; // pixels per millisecond
+    const speed = 0.07;
+    let visible = false;
 
     const loop = (time: number) => {
       const delta = time - lastTime;
       lastTime = time;
 
-      if (!isHovered.current && !isScrollingRef.current && track) {
+      if (visible && !isHovered.current && !isScrollingRef.current) {
         track.scrollLeft += speed * (delta || 16);
-
-        // Infinite loop wrap-around
-        // Since we duplicate the product array to create seamless loop
         const halfWidth = track.scrollWidth / 2;
         if (track.scrollLeft >= halfWidth) {
           track.scrollLeft -= halfWidth;
@@ -254,12 +254,17 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
       autoScrollRaf.current = requestAnimationFrame(loop);
     };
 
+    const obs = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    obs.observe(track);
+
     autoScrollRaf.current = requestAnimationFrame(loop);
 
     return () => {
-      if (autoScrollRaf.current) {
-        cancelAnimationFrame(autoScrollRaf.current);
-      }
+      obs.disconnect();
+      if (autoScrollRaf.current) cancelAnimationFrame(autoScrollRaf.current);
     };
   }, []);
 

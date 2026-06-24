@@ -1,12 +1,9 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import Image from "next/image";
 import { useCartStore } from "@/models/cartStore";
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface HotspotData {
   id: number;
@@ -82,7 +79,7 @@ export default function HotspotBanner() {
           fill
           className="object-cover"
           style={{ filter: "brightness(0.92)" }}
-          priority
+          sizes="100vw"
         />
 
       </div>

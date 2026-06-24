@@ -24,15 +24,15 @@ export default function Navbar() {
   const incrementItems = useCartStore((state) => state.incrementItems);
   const [session, setSession] = useState<SessionData | null>(null);
 
+  // Fetch auth state once on mount. We skip re-fetching on every pathname
+  // change — the signout handler already updates state directly, and signing
+  // in navigates to a new page which re-mounts the Navbar.
   useEffect(() => {
     fetch("/api/auth/me")
-      .then((res) => {
-        if (res.ok) return res.json();
-        return { authenticated: false };
-      })
+      .then((res) => (res.ok ? res.json() : { authenticated: false }))
       .then((data: SessionData) => setSession(data))
       .catch(() => setSession({ authenticated: false }));
-  }, [pathname]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!navbarRef.current) return;

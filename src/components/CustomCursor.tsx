@@ -191,11 +191,10 @@ export default function CustomCursor() {
           style={{
             fontSize: "8.5px",
             whiteSpace: "nowrap",
-            backgroundColor: "rgba(244, 240, 230, 0.96)",
+            backgroundColor: "#F4F0E6",
             padding: "5px 10px",
             border: "1px solid rgba(139, 26, 26, 0.25)",
             borderRadius: "3px",
-            backdropFilter: "blur(4px)",
             transition: "opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)",
             transform: "scale(0.8) translateY(-50%)",
             transformOrigin: "left center",

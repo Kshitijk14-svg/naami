@@ -2,10 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 export default function SelvedgeScrollbar() {
   const pathname = usePathname();
@@ -14,7 +11,7 @@ export default function SelvedgeScrollbar() {
   useEffect(() => {
     if (!ribbonRef.current) return;
 
-    ScrollTrigger.create({
+    const st = ScrollTrigger.create({
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
@@ -24,9 +21,8 @@ export default function SelvedgeScrollbar() {
       },
     });
 
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
+    // Kill ONLY this trigger — not all triggers globally.
+    return () => st.kill();
   }, []);
 
   if (pathname.startsWith("/admin")) return null;

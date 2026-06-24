@@ -1,0 +1,24 @@
+# Local development database — mirrors the self-hosted Postgres on the OVH VPS.
+# Usage:  docker compose up -d   (Postgres on localhost:5432)
+#         docker compose down    (stop; data persists in the named volume)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: naami-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: naami
+      POSTGRES_PASSWORD: CHANGEME
+      POSTGRES_DB: naami
+    ports:
+      - "5432:5432"
+    volumes:
+      - naami_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U naami -d naami"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  naami_pgdata:

@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import BrandLoader from "@/components/BrandLoader";
 import HotspotBanner from "@/components/HotspotBanner";
 import ProductCarousel from "@/components/ProductCarousel";
@@ -15,8 +14,6 @@ import IndigoCanvas from "@/components/IndigoCanvas";
 import CoinPocketReveal from "@/components/CoinPocketReveal";
 import { useCartStore } from "@/models/cartStore";
 import { newArrivals, bestsellers } from "@/models/products";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   // Force scroll to top on reload/mount

@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 export default function LoomTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -171,7 +168,7 @@ export default function LoomTimeline() {
               viewBox="0 0 300 300"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="border border-black/5 p-6 bg-[#EDE8DC]/50 backdrop-blur-sm"
+              className="border border-black/5 p-6 bg-[#EDE8DC]"
             >
               {/* Warp vertical lines */}
               <g ref={warpLinesRef} stroke="rgba(17,17,17,0.25)" strokeWidth="1">
