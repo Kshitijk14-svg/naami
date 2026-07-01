@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { verifyAdminRequest } from "@/lib/adminAuth";
-import { getOrderById, updateOrderStatus, getOrderItems } from "@/db/queries/orders";
+import { getOrderById, updateOrderStatus } from "@/db/queries/orders";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Accessible to the order confirmation page for authenticated customers too
-  const auth = await verifyAdminRequest(request, ["customer", "staff", "admin", "super_admin"]);
+  // Staff+ only. Customers read their own orders via GET /api/orders/[id]
+  // (ownership-checked); this admin route must not expose arbitrary orders.
+  const auth = await verifyAdminRequest(request, ["staff", "admin", "super_admin"]);
   if (auth instanceof Response) return auth;
 
   const { id } = await params;

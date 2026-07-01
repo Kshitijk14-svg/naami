@@ -27,6 +27,9 @@ export function AdminShell({ children }: Props) {
       .then((data: SessionData) => {
         if (!data.authenticated) {
           router.replace("/auth?from=/admin");
+        } else if (!data.role || !["staff", "admin", "super_admin"].includes(data.role)) {
+          // Signed in but not staff — no admin access (mirrors the proxy guard).
+          router.replace("/");
         } else {
           setSession(data);
         }

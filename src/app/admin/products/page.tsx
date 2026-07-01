@@ -3,7 +3,25 @@
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
-import { Product } from "@/models/productStore";
+
+type Product = {
+  id: number;
+  number: string;
+  name: string;
+  subtitle: string;
+  priceInr: number;
+  material: string;
+  fit: string;
+  origin: string;
+  image: string;
+  stock: number;
+  isPublished: boolean;
+  isFeaturedNewArrival: boolean;
+  isFeaturedBestseller: boolean;
+  homeSortOrder: number;
+  sizes?: string[];
+  category?: string;
+};
 
 type FormData = {
   number: string;
@@ -18,12 +36,16 @@ type FormData = {
   stock: string;
   sizes: string;
   isPublished: boolean;
+  isFeaturedNewArrival: boolean;
+  isFeaturedBestseller: boolean;
+  homeSortOrder: string;
 };
 
 const emptyForm: FormData = {
   number: "", name: "", subtitle: "", priceINR: "",
   material: "", fit: "", origin: "", image: "",
   category: "", stock: "10", sizes: "S,M,L,XL", isPublished: true,
+  isFeaturedNewArrival: false, isFeaturedBestseller: false, homeSortOrder: "0",
 };
 
 function field(label: string, children: React.ReactNode) {
@@ -47,6 +69,26 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
   fontFamily: "inherit",
 };
+
+const checkboxRow = (
+  id: string,
+  label: string,
+  checked: boolean,
+  onChange: (checked: boolean) => void
+) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+    <input
+      type="checkbox"
+      id={id}
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      style={{ width: 14, height: 14, accentColor: "#8B1A1A" }}
+    />
+    <label htmlFor={id} className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)" }}>
+      {label}
+    </label>
+  </div>
+);
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -73,7 +115,7 @@ export default function ProductsPage() {
         number: editing.number,
         name: editing.name,
         subtitle: editing.subtitle,
-        priceINR: String(editing.priceINR),
+        priceINR: String(editing.priceInr),
         material: editing.material,
         fit: editing.fit,
         origin: editing.origin,
@@ -82,6 +124,9 @@ export default function ProductsPage() {
         stock: String(editing.stock),
         sizes: (editing.sizes ?? []).join(","),
         isPublished: editing.isPublished,
+        isFeaturedNewArrival: editing.isFeaturedNewArrival,
+        isFeaturedBestseller: editing.isFeaturedBestseller,
+        homeSortOrder: String(editing.homeSortOrder),
       });
     } else {
       setForm(emptyForm);
@@ -101,6 +146,7 @@ export default function ProductsPage() {
       ...form,
       priceINR: Number(form.priceINR),
       stock: Number(form.stock),
+      homeSortOrder: Number(form.homeSortOrder),
       sizes: form.sizes ? form.sizes.split(",").map((s) => s.trim()).filter(Boolean) : [],
     };
 
@@ -135,8 +181,7 @@ export default function ProductsPage() {
         columns={[
           { key: "number", label: "#" },
           { key: "name", label: "Name" },
-          { key: "category", label: "Category", render: (p) => p.category ?? "—" },
-          { key: "priceINR", label: "Price", render: (p) => fmtINR(p.priceINR) },
+          { key: "priceInr", label: "Price", render: (p) => fmtINR(p.priceInr) },
           { key: "stock", label: "Stock" },
           {
             key: "isPublished", label: "Published",
@@ -145,6 +190,18 @@ export default function ProductsPage() {
                 {p.isPublished ? "Yes" : "No"}
               </span>
             ),
+          },
+          {
+            key: "isFeaturedNewArrival", label: "New Arrival",
+            render: (p) => p.isFeaturedNewArrival ? (
+              <span className="font-sans font-bold uppercase" style={{ fontSize: "8px", letterSpacing: "0.12em", color: "#8B1A1A" }}>★</span>
+            ) : <span style={{ opacity: 0.2 }}>—</span>,
+          },
+          {
+            key: "isFeaturedBestseller", label: "Bestseller",
+            render: (p) => p.isFeaturedBestseller ? (
+              <span className="font-sans font-bold uppercase" style={{ fontSize: "8px", letterSpacing: "0.12em", color: "#8B1A1A" }}>★</span>
+            ) : <span style={{ opacity: 0.2 }}>—</span>,
           },
         ]}
         rows={products}
@@ -176,18 +233,15 @@ export default function ProductsPage() {
         {field("Origin", <input style={inputStyle} value={form.origin} onChange={set("origin")} />)}
         {field("Image path", <input style={inputStyle} value={form.image} onChange={set("image")} placeholder="/images/product-jacket.png" />)}
         {field("Sizes (comma-separated)", <input style={inputStyle} value={form.sizes} onChange={set("sizes")} placeholder="S,M,L,XL" />)}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-          <input
-            type="checkbox"
-            id="isPublished"
-            checked={form.isPublished}
-            onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
-            style={{ width: 14, height: 14, accentColor: "#8B1A1A" }}
-          />
-          <label htmlFor="isPublished" className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)" }}>
-            Published
-          </label>
+        <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <p className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)", marginBottom: 8 }}>
+            Homepage featuring
+          </p>
+          {checkboxRow("isPublished", "Published", form.isPublished, (v) => setForm((f) => ({ ...f, isPublished: v })))}
+          {checkboxRow("isFeaturedNewArrival", "Featured: New Arrival", form.isFeaturedNewArrival, (v) => setForm((f) => ({ ...f, isFeaturedNewArrival: v })))}
+          {checkboxRow("isFeaturedBestseller", "Featured: Bestseller", form.isFeaturedBestseller, (v) => setForm((f) => ({ ...f, isFeaturedBestseller: v })))}
         </div>
+        {field("Homepage Sort Order", <input style={inputStyle} type="number" value={form.homeSortOrder} onChange={set("homeSortOrder")} placeholder="0" />)}
       </CrudModal>
     </div>
   );

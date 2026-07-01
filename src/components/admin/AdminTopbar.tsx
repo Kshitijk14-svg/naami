@@ -60,6 +60,13 @@ export function AdminTopbar({ email, name, role }: Props) {
             {name ?? email}
           </span>
         )}
+        <Link
+          href="/"
+          className="font-sans font-bold uppercase hover:opacity-60 transition-opacity"
+          style={{ fontSize: "9px", letterSpacing: "0.18em", color: "#111111" }}
+        >
+          View Site
+        </Link>
         <button
           onClick={handleSignOut}
           disabled={signingOut}

@@ -3,8 +3,10 @@ import { verifyAdminRequest } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { abandonedCarts } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { createLogger } from "@/lib/logger";
 import type { CartItem } from "@/models/cartStore";
 
+const log = createLogger("create-order");
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     if (!rzpRes.ok) {
       const rzpErr = await rzpRes.text();
-      console.error("[create-order] Razorpay error:", rzpErr);
+      log.error("Razorpay order creation failed", { status: rzpRes.status, rzpErr });
       return Response.json({ error: "Failed to create payment order." }, { status: 502 });
     }
 
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
       currency: rzpOrder.currency,
     });
   } catch (err) {
-    console.error("[create-order]", err);
+    log.error("unexpected failure", { err });
     return Response.json({ error: "An error occurred. Please try again." }, { status: 500 });
   }
 }

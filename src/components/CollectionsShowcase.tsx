@@ -4,7 +4,47 @@ import Image from "next/image";
 import { useRef } from "react";
 import gsap from "gsap";
 
-export default function CollectionsShowcase() {
+type CollectionItem = {
+  number: string;
+  name: string;
+  tag: string;
+  description: string;
+  image: string;
+};
+
+const FALLBACK_COLLECTIONS: CollectionItem[] = [
+  {
+    number: "01",
+    name: "OXFORD WHITES",
+    tag: "THE CLEAN SLATE",
+    description: "100% Egyptian cotton Oxford cloth woven on heritage shuttle looms. Each shirt builds to a unique softness through careful long-term wear.",
+    image: "/images/hero-1.png",
+  },
+  {
+    number: "02",
+    name: "LINEN NATURALS",
+    tag: "THE WOVEN LIGHT",
+    description: "European flax spun into 8oz linen, garment-dyed in natural earth pigments. The fabric breathes and softens with every wash cycle.",
+    image: "/images/hero-3.png",
+  },
+  {
+    number: "03",
+    name: "CHAMBRAY BLUES",
+    tag: "THE WORKWEAR ROOT",
+    description: "Cone Mills chambray woven in the American South. Heavy-duty utility with mother-of-pearl shell buttons, felled seams, and box-pleat back for unrestricted movement.",
+    image: "/images/product-hardware.png",
+  },
+];
+
+interface Props {
+  collections?: CollectionItem[];
+}
+
+export default function CollectionsShowcase({ collections }: Props) {
+  const items = collections && collections.length > 0 ? collections : FALLBACK_COLLECTIONS;
+  const portraitItems = items.slice(0, 2);
+  const landscapeItems = items.slice(2);
+
   return (
     <section
       className="px-6 md:px-12 py-28 relative"
@@ -48,38 +88,31 @@ export default function CollectionsShowcase() {
       {/* Asymmetric Editorial Layout Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-stretch reveal-stagger-container">
 
-        {/* ROW 1: Portrait Collection 01 - Oxford Whites (Left) */}
-        <div className="md:col-span-6 flex flex-col reveal-stagger-item">
-          <PortraitCollectionCard
-            number="01"
-            name="OXFORD WHITES"
-            tag="THE CLEAN SLATE"
-            description="100% Egyptian cotton Oxford cloth woven on heritage shuttle looms. Each shirt builds to a unique softness through careful long-term wear."
-            image="/images/hero-1.png"
-          />
-        </div>
+        {/* ROW 1: Portrait Cards */}
+        {portraitItems.map((item) => (
+          <div key={item.number} className="md:col-span-6 flex flex-col reveal-stagger-item">
+            <PortraitCollectionCard
+              number={item.number}
+              name={item.name}
+              tag={item.tag}
+              description={item.description}
+              image={item.image}
+            />
+          </div>
+        ))}
 
-        {/* ROW 1: Portrait Collection 02 - Linen Naturals (Right) */}
-        <div className="md:col-span-6 flex flex-col reveal-stagger-item">
-          <PortraitCollectionCard
-            number="02"
-            name="LINEN NATURALS"
-            tag="THE WOVEN LIGHT"
-            description="European flax spun into 8oz linen, garment-dyed in natural earth pigments. The fabric breathes and softens with every wash cycle."
-            image="/images/hero-3.png"
-          />
-        </div>
-
-        {/* ROW 2: Landscape Collection 03 - Chambray Blues (Full Width) */}
-        <div className="md:col-span-12 mt-4 md:mt-8 reveal-stagger-item">
-          <LandscapeCollectionCard
-            number="03"
-            name="CHAMBRAY BLUES"
-            tag="THE WORKWEAR ROOT"
-            description="Cone Mills chambray woven in the American South. Heavy-duty utility with mother-of-pearl shell buttons, felled seams, and box-pleat back for unrestricted movement."
-            image="/images/product-hardware.png"
-          />
-        </div>
+        {/* ROW 2: Landscape Cards */}
+        {landscapeItems.map((item) => (
+          <div key={item.number} className="md:col-span-12 mt-4 md:mt-8 reveal-stagger-item">
+            <LandscapeCollectionCard
+              number={item.number}
+              name={item.name}
+              tag={item.tag}
+              description={item.description}
+              image={item.image}
+            />
+          </div>
+        ))}
 
       </div>
     </section>

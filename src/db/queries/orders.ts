@@ -1,6 +1,32 @@
-import { db } from "@/lib/db";
+import { db, dbRead } from "@/lib/db";
 import { orders, orderItems, coupons, products } from "@/db/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, isNull, inArray, lt } from "drizzle-orm";
+import { enqueueJob } from "@/lib/jobs";
+import {
+  encryptField,
+  decryptField,
+  isEncrypted,
+  isEncryptionConfigured,
+} from "@/lib/crypto";
+
+// PII (phone/address) is encrypted at rest when ENCRYPTION_KEY is configured.
+// isEncrypted() guards decode so pre-existing plaintext rows still read correctly.
+function encryptPII(value?: string | null): string | null {
+  if (!value) return null;
+  return isEncryptionConfigured() ? encryptField(value) : value;
+}
+function decryptPII(value: string | null): string | null {
+  return isEncrypted(value) ? decryptField(value) : value;
+}
+function decryptOrderRow<T extends { shippingPhone: string | null; shippingAddress: string | null }>(
+  order: T
+): T {
+  return {
+    ...order,
+    shippingPhone: decryptPII(order.shippingPhone),
+    shippingAddress: decryptPII(order.shippingAddress),
+  };
+}
 
 export type OrderRow = typeof orders.$inferSelect;
 export type OrderItemRow = typeof orderItems.$inferSelect;
@@ -51,7 +77,12 @@ export async function createOrder(input: CreateOrderInput) {
       const [coupon] = await tx
         .select()
         .from(coupons)
-        .where(eq(coupons.code, input.couponCode.toUpperCase()))
+        .where(
+          and(
+            eq(coupons.code, input.couponCode.toUpperCase()),
+            isNull(coupons.deletedAt)
+          )
+        )
         .for("update")
         .limit(1);
 
@@ -95,8 +126,8 @@ export async function createOrder(input: CreateOrderInput) {
         status: "pending",
         shippingName: input.shippingName ?? null,
         shippingEmail: input.shippingEmail ?? null,
-        shippingPhone: input.shippingPhone ?? null,
-        shippingAddress: input.shippingAddress ?? null,
+        shippingPhone: encryptPII(input.shippingPhone),
+        shippingAddress: encryptPII(input.shippingAddress),
         razorpayOrderId: input.razorpayOrderId ?? null,
         razorpayPaymentId: input.razorpayPaymentId ?? null,
       })
@@ -121,26 +152,93 @@ export async function createOrder(input: CreateOrderInput) {
         .where(eq(products.id, item.productId));
     }
 
+    // Side effects go through the transactional outbox: enqueued in THIS
+    // transaction so they're created iff the order commits, then delivered
+    // asynchronously with retries by the jobs worker (see src/lib/jobs.ts).
+    if (input.shippingEmail) {
+      await enqueueJob(
+        "email:order_confirmation",
+        {
+          to: input.shippingEmail,
+          order: {
+            id: order.id,
+            totalInr: order.totalInr,
+            // Use plaintext input for the email — the stored columns are encrypted.
+            shippingName: input.shippingName ?? null,
+            shippingAddress: input.shippingAddress ?? null,
+          },
+          items: input.items.map((i) => ({
+            productName: i.name,
+            unitPriceInr: i.unitPriceInr,
+            quantity: i.quantity,
+            size: i.size ?? null,
+          })),
+        },
+        tx
+      );
+    }
+
+    // Low-stock check on the affected products (post-decrement), also enqueued.
+    const affectedIds = [...new Set(input.items.map((i) => i.productId))];
+    const lowStock = await tx
+      .select({
+        name: products.name,
+        number: products.number,
+        stock: products.stock,
+        lowStockThreshold: products.lowStockThreshold,
+      })
+      .from(products)
+      .where(
+        and(
+          inArray(products.id, affectedIds),
+          lt(products.stock, products.lowStockThreshold)
+        )
+      );
+    if (lowStock.length > 0) {
+      await enqueueJob("email:low_stock", { items: lowStock }, tx);
+    }
+
     return order;
   });
 }
 
 export async function getAllOrders() {
-  return db.select().from(orders).orderBy(desc(orders.createdAt));
+  const rows = await dbRead.select().from(orders).orderBy(desc(orders.createdAt));
+  return rows.map(decryptOrderRow);
+}
+
+export async function getOrdersByUserId(userId: number) {
+  const rows = await dbRead
+    .select()
+    .from(orders)
+    .where(eq(orders.userId, userId))
+    .orderBy(desc(orders.createdAt));
+  return rows.map(decryptOrderRow);
 }
 
 export async function getOrdersByStatus(status: string) {
   if (!VALID_STATUSES.includes(status as OrderStatus)) return [];
-  return db
+  const rows = await dbRead
     .select()
     .from(orders)
     .where(eq(orders.status, status as OrderStatus))
     .orderBy(desc(orders.createdAt));
+  return rows.map(decryptOrderRow);
 }
 
 export async function getOrderById(id: string) {
-  const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
-  return rows[0] ?? null;
+  const rows = await dbRead.select().from(orders).where(eq(orders.id, id)).limit(1);
+  return rows[0] ? decryptOrderRow(rows[0]) : null;
+}
+
+/** Idempotency guard: find an order already created for a gateway payment id. */
+export async function getOrderByRazorpayPaymentId(paymentId: string) {
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.razorpayPaymentId, paymentId))
+    .limit(1);
+  return rows[0] ? decryptOrderRow(rows[0]) : null;
 }
 
 export async function updateOrderStatus(id: string, status: string) {
@@ -154,5 +252,5 @@ export async function updateOrderStatus(id: string, status: string) {
 }
 
 export async function getOrderItems(orderId: string) {
-  return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  return dbRead.select().from(orderItems).where(eq(orderItems.orderId, orderId));
 }

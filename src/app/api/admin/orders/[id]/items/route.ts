@@ -6,7 +6,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await verifyAdminRequest(request, ["customer", "staff", "admin", "super_admin"]);
+  // Staff+ only; customers use GET /api/orders/[id]/items (ownership-checked).
+  const auth = await verifyAdminRequest(request, ["staff", "admin", "super_admin"]);
   if (auth instanceof Response) return auth;
 
   const { id } = await params;

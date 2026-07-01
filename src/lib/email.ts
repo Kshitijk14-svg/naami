@@ -1,5 +1,7 @@
 import { Resend } from "resend";
+import { createLogger } from "./logger";
 
+const log = createLogger("email");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Use your verified Resend sender domain. Falls back to the Resend test address
@@ -140,7 +142,8 @@ export async function sendOrderConfirmation(
       html: buildOrderHtml(order, items),
     });
   } catch (err) {
-    console.error("[email] sendOrderConfirmation failed:", err);
+    log.error("sendOrderConfirmation failed", { err });
+    throw err; // surface to the jobs worker so it retries with backoff
   }
 }
 
@@ -184,7 +187,8 @@ export async function sendAbandonedCartReminder(
       html,
     });
   } catch (err) {
-    console.error("[email] sendAbandonedCartReminder failed:", err);
+    log.error("sendAbandonedCartReminder failed", { err });
+    throw err; // surface to the jobs worker so it retries with backoff
   }
 }
 
@@ -236,6 +240,7 @@ export async function sendLowStockAlert(
       html,
     });
   } catch (err) {
-    console.error("[email] sendLowStockAlert failed:", err);
+    log.error("sendLowStockAlert failed", { err });
+    throw err; // surface to the jobs worker so it retries with backoff
   }
 }

@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
+import { db, dbRead } from "@/lib/db";
 import { collections, collectionProducts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull, asc } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 
@@ -8,7 +8,24 @@ export type CollectionRow = typeof collections.$inferSelect;
 
 export async function getAllCollections() {
   return getCached(CACHE_KEYS.COLLECTIONS_ALL, CACHE_TTL.COLLECTIONS, () =>
-    db.select().from(collections)
+    dbRead.select().from(collections).where(isNull(collections.deletedAt))
+  );
+}
+
+export async function getHomepageCollections() {
+  return getCached(CACHE_KEYS.COLLECTIONS_HOMEPAGE, CACHE_TTL.COLLECTIONS, () =>
+    dbRead
+      .select()
+      .from(collections)
+      .where(
+        and(
+          eq(collections.isPublished, true),
+          eq(collections.showOnHomepage, true),
+          isNull(collections.deletedAt)
+        )
+      )
+      .orderBy(asc(collections.homeSortOrder))
+      .limit(3)
   );
 }
 
@@ -17,10 +34,10 @@ export async function getCollectionById(id: number) {
     CACHE_KEYS.COLLECTION_BY_ID(id),
     CACHE_TTL.COLLECTIONS,
     async () => {
-      const rows = await db
+      const rows = await dbRead
         .select()
         .from(collections)
-        .where(eq(collections.id, id))
+        .where(and(eq(collections.id, id), isNull(collections.deletedAt)))
         .limit(1);
       return rows[0] ?? null;
     }
@@ -34,6 +51,8 @@ export async function createCollection(data: {
   description?: string;
   image?: string;
   isPublished?: boolean;
+  showOnHomepage?: boolean;
+  homeSortOrder?: number;
   productIds?: number[];
 }) {
   const { productIds, ...collectionData } = data;
@@ -46,6 +65,8 @@ export async function createCollection(data: {
       description: collectionData.description ?? "",
       image: collectionData.image ?? "/images/product-jacket.png",
       isPublished: collectionData.isPublished ?? true,
+      showOnHomepage: collectionData.showOnHomepage ?? false,
+      homeSortOrder: collectionData.homeSortOrder ?? 0,
     })
     .returning();
 
@@ -58,7 +79,7 @@ export async function createCollection(data: {
     );
   }
 
-  await redisDel(CACHE_KEYS.COLLECTIONS_ALL);
+  await redisDel(CACHE_KEYS.COLLECTIONS_ALL, CACHE_KEYS.COLLECTIONS_HOMEPAGE);
   return collection;
 }
 
@@ -71,6 +92,8 @@ export async function updateCollection(
     description: string;
     image: string;
     isPublished: boolean;
+    showOnHomepage: boolean;
+    homeSortOrder: number;
     productIds: number[];
   }>
 ) {
@@ -95,23 +118,32 @@ export async function updateCollection(
     }
   }
 
-  await redisDel(CACHE_KEYS.COLLECTIONS_ALL, CACHE_KEYS.COLLECTION_BY_ID(id));
+  await redisDel(
+    CACHE_KEYS.COLLECTIONS_ALL,
+    CACHE_KEYS.COLLECTIONS_HOMEPAGE,
+    CACHE_KEYS.COLLECTION_BY_ID(id)
+  );
   return updated;
 }
 
 export async function deleteCollection(id: number) {
   const [deleted] = await db
-    .delete(collections)
-    .where(eq(collections.id, id))
+    .update(collections)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(collections.id, id), isNull(collections.deletedAt)))
     .returning();
   if (deleted) {
-    await redisDel(CACHE_KEYS.COLLECTIONS_ALL, CACHE_KEYS.COLLECTION_BY_ID(id));
+    await redisDel(
+      CACHE_KEYS.COLLECTIONS_ALL,
+      CACHE_KEYS.COLLECTIONS_HOMEPAGE,
+      CACHE_KEYS.COLLECTION_BY_ID(id)
+    );
   }
   return !!deleted;
 }
 
 export async function getCollectionProductIds(collectionId: number) {
-  const rows = await db
+  const rows = await dbRead
     .select({ productId: collectionProducts.productId })
     .from(collectionProducts)
     .where(eq(collectionProducts.collectionId, collectionId));

@@ -6,6 +6,7 @@ import gsap from "gsap";
 import Image from "next/image";
 import { useCartStore } from "@/models/cartStore";
 import NaamiGatewayButton from "./NaamiGatewayButton";
+import WishlistButton from "./WishlistButton";
 
 export interface CarouselProduct {
   id: number;
@@ -641,6 +642,11 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
             boxShadow: "0 0 6px rgba(139,26,26,0.5)",
           }}
         />
+
+        {/* Wishlist toggle button */}
+        <div className="absolute bottom-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+          <WishlistButton productId={product.id} />
+        </div>
 
         {/* Red edge selvedge line */}
         <div

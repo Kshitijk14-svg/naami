@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
+import { db, dbRead } from "@/lib/db";
 import { products, productSizes } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, isNull, asc } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 import { formatINR } from "@/lib/format";
@@ -14,36 +14,78 @@ export function formatProduct(p: ProductRow) {
 
 export async function getAllProducts() {
   return getCached(CACHE_KEYS.PRODUCTS_ALL, CACHE_TTL.PRODUCTS, () =>
-    db.select().from(products)
+    dbRead.select().from(products).where(isNull(products.deletedAt))
   );
 }
 
 export async function getPublishedProducts() {
   return getCached(CACHE_KEYS.PRODUCTS_PUBLISHED, CACHE_TTL.PRODUCTS, () =>
-    db.select().from(products).where(eq(products.isPublished, true))
+    dbRead
+      .select()
+      .from(products)
+      .where(and(eq(products.isPublished, true), isNull(products.deletedAt)))
   );
 }
 
 export async function getProductById(id: number) {
   return getCached(CACHE_KEYS.PRODUCT_BY_ID(id), CACHE_TTL.PRODUCTS, async () => {
-    const rows = await db
+    const rows = await dbRead
       .select()
       .from(products)
-      .where(eq(products.id, id))
+      .where(and(eq(products.id, id), isNull(products.deletedAt)))
       .limit(1);
     return rows[0] ?? null;
   });
 }
 
-export async function createProduct(data: Omit<ProductRow, "id" | "createdAt" | "updatedAt">) {
+export async function getFeaturedNewArrivals() {
+  return getCached(CACHE_KEYS.PRODUCTS_NEW_ARRIVALS, CACHE_TTL.HOME, () =>
+    dbRead
+      .select()
+      .from(products)
+      .where(
+        and(
+          eq(products.isPublished, true),
+          eq(products.isFeaturedNewArrival, true),
+          isNull(products.deletedAt)
+        )
+      )
+      .orderBy(asc(products.homeSortOrder))
+  );
+}
+
+export async function getFeaturedBestsellers() {
+  return getCached(CACHE_KEYS.PRODUCTS_BESTSELLERS, CACHE_TTL.HOME, () =>
+    dbRead
+      .select()
+      .from(products)
+      .where(
+        and(
+          eq(products.isPublished, true),
+          eq(products.isFeaturedBestseller, true),
+          isNull(products.deletedAt)
+        )
+      )
+      .orderBy(asc(products.homeSortOrder))
+  );
+}
+
+export async function createProduct(
+  data: Omit<ProductRow, "id" | "createdAt" | "updatedAt" | "deletedAt">
+) {
   const [product] = await db.insert(products).values(data).returning();
-  await redisDel(CACHE_KEYS.PRODUCTS_ALL, CACHE_KEYS.PRODUCTS_PUBLISHED);
+  await redisDel(
+    CACHE_KEYS.PRODUCTS_ALL,
+    CACHE_KEYS.PRODUCTS_PUBLISHED,
+    CACHE_KEYS.PRODUCTS_NEW_ARRIVALS,
+    CACHE_KEYS.PRODUCTS_BESTSELLERS
+  );
   return product;
 }
 
 export async function updateProduct(
   id: number,
-  data: Partial<Omit<ProductRow, "id" | "createdAt" | "updatedAt">>
+  data: Partial<Omit<ProductRow, "id" | "createdAt" | "updatedAt" | "deletedAt">>
 ) {
   const [updated] = await db
     .update(products)
@@ -54,22 +96,28 @@ export async function updateProduct(
     await redisDel(
       CACHE_KEYS.PRODUCTS_ALL,
       CACHE_KEYS.PRODUCTS_PUBLISHED,
-      CACHE_KEYS.PRODUCT_BY_ID(id)
+      CACHE_KEYS.PRODUCT_BY_ID(id),
+      CACHE_KEYS.PRODUCTS_NEW_ARRIVALS,
+      CACHE_KEYS.PRODUCTS_BESTSELLERS
     );
   }
   return updated ?? null;
 }
 
 export async function deleteProduct(id: number) {
+  // Soft delete: keep the row (order history references it) but hide it from reads.
   const [deleted] = await db
-    .delete(products)
-    .where(eq(products.id, id))
+    .update(products)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(products.id, id), isNull(products.deletedAt)))
     .returning();
   if (deleted) {
     await redisDel(
       CACHE_KEYS.PRODUCTS_ALL,
       CACHE_KEYS.PRODUCTS_PUBLISHED,
-      CACHE_KEYS.PRODUCT_BY_ID(id)
+      CACHE_KEYS.PRODUCT_BY_ID(id),
+      CACHE_KEYS.PRODUCTS_NEW_ARRIVALS,
+      CACHE_KEYS.PRODUCTS_BESTSELLERS
     );
   }
   return !!deleted;
@@ -79,7 +127,7 @@ export async function searchProducts(q: string) {
   const lower = q.toLowerCase().trim();
   return getCached(CACHE_KEYS.SEARCH_RESULTS(lower), CACHE_TTL.SEARCH, () => {
     const pattern = `%${lower}%`;
-    return db
+    return dbRead
       .select({
         id: products.id,
         name: products.name,
@@ -91,6 +139,7 @@ export async function searchProducts(q: string) {
       .where(
         and(
           eq(products.isPublished, true),
+          isNull(products.deletedAt),
           sql`(${products.name} ILIKE ${pattern} OR ${products.subtitle} ILIKE ${pattern} OR ${products.material} ILIKE ${pattern})`
         )
       )
@@ -99,7 +148,7 @@ export async function searchProducts(q: string) {
 }
 
 export async function getProductSizes(productId: number) {
-  const rows = await db
+  const rows = await dbRead
     .select({ size: productSizes.size })
     .from(productSizes)
     .where(eq(productSizes.productId, productId));

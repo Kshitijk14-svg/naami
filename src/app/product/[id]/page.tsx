@@ -3,16 +3,33 @@
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { allProducts } from "@/models/products";
 import { useCartStore } from "@/models/cartStore";
 import { trackEvent } from "@/components/MetaPixel";
 import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import WishlistButton from "@/components/WishlistButton";
+
+type Product = {
+  id: number;
+  number: string;
+  name: string;
+  subtitle: string;
+  price: string;
+  priceInr: number;
+  material: string;
+  fit: string;
+  origin: string;
+  image: string;
+  sizes?: string[];
+};
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const productId = parseInt(resolvedParams.id, 10);
-  const product = allProducts.find((p) => p.id === productId);
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -23,16 +40,26 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (product) {
-      trackEvent("ViewContent", {
-        content_ids: [String(product.id)],
-        content_name: product.name,
-        content_type: "product",
-        value: product.priceInr / 100,
-        currency: "INR",
-      });
-    }
-  }, [product]);
+    setLoading(true);
+    fetch(`/api/products/${productId}`)
+      .then((r) => {
+        if (!r.ok) { setNotFound(true); setLoading(false); return null; }
+        return r.json();
+      })
+      .then((data: Product | null) => {
+        if (!data) return;
+        setProduct(data);
+        setLoading(false);
+        trackEvent("ViewContent", {
+          content_ids: [String(data.id)],
+          content_name: data.name,
+          content_type: "product",
+          value: data.priceInr / 100,
+          currency: "INR",
+        });
+      })
+      .catch(() => { setNotFound(true); setLoading(false); });
+  }, [productId]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -60,7 +87,20 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     setTimeout(() => setAdded(false), 2200);
   };
 
-  if (!product) {
+  if (loading) {
+    return (
+      <main
+        className="w-full min-h-screen flex flex-col items-center justify-center font-serif text-xl"
+        style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      >
+        <p style={{ opacity: 0.4, fontSize: "12px", fontFamily: "sans-serif", letterSpacing: "0.2em" }}>
+          LOADING…
+        </p>
+      </main>
+    );
+  }
+
+  if (notFound || !product) {
     return (
       <main
         className="w-full min-h-screen flex flex-col items-center justify-center font-serif text-xl"
@@ -108,16 +148,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               className="absolute top-0 left-0 bottom-0"
               style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
             />
-            <div
-              className="absolute top-5 right-5"
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                backgroundColor: "#8B1A1A",
-                boxShadow: "0 0 8px rgba(139,26,26,0.5)",
-              }}
-            />
+            {/* Wishlist button */}
+            <div className="absolute top-4 right-4 z-10">
+              <WishlistButton productId={product.id} />
+            </div>
           </div>
         </div>
 
@@ -252,25 +286,29 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
             )}
 
-            <button
-              onClick={handleAddToCart}
-              className="w-full flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 cursor-pointer"
-              style={{
-                fontSize: "11px",
-                color: "#F4F0E6",
-                backgroundColor: added ? "#2E6B3A" : "#8B1A1A",
-                padding: "18px 28px",
-                transition: "background-color 0.3s ease",
-              }}
-              data-cursor-text={added ? "DONE" : "ADD"}
-            >
-              {added ? "ADDED TO WARDROBE ✓" : "ADD TO WARDROBE"}
-              {!added && (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </button>
+            {/* Add to Cart + Wishlist row */}
+            <div className="flex gap-3 items-stretch mb-3">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 cursor-pointer"
+                style={{
+                  fontSize: "11px",
+                  color: "#F4F0E6",
+                  backgroundColor: added ? "#2E6B3A" : "#8B1A1A",
+                  padding: "18px 28px",
+                  transition: "background-color 0.3s ease",
+                }}
+                data-cursor-text={added ? "DONE" : "ADD"}
+              >
+                {added ? "ADDED TO WARDROBE ✓" : "ADD TO WARDROBE"}
+                {!added && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
+              <WishlistButton productId={product.id} />
+            </div>
 
             <Link
               href="/cart"

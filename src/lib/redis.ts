@@ -1,6 +1,9 @@
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { redisCircuit, CircuitOpenError } from "./circuitBreaker";
+import { createLogger } from "./logger";
+
+const log = createLogger("redis");
 
 // ─── Client singleton ─────────────────────────────────────────────────────────
 
@@ -33,7 +36,7 @@ export async function redisGet<T>(key: string): Promise<T | null> {
         return await getRedis().get<T>(key);
       } catch (err) {
         if (isQuotaError(err)) {
-          console.warn("[redis] Daily quota exceeded — treating as cache miss");
+          log.warn("daily quota exceeded — treating as cache miss");
           return null;
         }
         throw err;
@@ -41,11 +44,11 @@ export async function redisGet<T>(key: string): Promise<T | null> {
     });
   } catch (err) {
     if (err instanceof CircuitOpenError) {
-      console.warn("[redis] Circuit open — treating as cache miss");
+      log.warn("circuit open — treating as cache miss");
     } else {
       // Connection/DNS/timeout errors must never take down the request path —
       // the circuit breaker has already recorded this failure; fall through to DB.
-      console.warn("[redis] Read failed — treating as cache miss:", err);
+      log.warn("read failed — treating as cache miss", { err });
     }
     return null;
   }
@@ -66,7 +69,7 @@ export async function redisSet(
         }
       } catch (err) {
         if (isQuotaError(err)) {
-          console.warn("[redis] Daily quota exceeded — cache write skipped");
+          log.warn("daily quota exceeded — cache write skipped");
           return;
         }
         throw err;
@@ -74,9 +77,9 @@ export async function redisSet(
     });
   } catch (err) {
     if (err instanceof CircuitOpenError) {
-      console.warn("[redis] Circuit open — cache write skipped");
+      log.warn("circuit open — cache write skipped");
     } else {
-      console.warn("[redis] Write failed — cache write skipped:", err);
+      log.warn("write failed — cache write skipped", { err });
     }
   }
 }
@@ -88,7 +91,7 @@ export async function redisDel(...keys: string[]): Promise<void> {
         await getRedis().del(...keys);
       } catch (err) {
         if (isQuotaError(err)) {
-          console.warn("[redis] Daily quota exceeded — cache invalidation skipped");
+          log.warn("daily quota exceeded — cache invalidation skipped");
           return;
         }
         throw err;
@@ -96,10 +99,22 @@ export async function redisDel(...keys: string[]): Promise<void> {
     });
   } catch (err) {
     if (err instanceof CircuitOpenError) {
-      console.warn("[redis] Circuit open — cache invalidation skipped");
+      log.warn("circuit open — cache invalidation skipped");
     } else {
-      console.warn("[redis] Delete failed — cache invalidation skipped:", err);
+      log.warn("delete failed — cache invalidation skipped", { err });
     }
+  }
+}
+
+// ─── Health probe ─────────────────────────────────────────────────────────────
+
+/** Lightweight liveness check for the readiness probe. Never throws. */
+export async function redisPing(): Promise<"ok" | "down" | "circuit-open"> {
+  try {
+    await redisCircuit.call(() => getRedis().ping());
+    return "ok";
+  } catch (err) {
+    return err instanceof CircuitOpenError ? "circuit-open" : "down";
   }
 }
 
@@ -141,7 +156,7 @@ export async function checkRateLimit(
         return { limited: !success, remaining, reset };
       } catch (err) {
         if (isQuotaError(err)) {
-          console.warn("[redis] Rate limit quota exceeded — failing open");
+          log.warn("rate limit quota exceeded — failing open");
           return null;
         }
         throw err;
@@ -149,9 +164,9 @@ export async function checkRateLimit(
     });
   } catch (err) {
     if (err instanceof CircuitOpenError) {
-      console.warn("[redis] Circuit open — rate limit failing open");
+      log.warn("circuit open — rate limit failing open");
     } else {
-      console.warn("[redis] Rate limit check failed — failing open:", err);
+      log.warn("rate limit check failed — failing open", { err });
     }
     return null;
   }

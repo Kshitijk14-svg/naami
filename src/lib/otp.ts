@@ -16,7 +16,11 @@ function redisKey(email: string): string {
   return `otp:${email}`;
 }
 
-// ─── Set OTP (Redis primary, PostgreSQL fallback) ─────────────────────────────
+// ─── Set OTP (Redis cache + PostgreSQL source of truth) ───────────────────────
+// redisSet() never throws — it swallows Redis failures internally and just logs
+// (by design, for cache call sites). So this can't detect a failed Redis write
+// via try/catch; it must always persist to PostgreSQL too, or an OTP silently
+// vanishes whenever Redis is down/misconfigured, breaking verify-otp for every user.
 
 export async function setOtp(
   email: string,
@@ -24,12 +28,7 @@ export async function setOtp(
 ): Promise<void> {
   const payload: OtpEntry = { ...entry, attempts: 0 };
 
-  try {
-    await redisSet(redisKey(email), payload, OTP_TTL_SECONDS);
-    return;
-  } catch {
-    // Fall through to PostgreSQL on unexpected Redis failure
-  }
+  await redisSet(redisKey(email), payload, OTP_TTL_SECONDS);
 
   await db
     .insert(otpCodes)

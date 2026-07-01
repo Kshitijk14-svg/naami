@@ -21,5 +21,21 @@ module.exports = {
         PORT: 3000,
       },
     },
+    // Async jobs worker — single fork process that drains the outbox queue
+    // (order emails, low-stock alerts) by polling the internal endpoint.
+    // Requires JOBS_WORKER_SECRET (same value the app reads) in the environment.
+    {
+      name: "naami-worker",
+      script: "scripts/jobs-worker.mjs",
+      cwd: __dirname,
+      instances: 1,
+      exec_mode: "fork",
+      max_memory_restart: "200M",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+        WORKER_INTERVAL_MS: 30000,
+      },
+    },
   ],
 };

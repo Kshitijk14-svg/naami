@@ -3,7 +3,19 @@
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
-import { Collection } from "@/models/collectionStore";
+
+type Collection = {
+  id: number;
+  number: string;
+  name: string;
+  tag: string;
+  description: string;
+  image: string;
+  isPublished: boolean;
+  showOnHomepage: boolean;
+  homeSortOrder: number;
+  productIds: number[];
+};
 
 type FormData = {
   number: string;
@@ -13,11 +25,14 @@ type FormData = {
   image: string;
   productIds: string;
   isPublished: boolean;
+  showOnHomepage: boolean;
+  homeSortOrder: string;
 };
 
 const emptyForm: FormData = {
   number: "", name: "", tag: "", description: "",
   image: "", productIds: "", isPublished: true,
+  showOnHomepage: false, homeSortOrder: "0",
 };
 
 const inputStyle: React.CSSProperties = {
@@ -36,6 +51,26 @@ function field(label: string, children: React.ReactNode) {
     </div>
   );
 }
+
+const checkboxRow = (
+  id: string,
+  label: string,
+  checked: boolean,
+  onChange: (checked: boolean) => void
+) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+    <input
+      type="checkbox"
+      id={id}
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      style={{ width: 14, height: 14, accentColor: "#8B1A1A" }}
+    />
+    <label htmlFor={id} className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)" }}>
+      {label}
+    </label>
+  </div>
+);
 
 export default function CollectionsPage() {
   const [rows, setRows] = useState<Collection[]>([]);
@@ -61,6 +96,7 @@ export default function CollectionsPage() {
         number: editing.number, name: editing.name, tag: editing.tag,
         description: editing.description, image: editing.image,
         productIds: editing.productIds.join(","), isPublished: editing.isPublished,
+        showOnHomepage: editing.showOnHomepage, homeSortOrder: String(editing.homeSortOrder),
       });
     } else setForm(emptyForm);
   }, [editing]);
@@ -72,6 +108,7 @@ export default function CollectionsPage() {
     setSubmitting(true);
     const body = {
       ...form,
+      homeSortOrder: Number(form.homeSortOrder),
       productIds: form.productIds ? form.productIds.split(",").map((s) => Number(s.trim())).filter(Boolean) : [],
     };
     const url = editing ? `/api/admin/collections/${editing.id}` : "/api/admin/collections";
@@ -103,6 +140,9 @@ export default function CollectionsPage() {
               {c.isPublished ? "Yes" : "No"}
             </span>
           )},
+          { key: "showOnHomepage", label: "Homepage", render: (c) => c.showOnHomepage ? (
+            <span className="font-sans font-bold uppercase" style={{ fontSize: "8px", letterSpacing: "0.12em", color: "#8B1A1A" }}>★</span>
+          ) : <span style={{ opacity: 0.2 }}>—</span> },
         ]}
         rows={rows}
         onAdd={() => { setEditing(null); setModalOpen(true); }}
@@ -119,10 +159,14 @@ export default function CollectionsPage() {
         {field("Description", <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} value={form.description} onChange={set("description")} />)}
         {field("Image path", <input style={inputStyle} value={form.image} onChange={set("image")} placeholder="/images/product-jacket.png" />)}
         {field("Product IDs (comma-separated)", <input style={inputStyle} value={form.productIds} onChange={set("productIds")} placeholder="1,6,11" />)}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-          <input type="checkbox" id="colPub" checked={form.isPublished} onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))} style={{ width: 14, height: 14, accentColor: "#8B1A1A" }} />
-          <label htmlFor="colPub" className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)" }}>Published</label>
+        <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <p className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)", marginBottom: 8 }}>
+            Visibility
+          </p>
+          {checkboxRow("colPub", "Published", form.isPublished, (v) => setForm((f) => ({ ...f, isPublished: v })))}
+          {checkboxRow("colHomepage", "Show on Homepage", form.showOnHomepage, (v) => setForm((f) => ({ ...f, showOnHomepage: v })))}
         </div>
+        {field("Homepage Sort Order", <input style={inputStyle} type="number" value={form.homeSortOrder} onChange={set("homeSortOrder")} placeholder="0" />)}
       </CrudModal>
     </div>
   );

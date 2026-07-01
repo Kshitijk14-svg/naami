@@ -1,18 +1,13 @@
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
-import { Role } from '@/models/roles';
-import { getUser } from '@/models/userStore';
-
-function getJwtSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET is not set');
-  return new TextEncoder().encode(secret);
-}
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
+import { Role } from "@/models/roles";
+import { getUserByEmail } from "@/db/queries/users";
+import { getJwtSecret } from "@/lib/jwt";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('naami_session')?.value;
+    const token = cookieStore.get("naami_session")?.value;
 
     if (!token) {
       return Response.json({ authenticated: false }, { status: 401 });
@@ -20,7 +15,7 @@ export async function GET() {
 
     const { payload } = await jwtVerify(token, getJwtSecret());
     const email = payload.email as string;
-    const user = getUser(email);
+    const user = await getUserByEmail(email);
 
     return Response.json({
       authenticated: true,

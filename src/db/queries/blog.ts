@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
+import { db, dbRead } from "@/lib/db";
 import { blogPosts } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 
@@ -8,31 +8,39 @@ export type BlogPost = typeof blogPosts.$inferSelect;
 
 export async function getPublishedPosts(): Promise<BlogPost[]> {
   return getCached(CACHE_KEYS.BLOG_ALL, CACHE_TTL.BLOG, () =>
-    db
+    dbRead
       .select()
       .from(blogPosts)
-      .where(eq(blogPosts.isPublished, true))
+      .where(and(eq(blogPosts.isPublished, true), isNull(blogPosts.deletedAt)))
       .orderBy(desc(blogPosts.publishedAt))
   );
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   return getCached(CACHE_KEYS.BLOG_BY_SLUG(slug), CACHE_TTL.BLOG, async () => {
-    const rows = await db
+    const rows = await dbRead
       .select()
       .from(blogPosts)
-      .where(eq(blogPosts.slug, slug))
+      .where(and(eq(blogPosts.slug, slug), isNull(blogPosts.deletedAt)))
       .limit(1);
     return rows[0] ?? null;
   });
 }
 
 export async function getAllPostsAdmin(): Promise<BlogPost[]> {
-  return db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+  return dbRead
+    .select()
+    .from(blogPosts)
+    .where(isNull(blogPosts.deletedAt))
+    .orderBy(desc(blogPosts.createdAt));
 }
 
 export async function getPostById(id: number): Promise<BlogPost | null> {
-  const rows = await db.select().from(blogPosts).where(eq(blogPosts.id, id)).limit(1);
+  const rows = await dbRead
+    .select()
+    .from(blogPosts)
+    .where(and(eq(blogPosts.id, id), isNull(blogPosts.deletedAt)))
+    .limit(1);
   return rows[0] ?? null;
 }
 
@@ -98,7 +106,10 @@ export async function updatePost(input: UpdatePostInput): Promise<BlogPost | nul
 
 export async function deletePost(id: number): Promise<void> {
   const existing = await getPostById(id);
-  await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  await db
+    .update(blogPosts)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(blogPosts.id, id));
   if (existing) await invalidateBlogCache(existing.slug);
 }
 

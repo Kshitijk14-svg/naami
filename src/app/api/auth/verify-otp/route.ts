@@ -2,19 +2,49 @@ import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { timingSafeEqual } from "node:crypto";
 import { getOtp, incrementOtpAttempts, deleteOtp } from "@/lib/otp";
-import { getOrCreateUser } from "@/db/queries/users";
+import { upsertUserWithPassword } from "@/db/queries/users";
+import { hashPassword, isPasswordStrongEnough } from "@/lib/password";
 import { getJwtSecret } from "@/lib/jwt";
+import { createLogger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/redis";
+
+const log = createLogger("verify-otp");
 
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
+/**
+ * Verifies an emailed OTP and sets the account password. Serves both flows that
+ * require email ownership proof:
+ *   - signup: creates the account with the chosen password (name supplied)
+ *   - password reset: overwrites the existing account's password
+ * On success the user is signed in.
+ */
 export async function POST(request: Request) {
   try {
+    // Throttle verification attempts per IP (complements the per-OTP 3-try lock).
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    const rl = await checkRateLimit(`otp-verify:${ip}`, { requests: 10, window: "5 m" });
+    if (rl?.limited) {
+      return Response.json(
+        { error: "Too many attempts. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const email: string = (body.email ?? "").toLowerCase().trim();
     const inputOtp: string = (body.otp ?? "").trim();
+    const password: string = body.password ?? "";
+
+    if (!isPasswordStrongEnough(password)) {
+      return Response.json(
+        { error: "Password must be at least 8 characters." },
+        { status: 400 }
+      );
+    }
 
     const entry = await getOtp(email);
 
@@ -54,8 +84,9 @@ export async function POST(request: Request) {
 
     await deleteOtp(email);
 
-    // Upsert user in PostgreSQL — persists across server restarts
-    const user = await getOrCreateUser(email, entry.name);
+    // OTP proven — persist the hashed password (creating the account if needed).
+    const passwordHash = await hashPassword(password);
+    const user = await upsertUserWithPassword(email, passwordHash, entry.name ?? body.name);
 
     const token = await new SignJWT({ email: user.email, role: user.role })
       .setProtectedHeader({ alg: "HS256" })
@@ -74,7 +105,7 @@ export async function POST(request: Request) {
 
     return Response.json({ success: true, role: user.role });
   } catch (err) {
-    console.error("[verify-otp]", err);
+    log.error("unexpected failure", { err });
     return Response.json({ error: "Verification failed. Please try again." }, { status: 500 });
   }
 }

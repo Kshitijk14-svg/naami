@@ -44,8 +44,8 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
   useEffect(() => {
     window.scrollTo(0, 0);
     Promise.all([
-      fetch(`/api/admin/orders/${id}`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`/api/admin/orders/${id}/items`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`/api/orders/${id}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/orders/${id}/items`).then((r) => (r.ok ? r.json() : [])),
     ])
       .then(([orderData, itemsData]) => {
         if (!orderData) { setError(true); } else {

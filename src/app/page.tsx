@@ -10,10 +10,30 @@ import EvanliteFooter from "@/components/EvanliteFooter";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
 import HotspotCards from "@/components/HotspotCards";
 import LoomTimeline from "@/components/LoomTimeline";
-import IndigoCanvas from "@/components/IndigoCanvas";
 import CoinPocketReveal from "@/components/CoinPocketReveal";
 import { useCartStore } from "@/models/cartStore";
-import { newArrivals, bestsellers } from "@/models/products";
+
+type CarouselProduct = {
+  id: number;
+  number: string;
+  name: string;
+  subtitle: string;
+  price: string;
+  priceInr: number;
+  material: string;
+  fit: string;
+  origin: string;
+  image: string;
+  sizes?: string[];
+};
+
+type HomepageCollection = {
+  number: string;
+  name: string;
+  tag: string;
+  description: string;
+  image: string;
+};
 
 export default function Home() {
   // Force scroll to top on reload/mount
@@ -26,6 +46,10 @@ export default function Home() {
 
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
   const incrementItems = useCartStore((state) => state.incrementItems);
+
+  const [newArrivals, setNewArrivals] = useState<CarouselProduct[]>([]);
+  const [bestsellers, setBestsellers] = useState<CarouselProduct[]>([]);
+  const [homepageCollections, setHomepageCollections] = useState<HomepageCollection[]>([]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideTextRef = useRef<HTMLDivElement>(null);
@@ -67,6 +91,17 @@ export default function Home() {
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/public/home-content")
+      .then((r) => r.json())
+      .then((data: { newArrivals: CarouselProduct[]; bestsellers: CarouselProduct[]; collections: HomepageCollection[] }) => {
+        setNewArrivals(data.newArrivals ?? []);
+        setBestsellers(data.bestsellers ?? []);
+        setHomepageCollections(data.collections ?? []);
+      })
+      .catch(() => {});
   }, []);
 
   const handleNextSlide = () => {
@@ -173,9 +208,6 @@ export default function Home() {
       className="relative w-full min-h-screen"
       style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
     >
-      {/* Background Interactive Indigo Ink Canvas */}
-      <IndigoCanvas />
-
       {/* Cinematic unzipping loader */}
       <BrandLoader />
 
@@ -304,7 +336,7 @@ export default function Home() {
 
 
       {/* ── Collections Showcase ─────────────────────────────────── */}
-      <CollectionsShowcase />
+      <CollectionsShowcase collections={homepageCollections} />
 
       {/* ── Scroll-Pinned Loom Horizontal Timeline ── */}
       <LoomTimeline />

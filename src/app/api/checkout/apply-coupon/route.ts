@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
-import { coupons } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { getCouponByCode } from "@/db/queries/coupons";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("apply-coupon");
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,11 +14,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Coupon code is required." }, { status: 400 });
     }
 
-    const [coupon] = await db
-      .select()
-      .from(coupons)
-      .where(eq(coupons.code, code))
-      .limit(1);
+    const coupon = await getCouponByCode(code);
 
     if (!coupon || !coupon.isActive) {
       return Response.json({ error: "Invalid or inactive coupon." }, { status: 400 });
@@ -43,7 +40,7 @@ export async function POST(request: NextRequest) {
       discountValue: coupon.discountValue,
     });
   } catch (err) {
-    console.error("[apply-coupon]", err);
+    log.error("unexpected failure", { err });
     return Response.json({ error: "Failed to apply coupon." }, { status: 500 });
   }
 }

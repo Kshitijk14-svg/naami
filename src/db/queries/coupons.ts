@@ -1,20 +1,22 @@
 import { db } from "@/lib/db";
 import { coupons } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 export type CouponRow = typeof coupons.$inferSelect;
 
-// Coupons are not Redis-cached — correctness of usedCount must always be fresh.
+// Coupons are not Redis-cached and read from the PRIMARY, not the replica —
+// usedCount / validity must always be fresh (no replication lag) since these
+// reads gate money mutations.
 
 export async function getAllCoupons() {
-  return db.select().from(coupons);
+  return db.select().from(coupons).where(isNull(coupons.deletedAt));
 }
 
 export async function getCouponById(id: number) {
   const rows = await db
     .select()
     .from(coupons)
-    .where(eq(coupons.id, id))
+    .where(and(eq(coupons.id, id), isNull(coupons.deletedAt)))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -24,7 +26,7 @@ export async function getCouponByCode(code: string) {
   const rows = await db
     .select()
     .from(coupons)
-    .where(eq(coupons.code, upper))
+    .where(and(eq(coupons.code, upper), isNull(coupons.deletedAt)))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -80,8 +82,9 @@ export async function updateCoupon(
 
 export async function deleteCoupon(id: number) {
   const [deleted] = await db
-    .delete(coupons)
-    .where(eq(coupons.id, id))
+    .update(coupons)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(coupons.id, id), isNull(coupons.deletedAt)))
     .returning();
   return !!deleted;
 }

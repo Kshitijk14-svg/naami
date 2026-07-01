@@ -44,6 +44,9 @@ export async function PUT(
   if (body.image !== undefined) updateData.image = body.image;
   if (body.stock !== undefined) updateData.stock = body.stock;
   if (body.isPublished !== undefined) updateData.isPublished = body.isPublished;
+  if (body.isFeaturedNewArrival !== undefined) updateData.isFeaturedNewArrival = body.isFeaturedNewArrival;
+  if (body.isFeaturedBestseller !== undefined) updateData.isFeaturedBestseller = body.isFeaturedBestseller;
+  if (body.homeSortOrder !== undefined) updateData.homeSortOrder = body.homeSortOrder;
   if (body.categoryId !== undefined) updateData.categoryId = body.categoryId;
   if (body.lowStockThreshold !== undefined) updateData.lowStockThreshold = body.lowStockThreshold;
   // Accept both camelCase variants for price

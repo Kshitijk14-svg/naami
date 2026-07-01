@@ -1,27 +1,75 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+
+// Easy-to-swap images for each panel.
+const SLIDE_1_IMAGE = "/images/hero-2.png";
+const SLIDE_2_IMAGE = "/images/campaign-new.png";
 
 export default function LoomTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // SVG Anim Refs
-  const warpLinesRef = useRef<SVGGElement>(null);
-  const weftLinesRef = useRef<SVGGElement>(null);
-  const shuttleRef = useRef<SVGGElement>(null);
-  const selvedgeLineRef = useRef<SVGPathElement>(null);
+  // SVG / element animation refs
+  const slide1ImageRef = useRef<HTMLDivElement>(null);
+  const slide2ImageRef = useRef<HTMLDivElement>(null);
   const vatOverlayRef = useRef<HTMLDivElement>(null);
   const slide3TextRef = useRef<HTMLDivElement>(null);
+  const slide3LogoRef = useRef<HTMLDivElement>(null);
+  const logoCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Load and clean the logo image to strip the checkerboard background
+  useEffect(() => {
+    const canvas = logoCanvasRef.current;
+    if (!canvas) return;
+
+    const img = new window.Image();
+    img.onload = () => {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const px = imageData.data;
+
+      // Known logo crimson: #8B1A1A = (139, 26, 26)
+      const LR = 139, LG = 26, LB = 26;
+      // Keep pixels within KEEP distance, fade pixels up to FADE, erase the rest
+      const KEEP = 110;
+      const FADE = 170;
+
+      for (let i = 0; i < px.length; i += 4) {
+        const dist = Math.sqrt(
+          (px[i] - LR) ** 2 +
+          (px[i + 1] - LG) ** 2 +
+          (px[i + 2] - LB) ** 2
+        );
+
+        if (dist >= FADE) {
+          // Far from logo crimson (white, grey, checkerboard) -> fully transparent
+          px[i + 3] = 0;
+        } else if (dist > KEEP) {
+          // Anti-aliased edge pixel -> fade proportionally
+          px[i + 3] = Math.round(px[i + 3] * (1 - (dist - KEEP) / (FADE - KEEP)));
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    };
+    img.src = "/images/naami-icon.png";
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
     const track = trackRef.current;
     if (!container || !track) return;
 
-    // Calculate translation amount: total slides = 3, so shift is -200vw
-    // Let's get the width of the container. 3 panels total, so track translates by -(track.scrollWidth - window.innerWidth)
     const pinDistance = track.scrollWidth - window.innerWidth;
 
     const tl = gsap.timeline({
@@ -32,76 +80,68 @@ export default function LoomTimeline() {
         pin: true,
         scrub: 1.1,
         invalidateOnRefresh: true,
+        snap: {
+          snapTo: [0.0, 0.375, 0.75, 1.0],
+          duration: { min: 0.25, max: 0.5 },
+          delay: 0.05,
+          ease: "power2.out",
+        },
       },
     });
 
-    // 1. Translate track horizontally
+    // 1. Translate track horizontally (backbone)
     tl.to(track, {
       x: -pinDistance,
       ease: "none",
-    });
+      duration: 0.75,
+    }, 0);
 
-    // 2. Add slide-specific micro-animations linked to the main timeline
-    // Slide 1 (Warp & Weft lines drawing)
-    if (warpLinesRef.current && weftLinesRef.current) {
-      tl.fromTo(
-        warpLinesRef.current.children,
-        { scaleY: 0 },
-        { scaleY: 1, transformOrigin: "top center", duration: 0.3, stagger: 0.05 },
-        0.05
-      );
-      tl.fromTo(
-        weftLinesRef.current.children,
-        { scaleX: 0 },
-        { scaleX: 1, transformOrigin: "left center", duration: 0.3, stagger: 0.05 },
-        0.15
-      );
-    }
-
-    // Slide 2 (Shuttle Loom movement + Selvedge line draw)
-    if (shuttleRef.current && selvedgeLineRef.current) {
-      // Move shuttle back and forth
-      tl.fromTo(
-        shuttleRef.current,
-        { x: -50 },
-        { x: 300, duration: 0.4, ease: "power1.inOut" },
-        0.3
-      );
-      tl.to(shuttleRef.current, { x: 50, duration: 0.4, ease: "power1.inOut" }, 0.7);
-
-      // Draw red-line selvedge stroke dasharray
-      const pathLength = selvedgeLineRef.current.getTotalLength() || 400;
-      gsap.set(selvedgeLineRef.current, {
-        strokeDasharray: pathLength,
-        strokeDashoffset: pathLength,
-      });
-
-      tl.to(
-        selvedgeLineRef.current,
-        {
-          strokeDashoffset: 0,
-          duration: 0.6,
-          ease: "none",
-        },
-        0.35
-      );
-    }
-
-    // Slide 3 (Vat Color Saturation & Text Fade)
+    // Slide 3 — circle reveal of the brand crimson background and content (follow scroll)
     if (vatOverlayRef.current && slide3TextRef.current) {
       tl.fromTo(
         vatOverlayRef.current,
         { clipPath: "circle(0% at 50% 50%)" },
-        { clipPath: "circle(120% at 50% 50%)", duration: 0.5, ease: "power2.out" },
-        0.65
+        { clipPath: "circle(150% at 50% 50%)", ease: "none", duration: 0.375 },
+        0.375
       );
+      if (slide3LogoRef.current) {
+        tl.fromTo(
+          slide3LogoRef.current,
+          { opacity: 0, scale: 0.7 },
+          { opacity: 1, scale: 1, ease: "back.out(1.6)", duration: 0.3 },
+          0.45
+        );
+      }
       tl.fromTo(
         slide3TextRef.current,
         { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
-        0.75
+        { opacity: 1, y: 0, ease: "power2.out", duration: 0.3 },
+        0.45
       );
     }
+
+    // Slide 1 — image scales/fades into frame as it scrolls in
+    if (slide1ImageRef.current) {
+      tl.fromTo(
+        slide1ImageRef.current,
+        { opacity: 0, scale: 1.12 },
+        { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" },
+        0.02
+      );
+    }
+
+    // Slide 2 — image scales/fades into frame as it scrolls in
+    if (slide2ImageRef.current) {
+      tl.fromTo(
+        slide2ImageRef.current,
+        { opacity: 0, scale: 1.12 },
+        { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" },
+        0.3
+      );
+    }
+
+    // Dwell — hold the fully-assembled slide 3 in view before the pin releases.
+    tl.to({}, { duration: 0.25 });
 
     return () => {
       ScrollTrigger.getAll().forEach((st) => {
@@ -122,7 +162,6 @@ export default function LoomTimeline() {
         className="flex h-full w-[300vw] select-none"
         style={{ willChange: "transform" }}
       >
-        
         {/* PANEL 1: Weave & The Count */}
         <section
           className="w-screen h-full flex flex-col md:flex-row items-center justify-between px-12 md:px-24 py-20 relative"
@@ -160,41 +199,39 @@ export default function LoomTimeline() {
             </div>
           </div>
 
-          {/* Right SVG Graphic */}
+          {/* Right editorial image */}
           <div className="w-full md:w-6/12 h-[50vh] md:h-[60vh] flex items-center justify-center relative">
-            <svg
-              width="90%"
-              height="90%"
-              viewBox="0 0 300 300"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="border border-black/5 p-6 bg-[#EDE8DC]"
+            <div
+              ref={slide1ImageRef}
+              className="relative w-full h-full overflow-hidden border border-black/5"
+              style={{ backgroundColor: "#EDE8DC", willChange: "transform, opacity" }}
             >
-              {/* Warp vertical lines */}
-              <g ref={warpLinesRef} stroke="rgba(17,17,17,0.25)" strokeWidth="1">
-                <line x1="40" y1="20" x2="40" y2="280" />
-                <line x1="80" y1="20" x2="80" y2="280" />
-                <line x1="120" y1="20" x2="120" y2="280" />
-                <line x1="160" y1="20" x2="160" y2="280" />
-                <line x1="200" y1="20" x2="200" y2="280" />
-                <line x1="240" y1="20" x2="240" y2="280" />
-                <line x1="260" y1="20" x2="260" y2="280" />
-              </g>
-
-              {/* Weft horizontal lines */}
-              <g ref={weftLinesRef} stroke="#8B1A1A" strokeWidth="0.8" strokeDasharray="3 3">
-                <line x1="20" y1="50" x2="280" y2="50" />
-                <line x1="20" y1="90" x2="280" y2="90" />
-                <line x1="20" y1="130" x2="280" y2="130" />
-                <line x1="20" y1="170" x2="280" y2="170" />
-                <line x1="20" y1="210" x2="280" y2="210" />
-                <line x1="20" y1="250" x2="280" y2="250" />
-              </g>
-            </svg>
+              <Image
+                src={SLIDE_1_IMAGE}
+                alt="NAAMI // The Weave & The Count"
+                fill
+                className="object-cover"
+                style={{ filter: "brightness(0.94)" }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+              {/* Selvedge red edge line */}
+              <div
+                className="absolute top-0 left-0 bottom-0 z-10"
+                style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
+              />
+              {/* Card label */}
+              <div
+                className="absolute bottom-6 left-6 z-10 font-sans font-bold uppercase tracking-[0.25em]"
+                style={{ fontSize: "9px", color: "#FAF8F5" }}
+              >
+                NAAMI // THE LOOM
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* PANEL 2: Shuttle Loom shuttle motion */}
+        {/* PANEL 2: The Cutting Table — editorial image */}
         <section
           className="w-screen h-full flex flex-col md:flex-row items-center justify-between px-12 md:px-24 py-20 relative"
           style={{ backgroundColor: "#EDE8DC" }}
@@ -223,61 +260,68 @@ export default function LoomTimeline() {
             </p>
           </div>
 
-          {/* Right SVG Graphic */}
+          {/* Right editorial image */}
           <div className="w-full md:w-6/12 h-[50vh] md:h-[60vh] flex items-center justify-center relative">
-            <svg
-              width="90%"
-              height="90%"
-              viewBox="0 0 320 200"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="border border-black/5 bg-[#F4F0E6] p-6"
+            <div
+              ref={slide2ImageRef}
+              className="relative w-full h-full overflow-hidden border border-black/5"
+              style={{ backgroundColor: "#F4F0E6", willChange: "transform, opacity" }}
             >
-              {/* Loom boundaries */}
-              <line x1="30" y1="100" x2="290" y2="100" stroke="#111111" strokeWidth="0.5" strokeDasharray="4 4" />
-
-              {/* Dynamic Selvedge line */}
-              <path
-                ref={selvedgeLineRef}
-                d="M 30 100 L 290 100"
-                stroke="#8B1A1A"
-                strokeWidth="2"
+              <Image
+                src={SLIDE_2_IMAGE}
+                alt="NAAMI // The Cutting Table"
+                fill
+                className="object-cover"
+                style={{ filter: "brightness(0.94)" }}
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
-
-              {/* Moving Shuttle Piece */}
-              <g ref={shuttleRef} className="will-change-transform">
-                {/* Wood shuttle body */}
-                <path d="M 0 92 L 20 85 L 40 92 V 108 L 20 115 L 0 108 Z" fill="#C5A059" stroke="#111111" strokeWidth="1" />
-                {/* Brass spindle */}
-                <circle cx="20" cy="100" r="4" fill="#D4AF37" />
-                {/* Spilled thread */}
-                <path d="M 0 100 Q -15 95 -30 100" stroke="#8B1A1A" strokeWidth="1" strokeDasharray="2 2" />
-              </g>
-            </svg>
+              {/* Selvedge red edge line */}
+              <div
+                className="absolute top-0 left-0 bottom-0 z-10"
+                style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
+              />
+              {/* Card label */}
+              <div
+                className="absolute bottom-6 left-6 z-10 font-sans font-bold uppercase tracking-[0.25em]"
+                style={{ fontSize: "9px", color: "#FAF8F5" }}
+              >
+                NAAMI // ATELIER FLOOR
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* PANEL 3: Dye Vat Saturation */}
+        {/* PANEL 3: The Finishing Hand — brand crimson finale */}
         <section
           className="w-screen h-full flex flex-col md:flex-row items-center justify-between px-12 md:px-24 py-20 relative overflow-hidden"
           style={{ backgroundColor: "#F4F0E6" }}
         >
-          {/* Warm mahogany overlay — evokes fabric pressing/heat */}
+          {/* Crimson brand reveal */}
           <div
             ref={vatOverlayRef}
             className="absolute inset-0 z-0 pointer-events-none"
             style={{
-              backgroundColor: "#2C1810",
-              mixBlendMode: "multiply",
-              opacity: 0.95,
+              background:
+                "radial-gradient(circle at 50% 40%, #9E2020 0%, #8B1A1A 45%, #5E1010 100%)",
+            }}
+          />
+          {/* Subtle weave texture over the crimson */}
+          <div
+            className="absolute inset-0 z-0 pointer-events-none opacity-[0.08] mix-blend-overlay"
+            style={{
+              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.4) 2px, rgba(0,0,0,0.4) 3px), repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 5px)`,
             }}
           />
 
           {/* Left Description */}
-          <div ref={slide3TextRef} className="w-full md:w-5/12 text-left z-10" style={{ opacity: 0, willChange: "transform, opacity" }}>
+          <div
+            ref={slide3TextRef}
+            className="w-full md:w-5/12 text-left z-10"
+            style={{ opacity: 0, willChange: "transform, opacity" }}
+          >
             <span
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
-              style={{ fontSize: "9px", color: "#D4AF37" }}
+              style={{ fontSize: "9px", color: "#E8C977" }}
             >
               Heritage Craft // Stage 03
             </span>
@@ -285,37 +329,63 @@ export default function LoomTimeline() {
               className="font-serif font-light uppercase mb-6"
               style={{
                 fontSize: "clamp(2rem, 4vw, 3.5rem)",
-                color: "#FAF8F5",
+                color: "#FAF6EC",
                 lineHeight: 1.1,
                 letterSpacing: "0.02em",
               }}
             >
               The Finishing Hand
             </h2>
-            <p className="font-sans text-[12.5px] text-[#FAF8F5]/90 leading-relaxed mb-8 max-w-md">
+            <p className="font-sans text-[12.5px] text-[#FAF6EC]/85 leading-relaxed mb-8 max-w-md">
               Each shirt passes through the hands of a finishing specialist who steams the placket flat, presses the collar roll with a curved iron, and attaches the mother-of-pearl buttons by hand. This final stage cannot be mechanised.
             </p>
+            {/* Gold hairline accent */}
+            <div
+              style={{
+                width: "120px",
+                height: "1px",
+                background:
+                  "linear-gradient(to right, #E8C977 2px, rgba(250,246,236,0.25) 2px, transparent)",
+              }}
+            />
           </div>
 
-          {/* Right visual indicator */}
+          {/* Right: brand logo medallion */}
           <div className="w-full md:w-6/12 h-[50vh] md:h-[60vh] flex items-center justify-center relative z-10">
-            {/* Centered stylized logo/icon medallion container */}
             <div
-              className="rounded-full flex items-center justify-center border border-white/20 p-8 relative overflow-hidden"
-              style={{ width: "200px", height: "200px", backgroundColor: "rgba(244,240,230,0.04)" }}
+              ref={slide3LogoRef}
+              className="relative flex items-center justify-center"
+              style={{ width: "240px", height: "240px", willChange: "transform, opacity" }}
             >
-              {/* Outer halo */}
-              <div className="absolute inset-2 border border-white/10 rounded-full animate-spin" style={{ animationDuration: "12s" }} />
-
-              <span
-                className="font-serif text-[10vw] md:text-[3rem] font-light uppercase text-[#FAF8F5] tracking-widest"
+              {/* Rotating gold ring */}
+              <div
+                className="absolute inset-0 rounded-full border animate-spin"
+                style={{ borderColor: "rgba(232,201,119,0.35)", animationDuration: "18s" }}
+              />
+              <div
+                className="absolute inset-3 rounded-full border"
+                style={{ borderColor: "rgba(250,246,236,0.18)" }}
+              />
+              {/* Cream logo disc */}
+              <div
+                className="rounded-full flex items-center justify-center overflow-hidden"
+                style={{
+                  width: "190px",
+                  height: "190px",
+                  backgroundColor: "#FAF6EC",
+                  boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
+                }}
               >
-                NAAMI
-              </span>
+                <div style={{ width: "70%", height: "70%" }} className="flex items-center justify-center">
+                  <canvas
+                    ref={logoCanvasRef}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
-
       </div>
     </div>
   );

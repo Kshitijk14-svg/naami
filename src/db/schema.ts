@@ -11,7 +11,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +32,13 @@ export const orderStatusEnum = pgEnum("order_status", [
 
 export const discountTypeEnum = pgEnum("discount_type", ["percent", "fixed"]);
 
+export const jobStatusEnum = pgEnum("job_status", [
+  "pending",
+  "processing",
+  "done",
+  "failed",
+]);
+
 // ─── 1. users ─────────────────────────────────────────────────────────────────
 
 export const users = pgTable(
@@ -40,7 +47,12 @@ export const users = pgTable(
     id: serial("id").primaryKey(),
     email: varchar("email", { length: 320 }).notNull().unique(),
     name: text("name"),
+    // scrypt hash (scheme$N$r$p$salt$hash). Nullable: legacy accounts and
+    // accounts mid-signup may not have set a password yet.
+    passwordHash: text("password_hash"),
     role: roleEnum("role").notNull().default("customer"),
+    // Soft delete: non-null = deactivated. Reads filter on deletedAt IS NULL.
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -56,9 +68,13 @@ export const categories = pgTable(
     name: varchar("name", { length: 100 }).notNull(),
     slug: varchar("slug", { length: 100 }).notNull().unique(),
     description: text("description"),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("categories_slug_idx").on(t.slug)]
+  (t) => [
+    uniqueIndex("categories_slug_idx").on(t.slug),
+    index("categories_active_idx").on(t.id).where(sql`${t.deletedAt} IS NULL`),
+  ]
 );
 
 // ─── 3. products ──────────────────────────────────────────────────────────────
@@ -77,14 +93,21 @@ export const products = pgTable(
     priceInr: integer("price_inr").notNull(),
     stock: integer("stock").notNull().default(0),
     isPublished: boolean("is_published").notNull().default(true),
+    isFeaturedNewArrival: boolean("is_featured_new_arrival").notNull().default(false),
+    isFeaturedBestseller: boolean("is_featured_bestseller").notNull().default(false),
+    homeSortOrder: integer("home_sort_order").notNull().default(0),
     categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
     lowStockThreshold: integer("low_stock_threshold").notNull().default(5),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("products_published_idx").on(t.isPublished),
     index("products_category_idx").on(t.categoryId),
+    index("products_active_idx").on(t.id).where(sql`${t.deletedAt} IS NULL`),
+    index("products_new_arrival_idx").on(t.isFeaturedNewArrival),
+    index("products_bestseller_idx").on(t.isFeaturedBestseller),
   ]
 );
 
@@ -101,17 +124,27 @@ export const productSizes = pgTable(
 
 // ─── 5. collections ───────────────────────────────────────────────────────────
 
-export const collections = pgTable("collections", {
-  id: serial("id").primaryKey(),
-  number: varchar("number", { length: 10 }).notNull().unique(),
-  name: varchar("name", { length: 200 }).notNull(),
-  tag: varchar("tag", { length: 100 }).notNull().default(""),
-  description: text("description").notNull().default(""),
-  image: text("image").notNull().default("/images/product-jacket.png"),
-  isPublished: boolean("is_published").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const collections = pgTable(
+  "collections",
+  {
+    id: serial("id").primaryKey(),
+    number: varchar("number", { length: 10 }).notNull().unique(),
+    name: varchar("name", { length: 200 }).notNull(),
+    tag: varchar("tag", { length: 100 }).notNull().default(""),
+    description: text("description").notNull().default(""),
+    image: text("image").notNull().default("/images/product-jacket.png"),
+    isPublished: boolean("is_published").notNull().default(true),
+    showOnHomepage: boolean("show_on_homepage").notNull().default(false),
+    homeSortOrder: integer("home_sort_order").notNull().default(0),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("collections_active_idx").on(t.id).where(sql`${t.deletedAt} IS NULL`),
+    index("collections_homepage_idx").on(t.showOnHomepage),
+  ]
+);
 
 // ─── 6. collection_products ───────────────────────────────────────────────────
 
@@ -138,6 +171,7 @@ export const coupons = pgTable(
     usedCount: integer("used_count").notNull().default(0),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     isActive: boolean("is_active").notNull().default(true),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("coupons_code_idx").on(t.code)]
@@ -167,6 +201,10 @@ export const orders = pgTable(
     index("orders_user_idx").on(t.userId),
     index("orders_status_idx").on(t.status),
     index("orders_created_at_idx").on(t.createdAt),
+    // Idempotency: a given gateway payment maps to at most one order.
+    uniqueIndex("orders_razorpay_payment_idx")
+      .on(t.razorpayPaymentId)
+      .where(sql`${t.razorpayPaymentId} IS NOT NULL`),
   ]
 );
 
@@ -215,6 +253,7 @@ export const blogPosts = pgTable(
     isPublished: boolean("is_published").notNull().default(false),
     // publishedAt differs from createdAt — drafts have createdAt but null publishedAt
     publishedAt: timestamp("published_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -250,10 +289,64 @@ export const abandonedCarts = pgTable(
   (t) => [index("abandoned_carts_email_idx").on(t.email)]
 );
 
+// ─── 14. idempotency_keys ────────────────────────────────────────────────────
+// Stores the response of a completed POST so a client retry with the same
+// Idempotency-Key header replays the original result instead of re-executing.
+
+export const idempotencyKeys = pgTable(
+  "idempotency_keys",
+  {
+    key: varchar("key", { length: 255 }).primaryKey(),
+    statusCode: integer("status_code").notNull(),
+    responseBody: text("response_body").notNull(), // JSON snapshot of the response
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("idempotency_keys_expires_idx").on(t.expiresAt)]
+);
+
+// ─── 15. wishlists ───────────────────────────────────────────────────────────
+
+export const wishlists = pgTable(
+  "wishlists",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("wishlists_user_product_idx").on(t.userId, t.productId),
+    index("wishlists_user_idx").on(t.userId),
+  ]
+);
+
+// ─── 16. jobs ─────────────────────────────────────────────────────────────────
+// Transactional outbox: side effects (emails) are enqueued inside the same DB
+// transaction as the state change, then drained by a worker with retries.
+
+export const jobs = pgTable(
+  "jobs",
+  {
+    id: serial("id").primaryKey(),
+    type: varchar("type", { length: 100 }).notNull(),
+    payload: text("payload").notNull(), // JSON
+    status: jobStatusEnum("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(5),
+    runAt: timestamp("run_at", { withTimezone: true }).notNull().defaultNow(),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("jobs_status_run_at_idx").on(t.status, t.runAt)]
+);
+
 // ─── Drizzle relations ────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
+  wishlists: many(wishlists),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -265,6 +358,12 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   sizes: many(productSizes),
   collectionProducts: many(collectionProducts),
   orderItems: many(orderItems),
+  wishlists: many(wishlists),
+}));
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  user: one(users, { fields: [wishlists.userId], references: [users.id] }),
+  product: one(products, { fields: [wishlists.productId], references: [products.id] }),
 }));
 
 export const productSizesRelations = relations(productSizes, ({ one }) => ({

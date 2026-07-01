@@ -1,4 +1,7 @@
 import { redisGet, redisSet } from "./redis";
+import { createLogger } from "./logger";
+
+const log = createLogger("cache");
 
 /**
  * Try Redis first. On any miss or quota error (redisGet returns null),
@@ -15,7 +18,7 @@ export async function getCached<T>(
 
   const fresh = await fallback();
   redisSet(key, fresh, ttl).catch((err) =>
-    console.error("[cache] Redis write failed:", err)
+    log.error("redis write failed", { key, err })
   );
   return fresh;
 }
@@ -25,9 +28,12 @@ export async function getCached<T>(
 export const CACHE_KEYS = {
   PRODUCTS_ALL: "products:all",
   PRODUCTS_PUBLISHED: "products:published",
+  PRODUCTS_NEW_ARRIVALS: "products:new-arrivals",
+  PRODUCTS_BESTSELLERS: "products:bestsellers",
   PRODUCT_BY_ID: (id: number) => `products:${id}`,
   CATEGORIES_ALL: "categories:all",
   COLLECTIONS_ALL: "collections:all",
+  COLLECTIONS_HOMEPAGE: "collections:homepage",
   COLLECTION_BY_ID: (id: number) => `collections:${id}`,
   SEARCH_RESULTS: (q: string) => `search:${q.toLowerCase().trim()}`,
   BLOG_ALL: "blog:all",
@@ -44,4 +50,5 @@ export const CACHE_TTL = {
   SEARCH: 60,
   BLOG: 300,
   DESIGN: 3600,
+  HOME: 300,
 } as const;

@@ -95,6 +95,20 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
 
           {/* Links section */}
           <div style={{ padding: "8px 0" }}>
+            <Link
+              href="/profile"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-between font-sans font-bold uppercase hover:bg-[#F4F0E6] transition-colors"
+              style={{
+                padding: "10px 18px",
+                fontSize: "9px",
+                letterSpacing: "0.18em",
+                color: "#111111",
+              }}
+            >
+              My Profile
+              <span style={{ fontSize: "12px", fontWeight: 300, opacity: 0.4 }}>→</span>
+            </Link>
             {ADMIN_ROLES.includes(role) && (
               <Link
                 href="/admin"

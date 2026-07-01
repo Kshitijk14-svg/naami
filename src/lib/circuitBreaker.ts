@@ -1,3 +1,7 @@
+import { createLogger } from "./logger";
+
+const log = createLogger("circuit-breaker");
+
 type State = "CLOSED" | "OPEN" | "HALF_OPEN";
 
 interface Options {
@@ -52,7 +56,7 @@ export class CircuitBreaker {
         this.state = "CLOSED";
         this.failures = 0;
         this.successes = 0;
-        console.info(`[circuit-breaker] "${this.opts.name}" closed — downstream recovered`);
+        log.info("closed — downstream recovered", { name: this.opts.name });
       }
     } else {
       this.failures = 0;
@@ -64,9 +68,11 @@ export class CircuitBreaker {
     if (this.failures >= this.opts.failureThreshold) {
       this.state = "OPEN";
       this.reopenAt = Date.now() + this.opts.timeoutMs;
-      console.warn(
-        `[circuit-breaker] "${this.opts.name}" opened after ${this.failures} failures — retrying in ${this.opts.timeoutMs / 1000}s`
-      );
+      log.warn("opened — downstream unhealthy", {
+        name: this.opts.name,
+        failures: this.failures,
+        retryInSeconds: this.opts.timeoutMs / 1000,
+      });
     }
   }
 }

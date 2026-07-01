@@ -40,6 +40,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Protect /orders — any signed-in user (per-order ownership is enforced by the
+  // /api/orders route + query layer; this just blocks anonymous access).
+  if (pathname.startsWith('/orders')) {
+    const session = await getSessionPayload(request);
+    if (!session) {
+      const loginUrl = new URL('/auth', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
   // Redirect already-authenticated users away from /auth
   if (pathname === '/auth') {
     const session = await getSessionPayload(request);
@@ -53,5 +65,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/auth'],
+  matcher: ['/admin/:path*', '/orders/:path*', '/auth'],
 };
