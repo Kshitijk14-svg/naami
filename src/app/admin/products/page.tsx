@@ -22,7 +22,15 @@ type Product = {
   isFeaturedBestseller: boolean;
   homeSortOrder: number;
   sizes?: string[];
-  category?: string;
+  categoryId: number | null;
+};
+
+type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  createdAt: string;
 };
 
 type FormData = {
@@ -35,7 +43,7 @@ type FormData = {
   origin: string;
   image: string;
   thumbnailImage: string;
-  category: string;
+  categoryId: string;
   stock: string;
   sizes: string;
   isPublished: boolean;
@@ -47,7 +55,7 @@ type FormData = {
 const emptyForm: FormData = {
   number: "", name: "", subtitle: "", priceINR: "",
   material: "", fit: "", origin: "", image: "", thumbnailImage: "",
-  category: "", stock: "10", sizes: "S,M,L,XL", isPublished: true,
+  categoryId: "", stock: "10", sizes: "S,M,L,XL", isPublished: true,
   isFeaturedNewArrival: false, isFeaturedBestseller: false, homeSortOrder: "0",
 };
 
@@ -95,6 +103,7 @@ const checkboxRow = (
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -110,7 +119,14 @@ export default function ProductsPage() {
       .catch(() => { setError("Failed to load products"); setIsLoading(false); });
   };
 
-  useEffect(() => { load(); }, []);
+  const loadCategories = () => {
+    fetch("/api/admin/categories")
+      .then((r) => r.json())
+      .then((data) => setCategories(data))
+      .catch(() => {});
+  };
+
+  useEffect(() => { load(); loadCategories(); }, []);
 
   useEffect(() => {
     if (editing) {
@@ -124,7 +140,7 @@ export default function ProductsPage() {
         origin: editing.origin,
         image: editing.image,
         thumbnailImage: editing.thumbnailImage ?? "",
-        category: editing.category ?? "",
+        categoryId: editing.categoryId != null ? String(editing.categoryId) : "",
         stock: String(editing.stock),
         sizes: (editing.sizes ?? []).join(","),
         isPublished: editing.isPublished,
@@ -141,7 +157,7 @@ export default function ProductsPage() {
   const openEdit = (p: Product) => { setEditing(p); setModalOpen(true); };
   const closeModal = () => { setModalOpen(false); setEditing(null); };
 
-  const set = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const set = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSubmit = async () => {
@@ -151,6 +167,7 @@ export default function ProductsPage() {
       priceINR: Number(form.priceINR),
       stock: Number(form.stock),
       homeSortOrder: Number(form.homeSortOrder),
+      categoryId: form.categoryId ? Number(form.categoryId) : null,
       sizes: form.sizes ? form.sizes.split(",").map((s) => s.trim()).filter(Boolean) : [],
     };
 
@@ -186,6 +203,10 @@ export default function ProductsPage() {
           { key: "number", label: "#" },
           { key: "name", label: "Name" },
           { key: "priceInr", label: "Price", render: (p) => fmtINR(p.priceInr) },
+          {
+            key: "category", label: "Category",
+            render: (p) => categories.find((c) => c.id === p.categoryId)?.name ?? "—",
+          },
           { key: "stock", label: "Stock" },
           {
             key: "isPublished", label: "Published",
@@ -230,7 +251,14 @@ export default function ProductsPage() {
         {field("Subtitle", <input style={inputStyle} value={form.subtitle} onChange={set("subtitle")} placeholder="120s Egyptian Cotton" />)}
         <div className="grid grid-cols-2 gap-x-4">
           {field("Price (INR) *", <input style={inputStyle} type="number" value={form.priceINR} onChange={set("priceINR")} placeholder="29900" />)}
-          {field("Category", <input style={inputStyle} value={form.category} onChange={set("category")} placeholder="Shirts" />)}
+          {field("Category", (
+            <select style={inputStyle} value={form.categoryId} onChange={set("categoryId")}>
+              <option value="">— None —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          ))}
         </div>
         {field("Material", <input style={inputStyle} value={form.material} onChange={set("material")} />)}
         {field("Fit", <input style={inputStyle} value={form.fit} onChange={set("fit")} />)}
