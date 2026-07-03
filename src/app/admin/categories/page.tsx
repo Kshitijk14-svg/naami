@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
-import { Category } from "@/models/categoryStore";
+type Category = { id: number; name: string; slug: string; description: string | null; createdAt: string };
 
 type FormData = { name: string; slug: string; description: string };
 const emptyForm: FormData = { name: "", slug: "", description: "" };
