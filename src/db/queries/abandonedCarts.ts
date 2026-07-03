@@ -44,7 +44,20 @@ export async function enqueueDueCartReminders(olderThanHours: number): Promise<n
       // No row returned means a concurrent run already claimed it — skip.
       if (!claimed) return;
 
-      const items = JSON.parse(claimed.items);
+      let items: unknown;
+      try {
+        items = JSON.parse(claimed.items);
+      } catch (err) {
+        // Malformed `items` (legacy data, manual edit, etc.) must not roll
+        // back the claim above — that would make this row eligible for
+        // re-selection next run and retry-storm forever. Leave the claim in
+        // place (same end state as the empty-array case below) and move on.
+        log.error("failed to parse cart items; leaving claimed with no reminder", {
+          id: claimed.id,
+          err,
+        });
+        return;
+      }
       if (!Array.isArray(items) || items.length === 0) return;
 
       await enqueueJob("email:abandoned_cart", { to: claimed.email, items }, tx);
