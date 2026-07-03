@@ -217,6 +217,13 @@ const STATUS_COPY: Record<string, { heading: string; body: string }> = {
     heading: "Order Cancelled",
     body: "Your order has been cancelled. If this is unexpected, please contact us and we will make it right.",
   },
+  // Synthetic pseudo-status (not a real OrderStatus) — reused by
+  // updateOrderAdminFields when tracking info changes on an already-shipped
+  // order, so the customer gets notified even without a status transition.
+  tracking_updated: {
+    heading: "Tracking Updated",
+    body: "The tracking details for your shipment have been updated.",
+  },
 };
 
 export async function sendOrderStatusUpdate(
@@ -235,7 +242,7 @@ export async function sendOrderStatusUpdate(
 
   const t = update.tracking;
   const trackingBlock =
-    update.toStatus === "shipped" && t?.number
+    (update.toStatus === "shipped" || update.toStatus === "tracking_updated") && t?.number
       ? `
       <div style="margin-top:24px;padding:20px;background:#F4F0E6;">
         <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">

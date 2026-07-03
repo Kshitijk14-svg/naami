@@ -354,19 +354,71 @@ export async function updateOrderStatus(
   });
 }
 
-/** Update internal admin fields (notes/tracking) without a status change. */
+/**
+ * Update internal admin fields (notes/tracking) without a status change.
+ * If the order is already "shipped" and a tracking field actually changes
+ * (old vs new compare, so re-submitting the same values is a no-op), enqueue
+ * a customer notification email via the transactional outbox, mirroring
+ * updateOrderStatus's pattern.
+ */
 export async function updateOrderAdminFields(
   id: string,
   fields: { adminNotes?: string; trackingNumber?: string; trackingCarrier?: string; trackingUrl?: string }
 ) {
-  const set: Record<string, unknown> = { updatedAt: new Date() };
-  if (fields.adminNotes !== undefined) set.adminNotes = fields.adminNotes || null;
-  if (fields.trackingNumber !== undefined) set.trackingNumber = fields.trackingNumber || null;
-  if (fields.trackingCarrier !== undefined) set.trackingCarrier = fields.trackingCarrier || null;
-  if (fields.trackingUrl !== undefined) set.trackingUrl = fields.trackingUrl || null;
+  return db.transaction(async (tx) => {
+    const [order] = await tx
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id))
+      .for("update")
+      .limit(1);
+    if (!order) return null;
 
-  const [updated] = await db.update(orders).set(set).where(eq(orders.id, id)).returning();
-  return updated ? decryptOrderRow(updated) : null;
+    const set: Record<string, unknown> = { updatedAt: new Date() };
+    if (fields.adminNotes !== undefined) set.adminNotes = fields.adminNotes || null;
+    if (fields.trackingNumber !== undefined) set.trackingNumber = fields.trackingNumber || null;
+    if (fields.trackingCarrier !== undefined) set.trackingCarrier = fields.trackingCarrier || null;
+    if (fields.trackingUrl !== undefined) set.trackingUrl = fields.trackingUrl || null;
+
+    const [updated] = await tx
+      .update(orders)
+      .set(set)
+      .where(eq(orders.id, id))
+      .returning();
+
+    const trackingChanged =
+      order.trackingNumber !== updated.trackingNumber ||
+      order.trackingCarrier !== updated.trackingCarrier ||
+      order.trackingUrl !== updated.trackingUrl;
+
+    if (
+      order.status === "shipped" &&
+      trackingChanged &&
+      updated.trackingNumber &&
+      order.shippingEmail
+    ) {
+      // shippingEmail/shippingName are not encrypted columns (see decryptOrderRow,
+      // which only handles shippingPhone/shippingAddress) — use the raw order
+      // fields directly here, matching updateOrderStatus's email-payload sourcing.
+      await enqueueJob(
+        "email:order_status",
+        {
+          to: order.shippingEmail,
+          orderId: id,
+          toStatus: "tracking_updated",
+          shippingName: order.shippingName,
+          tracking: {
+            number: updated.trackingNumber,
+            carrier: updated.trackingCarrier,
+            url: updated.trackingUrl,
+          },
+        },
+        tx
+      );
+    }
+
+    return decryptOrderRow(updated);
+  });
 }
 
 export async function getOrderStatusHistory(orderId: string) {
