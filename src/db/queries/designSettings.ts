@@ -61,6 +61,21 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   manifesto_quote:
     "True luxury is found in the fall of a collar and the quiet confidence of a perfectly pressed placket. We build refinement for the modern gentleman.",
   manifesto_attribution: "— The Atelier Philosophy",
+
+  collections_kicker: "NAAMI // THE ARCHIVAL SERIES",
+  collections_title: "Seasonal",
+  collections_title_accent: "Collections",
+  collections_side_note: "Curated Product Lines\nBuilt on Heritage Methods",
+  new_arrivals_tag: "NAAMI // THE LATEST PIECES",
+  new_arrivals_title: "New Arrivals",
+  new_arrivals_gateway_label: "Discover New Products",
+  bestsellers_tag: "NAAMI // DEMAND CLASSICS",
+  bestsellers_title: "Bestsellers",
+  bestsellers_gateway_label: "Discover Bestsellers",
+  shoplook_kicker: "NAAMI // INTERACTIVE CO-ORDINATES",
+  shoplook_title: "Shop The Look",
+  loom_panel1_label: "NAAMI // THE LOOM",
+  loom_panel2_label: "NAAMI // ATELIER FLOOR",
 };
 
 export async function getAllDesignSettings(): Promise<Record<string, string>> {

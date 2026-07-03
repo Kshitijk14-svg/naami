@@ -77,6 +77,24 @@ type Manifesto = {
   attribution: string;
 };
 
+type CollectionsHeader = {
+  kicker: string;
+  title: string;
+  titleAccent: string;
+  sideNote: string;
+};
+
+type ProductCarouselSection = {
+  tag: string;
+  title: string;
+  gatewayLabel: string;
+};
+
+type ShopLookHeader = {
+  kicker: string;
+  title: string;
+};
+
 interface HomeClientProps {
   heroSlides: HeroSlide[];
   newArrivals: CarouselProduct[];
@@ -87,6 +105,10 @@ interface HomeClientProps {
   loomContent: LoomTimelineContent;
   coinPocketContent: CoinPocketContent;
   manifesto: Manifesto;
+  collectionsHeader: CollectionsHeader;
+  newArrivalsSection: ProductCarouselSection;
+  bestsellersSection: ProductCarouselSection;
+  shopLookHeader: ShopLookHeader;
 }
 
 export default function HomeClient({
@@ -99,6 +121,10 @@ export default function HomeClient({
   loomContent,
   coinPocketContent,
   manifesto,
+  collectionsHeader,
+  newArrivalsSection,
+  bestsellersSection,
+  shopLookHeader,
 }: HomeClientProps) {
   // Force scroll to top on reload/mount
   useEffect(() => {
@@ -340,7 +366,13 @@ export default function HomeClient({
       </section>
 
       {/* ── Collections Showcase ─────────────────────────────────── */}
-      <CollectionsShowcase collections={homepageCollections} />
+      <CollectionsShowcase
+        collections={homepageCollections}
+        kicker={collectionsHeader.kicker}
+        title={collectionsHeader.title}
+        titleAccent={collectionsHeader.titleAccent}
+        sideNote={collectionsHeader.sideNote}
+      />
 
       {/* ── Scroll-Pinned Loom Horizontal Timeline ── */}
       <LoomTimeline content={loomContent} />
@@ -355,10 +387,10 @@ export default function HomeClient({
       {/* ── New Arrivals Section ────────────────────────────────── */}
       <div className="reveal-fade-up">
         <ProductCarousel
-          title="New Arrivals"
-          tag="NAAMI // THE LATEST PIECES"
+          title={newArrivalsSection.title}
+          tag={newArrivalsSection.tag}
           products={newArrivals}
-          gatewayLabel="Discover New Products"
+          gatewayLabel={newArrivalsSection.gatewayLabel}
         />
       </div>
 
@@ -372,7 +404,11 @@ export default function HomeClient({
       </div>
 
       {/* ── Hotspot Cards Section ──────────────────────────────── */}
-      <HotspotCards lookCards={lookCards} />
+      <HotspotCards
+        lookCards={lookCards}
+        kicker={shopLookHeader.kicker}
+        title={shopLookHeader.title}
+      />
 
       {/* ── Stitch Separator ── */}
       <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#EDE8DC" }}>
@@ -384,10 +420,10 @@ export default function HomeClient({
       {/* ── Bestsellers Section ─────────────────────────────────── */}
       <div className="reveal-fade-up">
         <ProductCarousel
-          title="Bestsellers"
-          tag="NAAMI // DEMAND CLASSICS"
+          title={bestsellersSection.title}
+          tag={bestsellersSection.tag}
           products={bestsellers}
-          gatewayLabel="Discover Bestsellers"
+          gatewayLabel={bestsellersSection.gatewayLabel}
         />
       </div>
 

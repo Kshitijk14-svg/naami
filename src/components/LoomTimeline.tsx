@@ -5,8 +5,8 @@ import Image from "next/image";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 export interface LoomTimelineContent {
-  panel1: { image: string; kicker: string; title: string; body: string };
-  panel2: { image: string; kicker: string; title: string; body: string };
+  panel1: { image: string; kicker: string; title: string; body: string; label: string };
+  panel2: { image: string; kicker: string; title: string; body: string; label: string };
   panel3: { kicker: string; title: string; body: string };
 }
 
@@ -231,7 +231,7 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
                 className="absolute bottom-6 left-6 z-10 font-sans font-bold uppercase tracking-[0.25em]"
                 style={{ fontSize: "9px", color: "#FAF8F5" }}
               >
-                NAAMI // THE LOOM
+                {content.panel1.label}
               </div>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
                 className="absolute bottom-6 left-6 z-10 font-sans font-bold uppercase tracking-[0.25em]"
                 style={{ fontSize: "9px", color: "#FAF8F5" }}
               >
-                NAAMI // ATELIER FLOOR
+                {content.panel2.label}
               </div>
             </div>
           </div>

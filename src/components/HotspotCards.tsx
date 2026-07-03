@@ -64,10 +64,17 @@ const FALLBACK_LOOK_CARDS: LookCardData[] = [
 
 interface HotspotCardsProps {
   lookCards?: LookCardData[];
+  kicker?: string;
+  title?: string;
 }
 
-export default function HotspotCards({ lookCards }: HotspotCardsProps) {
+const DEFAULT_KICKER = "NAAMI // INTERACTIVE CO-ORDINATES";
+const DEFAULT_TITLE = "Shop The Look";
+
+export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsProps) {
   const cards = lookCards && lookCards.length > 0 ? lookCards : FALLBACK_LOOK_CARDS;
+  const headerKicker = kicker || DEFAULT_KICKER;
+  const headerTitle = title || DEFAULT_TITLE;
   const addItem = useCartStore((state) => state.addItem);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +110,7 @@ export default function HotspotCards({ lookCards }: HotspotCardsProps) {
             className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
             style={{ fontSize: "9px", color: "#8B1A1A" }}
           >
-            NAAMI // INTERACTIVE CO-ORDINATES
+            {headerKicker}
           </span>
           <h2
             className="font-serif font-light uppercase"
@@ -114,7 +121,7 @@ export default function HotspotCards({ lookCards }: HotspotCardsProps) {
               letterSpacing: "0.02em",
             }}
           >
-            Shop The Look
+            {headerTitle}
           </h2>
         </div>
 

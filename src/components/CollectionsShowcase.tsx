@@ -38,12 +38,32 @@ const FALLBACK_COLLECTIONS: CollectionItem[] = [
 
 interface Props {
   collections?: CollectionItem[];
+  kicker?: string;
+  title?: string;
+  titleAccent?: string;
+  sideNote?: string;
 }
 
-export default function CollectionsShowcase({ collections }: Props) {
+const DEFAULT_KICKER = "NAAMI // THE ARCHIVAL SERIES";
+const DEFAULT_TITLE = "Seasonal";
+const DEFAULT_TITLE_ACCENT = "Collections";
+const DEFAULT_SIDE_NOTE = "Curated Product Lines\nBuilt on Heritage Methods";
+
+export default function CollectionsShowcase({
+  collections,
+  kicker,
+  title,
+  titleAccent,
+  sideNote,
+}: Props) {
   const items = collections && collections.length > 0 ? collections : FALLBACK_COLLECTIONS;
   const portraitItems = items.slice(0, 2);
   const landscapeItems = items.slice(2);
+
+  const headerKicker = kicker || DEFAULT_KICKER;
+  const headerTitle = title || DEFAULT_TITLE;
+  const headerTitleAccent = titleAccent || DEFAULT_TITLE_ACCENT;
+  const sideNoteLines = (sideNote || DEFAULT_SIDE_NOTE).split("\n");
 
   return (
     <section
@@ -57,7 +77,7 @@ export default function CollectionsShowcase({ collections }: Props) {
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
             style={{ fontSize: "9px", color: "#8B1A1A" }}
           >
-            NAAMI // THE ARCHIVAL SERIES
+            {headerKicker}
           </span>
           <h2
             className="font-serif font-light uppercase"
@@ -68,10 +88,10 @@ export default function CollectionsShowcase({ collections }: Props) {
               letterSpacing: "0.02em",
             }}
           >
-            Seasonal
+            {headerTitle}
             <br />
             <span style={{ color: "#8B1A1A", fontStyle: "italic" }}>
-              Collections
+              {headerTitleAccent}
             </span>
           </h2>
         </div>
@@ -79,9 +99,12 @@ export default function CollectionsShowcase({ collections }: Props) {
           className="mt-6 md:mt-0 font-sans font-bold uppercase tracking-[0.25em] text-left md:text-right"
           style={{ fontSize: "9px", color: "rgba(17,17,17,0.4)", lineHeight: 1.6 }}
         >
-          Curated Product Lines
-          <br />
-          Built on Heritage Methods
+          {sideNoteLines.map((line, idx) => (
+            <span key={idx}>
+              {idx > 0 && <br />}
+              {line}
+            </span>
+          ))}
         </div>
       </div>
 

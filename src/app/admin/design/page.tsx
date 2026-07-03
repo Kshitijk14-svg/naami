@@ -124,6 +124,11 @@ export default function AdminDesignPage() {
   const [manifestoSaved, setManifestoSaved] = useState(false);
   const [manifestoError, setManifestoError] = useState<string | null>(null);
 
+  // ── Section Headers ────────────────────────────────────────────────────────
+  const [sectionHeadersSaving, setSectionHeadersSaving] = useState(false);
+  const [sectionHeadersSaved, setSectionHeadersSaved] = useState(false);
+  const [sectionHeadersError, setSectionHeadersError] = useState<string | null>(null);
+
   const loadAll = () => {
     setLoading(true);
     Promise.all([
@@ -241,7 +246,7 @@ export default function AdminDesignPage() {
     setLoomSaved(false);
     try {
       const keys = [1, 2].flatMap((n) => [
-        `loom_panel${n}_image`, `loom_panel${n}_kicker`, `loom_panel${n}_title`, `loom_panel${n}_body`,
+        `loom_panel${n}_image`, `loom_panel${n}_kicker`, `loom_panel${n}_title`, `loom_panel${n}_body`, `loom_panel${n}_label`,
       ]).concat(["loom_panel3_kicker", "loom_panel3_title", "loom_panel3_body"]);
       await saveSettingsSubset(keys);
       setLoomSaved(true);
@@ -286,6 +291,26 @@ export default function AdminDesignPage() {
       setManifestoError(err instanceof Error ? err.message : "An error occurred.");
     } finally {
       setManifestoSaving(false);
+    }
+  };
+
+  const saveSectionHeaders = async () => {
+    setSectionHeadersSaving(true);
+    setSectionHeadersError(null);
+    setSectionHeadersSaved(false);
+    try {
+      await saveSettingsSubset([
+        "collections_kicker", "collections_title", "collections_title_accent", "collections_side_note",
+        "new_arrivals_tag", "new_arrivals_title", "new_arrivals_gateway_label",
+        "bestsellers_tag", "bestsellers_title", "bestsellers_gateway_label",
+        "shoplook_kicker", "shoplook_title",
+      ]);
+      setSectionHeadersSaved(true);
+      setTimeout(() => setSectionHeadersSaved(false), 3000);
+    } catch (err) {
+      setSectionHeadersError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setSectionHeadersSaving(false);
     }
   };
 
@@ -537,6 +562,10 @@ export default function AdminDesignPage() {
                         <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
                         <input value={settings[`loom_panel${n}_title`] ?? ""} onChange={(e) => update(`loom_panel${n}_title`, e.target.value)} style={inputStyle} />
                       </div>
+                      <div>
+                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Card Label</label>
+                        <input value={settings[`loom_panel${n}_label`] ?? ""} onChange={(e) => update(`loom_panel${n}_label`, e.target.value)} style={inputStyle} />
+                      </div>
                     </div>
                     <div>
                       <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Body</label>
@@ -667,6 +696,104 @@ export default function AdminDesignPage() {
                   {manifestoSaving ? "Saving…" : "Save Manifesto"}
                 </button>
                 {manifestoSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Section Headers ─────────────────────────────────────────── */}
+          <section>
+            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
+              Section Headers
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
+                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
+                  Collections Showcase
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <div>
+                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
+                      <input value={settings.collections_kicker ?? ""} onChange={(e) => update("collections_kicker", e.target.value)} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
+                      <input value={settings.collections_title ?? ""} onChange={(e) => update("collections_title", e.target.value)} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title Accent</label>
+                      <input value={settings.collections_title_accent ?? ""} onChange={(e) => update("collections_title_accent", e.target.value)} style={inputStyle} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Side Note (one line per row)</label>
+                    <textarea value={settings.collections_side_note ?? ""} onChange={(e) => update("collections_side_note", e.target.value)} style={textareaStyle} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
+                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
+                  New Arrivals Carousel
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Tag</label>
+                    <input value={settings.new_arrivals_tag ?? ""} onChange={(e) => update("new_arrivals_tag", e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
+                    <input value={settings.new_arrivals_title ?? ""} onChange={(e) => update("new_arrivals_title", e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Gateway Label</label>
+                    <input value={settings.new_arrivals_gateway_label ?? ""} onChange={(e) => update("new_arrivals_gateway_label", e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
+                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
+                  Bestsellers Carousel
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Tag</label>
+                    <input value={settings.bestsellers_tag ?? ""} onChange={(e) => update("bestsellers_tag", e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
+                    <input value={settings.bestsellers_title ?? ""} onChange={(e) => update("bestsellers_title", e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Gateway Label</label>
+                    <input value={settings.bestsellers_gateway_label ?? ""} onChange={(e) => update("bestsellers_gateway_label", e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
+                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
+                  Shop The Look
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
+                    <input value={settings.shoplook_kicker ?? ""} onChange={(e) => update("shoplook_kicker", e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
+                    <input value={settings.shoplook_title ?? ""} onChange={(e) => update("shoplook_title", e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+
+              {sectionHeadersError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{sectionHeadersError}</p>}
+              <div className="flex items-center gap-4">
+                <button onClick={saveSectionHeaders} disabled={sectionHeadersSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
+                  {sectionHeadersSaving ? "Saving…" : "Save Section Headers"}
+                </button>
+                {sectionHeadersSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
               </div>
             </div>
           </section>

@@ -44,12 +44,14 @@ export default async function Home() {
       kicker: designSettings.loom_panel1_kicker,
       title: designSettings.loom_panel1_title,
       body: designSettings.loom_panel1_body,
+      label: designSettings.loom_panel1_label,
     },
     panel2: {
       image: designSettings.loom_panel2_image,
       kicker: designSettings.loom_panel2_kicker,
       title: designSettings.loom_panel2_title,
       body: designSettings.loom_panel2_body,
+      label: designSettings.loom_panel2_label,
     },
     panel3: {
       kicker: designSettings.loom_panel3_kicker,
@@ -78,6 +80,30 @@ export default async function Home() {
     attribution: designSettings.manifesto_attribution,
   };
 
+  const collectionsHeader = {
+    kicker: designSettings.collections_kicker,
+    title: designSettings.collections_title,
+    titleAccent: designSettings.collections_title_accent,
+    sideNote: designSettings.collections_side_note,
+  };
+
+  const newArrivalsSection = {
+    tag: designSettings.new_arrivals_tag,
+    title: designSettings.new_arrivals_title,
+    gatewayLabel: designSettings.new_arrivals_gateway_label,
+  };
+
+  const bestsellersSection = {
+    tag: designSettings.bestsellers_tag,
+    title: designSettings.bestsellers_title,
+    gatewayLabel: designSettings.bestsellers_gateway_label,
+  };
+
+  const shopLookHeader = {
+    kicker: designSettings.shoplook_kicker,
+    title: designSettings.shoplook_title,
+  };
+
   return (
     <HomeClient
       heroSlides={heroSlides}
@@ -93,6 +119,10 @@ export default async function Home() {
       loomContent={loomContent}
       coinPocketContent={coinPocketContent}
       manifesto={manifesto}
+      collectionsHeader={collectionsHeader}
+      newArrivalsSection={newArrivalsSection}
+      bestsellersSection={bestsellersSection}
+      shopLookHeader={shopLookHeader}
     />
   );
 }
