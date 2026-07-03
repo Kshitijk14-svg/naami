@@ -50,6 +50,7 @@ export async function createCollection(data: {
   tag?: string;
   description?: string;
   image?: string;
+  thumbnailImage?: string;
   isPublished?: boolean;
   showOnHomepage?: boolean;
   homeSortOrder?: number;
@@ -64,6 +65,7 @@ export async function createCollection(data: {
       tag: collectionData.tag ?? "",
       description: collectionData.description ?? "",
       image: collectionData.image ?? "/images/product-jacket.png",
+      thumbnailImage: collectionData.thumbnailImage,
       isPublished: collectionData.isPublished ?? true,
       showOnHomepage: collectionData.showOnHomepage ?? false,
       homeSortOrder: collectionData.homeSortOrder ?? 0,
@@ -91,6 +93,7 @@ export async function updateCollection(
     tag: string;
     description: string;
     image: string;
+    thumbnailImage: string;
     isPublished: boolean;
     showOnHomepage: boolean;
     homeSortOrder: number;

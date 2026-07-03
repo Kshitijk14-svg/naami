@@ -1,35 +1,40 @@
-import { NextRequest } from 'next/server';
-import { verifyAdminRequest } from '@/lib/adminAuth';
-import { getAllCoupons, createCoupon } from '@/models/couponStore';
+import { NextRequest } from "next/server";
+import { verifyAdminRequest } from "@/lib/adminAuth";
+import { getAllCoupons, createCoupon, getCouponByCode } from "@/db/queries/coupons";
+import { validateCouponInput } from "@/lib/coupons";
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyAdminRequest(request, ['admin', 'super_admin']);
+  const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
-  return Response.json(getAllCoupons());
+  return Response.json(await getAllCoupons());
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyAdminRequest(request, ['admin', 'super_admin']);
+  const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
 
   const body = await request.json();
-  if (!body.code || !body.discountType || typeof body.discountValue !== 'number') {
-    return Response.json({ error: 'code, discountType, and discountValue are required' }, { status: 400 });
+  const validationError = validateCouponInput(body);
+  if (validationError) {
+    return Response.json({ error: validationError }, { status: 400 });
   }
 
-  try {
-    const coupon = createCoupon({
-      code: body.code,
-      discountType: body.discountType,
-      discountValue: body.discountValue,
-      minOrderValue: body.minOrderValue,
-      usageLimit: body.usageLimit,
-      expiresAt: body.expiresAt,
-      isActive: body.isActive ?? true,
-    });
-    return Response.json(coupon, { status: 201 });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return Response.json({ error: message }, { status: 409 });
+  if (await getCouponByCode(body.code)) {
+    return Response.json({ error: "Coupon code already exists" }, { status: 409 });
   }
+
+  const coupon = await createCoupon({
+    code: body.code,
+    discountType: body.discountType,
+    discountValue: body.discountValue,
+    minOrderValue: body.minOrderValue ?? null,
+    maxDiscountInr: body.maxDiscountInr ?? null,
+    usageLimit: body.usageLimit ?? null,
+    perUserLimit: body.perUserLimit ?? null,
+    perIpLimit: body.perIpLimit ?? null,
+    startsAt: body.startsAt ?? null,
+    expiresAt: body.expiresAt ?? null,
+    isActive: body.isActive ?? true,
+  });
+  return Response.json(coupon, { status: 201 });
 }

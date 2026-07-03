@@ -42,6 +42,7 @@ export async function PUT(
   if (body.fit !== undefined) updateData.fit = body.fit;
   if (body.origin !== undefined) updateData.origin = body.origin;
   if (body.image !== undefined) updateData.image = body.image;
+  if (body.thumbnailImage !== undefined) updateData.thumbnailImage = body.thumbnailImage;
   if (body.stock !== undefined) updateData.stock = body.stock;
   if (body.isPublished !== undefined) updateData.isPublished = body.isPublished;
   if (body.isFeaturedNewArrival !== undefined) updateData.isFeaturedNewArrival = body.isFeaturedNewArrival;

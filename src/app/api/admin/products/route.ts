@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     fit: body.fit ?? "",
     origin: body.origin ?? "",
     image: body.image ?? "/images/product-jacket.png",
+    thumbnailImage: body.thumbnailImage ?? null,
     categoryId: body.categoryId ?? null,
     lowStockThreshold: body.lowStockThreshold ?? 5,
   });

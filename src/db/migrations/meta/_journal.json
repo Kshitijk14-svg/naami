@@ -29,6 +29,27 @@
       "when": 1782890239327,
       "tag": "0003_dry_black_cat",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782895597403,
+      "tag": "0004_tense_hardball",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782900791036,
+      "tag": "0005_cultured_morbius",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782966176802,
+      "tag": "0006_fluffy_marauders",
+      "breakpoints": true
     }
   ]
 }

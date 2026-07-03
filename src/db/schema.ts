@@ -90,6 +90,7 @@ export const products = pgTable(
     fit: text("fit").notNull().default(""),
     origin: text("origin").notNull().default(""),
     image: text("image").notNull().default("/images/product-jacket.png"),
+    thumbnailImage: text("thumbnail_image"),
     priceInr: integer("price_inr").notNull(),
     stock: integer("stock").notNull().default(0),
     isPublished: boolean("is_published").notNull().default(true),
@@ -133,6 +134,7 @@ export const collections = pgTable(
     tag: varchar("tag", { length: 100 }).notNull().default(""),
     description: text("description").notNull().default(""),
     image: text("image").notNull().default("/images/product-jacket.png"),
+    thumbnailImage: text("thumbnail_image"),
     isPublished: boolean("is_published").notNull().default(true),
     showOnHomepage: boolean("show_on_homepage").notNull().default(false),
     homeSortOrder: integer("home_sort_order").notNull().default(0),
@@ -157,6 +159,50 @@ export const collectionProducts = pgTable(
   (t) => [primaryKey({ columns: [t.collectionId, t.productId] })]
 );
 
+// ─── 6b. homepage_look_cards ────────────────────────────────────────────────────
+
+export const homepageLookCards = pgTable(
+  "homepage_look_cards",
+  {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 200 }).notNull(),
+    subtitle: text("subtitle").notNull().default(""),
+    image: text("image").notNull().default("/images/product-jacket.png"),
+    thumbnailImage: text("thumbnail_image"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isPublished: boolean("is_published").notNull().default(true),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("homepage_look_cards_active_idx").on(t.id).where(sql`${t.deletedAt} IS NULL`),
+    index("homepage_look_cards_sort_idx").on(t.sortOrder),
+  ]
+);
+
+// ─── 6c. homepage_hotspots ──────────────────────────────────────────────────────
+// Shared by both the singleton lookbook banner (lookCardId IS NULL) and each
+// look card's nested hotspots (lookCardId set) — avoids duplicating identical
+// columns/CRUD across two near-identical tables.
+
+export const homepageHotspots = pgTable(
+  "homepage_hotspots",
+  {
+    id: serial("id").primaryKey(),
+    lookCardId: integer("look_card_id").references(() => homepageLookCards.id, { onDelete: "cascade" }),
+    productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
+    topPct: integer("top_pct").notNull(),
+    leftPct: integer("left_pct").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("homepage_hotspots_look_card_idx").on(t.lookCardId),
+    index("homepage_hotspots_product_idx").on(t.productId),
+  ]
+);
+
 // ─── 7. coupons ───────────────────────────────────────────────────────────────
 
 export const coupons = pgTable(
@@ -167,8 +213,14 @@ export const coupons = pgTable(
     discountType: discountTypeEnum("discount_type").notNull(),
     discountValue: integer("discount_value").notNull(),
     minOrderValue: integer("min_order_value"),
+    // Cap on the computed discount for percent coupons (₹). Null = uncapped.
+    maxDiscountInr: integer("max_discount_inr"),
     usageLimit: integer("usage_limit"),
     usedCount: integer("used_count").notNull().default(0),
+    // Per-user / per-IP redemption caps, enforced against coupon_redemptions.
+    perUserLimit: integer("per_user_limit"),
+    perIpLimit: integer("per_ip_limit"),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     isActive: boolean("is_active").notNull().default(true),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -186,7 +238,14 @@ export const orders = pgTable(
     userId: integer("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
     status: orderStatusEnum("status").notNull().default("pending"),
     totalInr: integer("total_inr").notNull(),
+    // Coupon discount applied to this order (₹), snapshotted at purchase time.
+    discountInr: integer("discount_inr").notNull().default(0),
     couponId: integer("coupon_id").references(() => coupons.id, { onDelete: "set null" }),
+    trackingNumber: varchar("tracking_number", { length: 100 }),
+    trackingCarrier: varchar("tracking_carrier", { length: 100 }),
+    trackingUrl: text("tracking_url"),
+    adminNotes: text("admin_notes"),
+    invoiceNumber: varchar("invoice_number", { length: 30 }),
     // Shipping snapshot — captured at order time, nullable for existing orders
     shippingName: varchar("shipping_name", { length: 200 }),
     shippingEmail: varchar("shipping_email", { length: 320 }),
@@ -205,6 +264,9 @@ export const orders = pgTable(
     uniqueIndex("orders_razorpay_payment_idx")
       .on(t.razorpayPaymentId)
       .where(sql`${t.razorpayPaymentId} IS NOT NULL`),
+    uniqueIndex("orders_invoice_number_idx")
+      .on(t.invoiceNumber)
+      .where(sql`${t.invoiceNumber} IS NOT NULL`),
   ]
 );
 
@@ -227,6 +289,55 @@ export const orderItems = pgTable(
     index("order_items_product_idx").on(t.productId),
   ]
 );
+
+// ─── 9a. coupon_redemptions ───────────────────────────────────────────────────
+// One row per coupon redemption, written inside the order-creation transaction.
+// Powers per-user and per-IP usage limits and gives an audit trail of who
+// redeemed which coupon (usedCount on coupons stays the fast aggregate).
+
+export const couponRedemptions = pgTable(
+  "coupon_redemptions",
+  {
+    id: serial("id").primaryKey(),
+    couponId: integer("coupon_id").notNull().references(() => coupons.id, { onDelete: "cascade" }),
+    orderId: varchar("order_id", { length: 20 }).notNull().references(() => orders.id, { onDelete: "cascade" }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    ip: varchar("ip", { length: 45 }), // IPv6-safe; null when unknown
+    discountInr: integer("discount_inr").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("coupon_redemptions_coupon_user_idx").on(t.couponId, t.userId),
+    index("coupon_redemptions_coupon_ip_idx").on(t.couponId, t.ip),
+    index("coupon_redemptions_order_idx").on(t.orderId),
+  ]
+);
+
+// ─── 9b. order_status_history ─────────────────────────────────────────────────
+// Audit trail of every admin status change.
+
+export const orderStatusHistory = pgTable(
+  "order_status_history",
+  {
+    id: serial("id").primaryKey(),
+    orderId: varchar("order_id", { length: 20 }).notNull().references(() => orders.id, { onDelete: "cascade" }),
+    fromStatus: orderStatusEnum("from_status").notNull(),
+    toStatus: orderStatusEnum("to_status").notNull(),
+    changedBy: varchar("changed_by", { length: 320 }).notNull(), // admin email
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("order_status_history_order_idx").on(t.orderId)]
+);
+
+// ─── 9c. invoice_counters ─────────────────────────────────────────────────────
+// Per-year sequential counter for invoice numbers (NAAMI-INV-<year>-<seq>).
+// Incremented via atomic upsert; orders.invoice_number unique index is the backstop.
+
+export const invoiceCounters = pgTable("invoice_counters", {
+  year: integer("year").primaryKey(),
+  counter: integer("counter").notNull(),
+});
 
 // ─── 10. otp_codes ────────────────────────────────────────────────────────────
 
@@ -388,4 +499,14 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
   product: one(products, { fields: [orderItems.productId], references: [products.id] }),
+}));
+
+export const couponRedemptionsRelations = relations(couponRedemptions, ({ one }) => ({
+  coupon: one(coupons, { fields: [couponRedemptions.couponId], references: [coupons.id] }),
+  order: one(orders, { fields: [couponRedemptions.orderId], references: [orders.id] }),
+  user: one(users, { fields: [couponRedemptions.userId], references: [users.id] }),
+}));
+
+export const orderStatusHistoryRelations = relations(orderStatusHistory, ({ one }) => ({
+  order: one(orders, { fields: [orderStatusHistory.orderId], references: [orders.id] }),
 }));

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyAdminRequest } from "@/lib/adminAuth";
-import { getOrderById } from "@/db/queries/orders";
+import { getOrderById, getOrderStatusHistory } from "@/db/queries/orders";
 import { getUserByEmail } from "@/db/queries/users";
 
 // Customer-facing order read. Any authenticated user may call it, but a customer
@@ -31,5 +31,14 @@ export async function GET(
     }
   }
 
-  return Response.json(order);
+  // Status timeline for the customer's order page. Expose only what the
+  // customer should see — changedBy (admin email) and internal notes stay private.
+  const history = (await getOrderStatusHistory(id)).map((h) => ({
+    fromStatus: h.fromStatus,
+    toStatus: h.toStatus,
+    createdAt: h.createdAt,
+  }));
+
+  const { adminNotes: _adminNotes, ...customerVisible } = order;
+  return Response.json({ ...customerVisible, history });
 }

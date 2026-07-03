@@ -6,6 +6,9 @@ import {
   sendOrderConfirmation,
   sendLowStockAlert,
   sendAbandonedCartReminder,
+  sendOrderStatusUpdate,
+  sendInvoiceEmail,
+  type StatusTracking,
 } from "@/lib/email";
 
 const log = createLogger("jobs");
@@ -23,7 +26,9 @@ const BACKOFF_BASE_MS = 30 * 1000;
 export type JobType =
   | "email:order_confirmation"
   | "email:low_stock"
-  | "email:abandoned_cart";
+  | "email:abandoned_cart"
+  | "email:order_status"
+  | "email:invoice";
 
 type EmailItem = { productName: string; unitPriceInr: number; quantity: number; size?: string | null };
 type OrderPayload = {
@@ -35,6 +40,16 @@ type LowStockPayload = {
   items: { name: string; number: string; stock: number; lowStockThreshold: number }[];
 };
 type AbandonedCartPayload = { to: string; items: EmailItem[] };
+type OrderStatusPayload = {
+  to: string;
+  orderId: string;
+  toStatus: string;
+  shippingName?: string | null;
+  tracking?: StatusTracking;
+};
+// Invoice jobs carry only the order id — the worker regenerates the PDF at
+// send time so attachment bytes never live in the jobs table.
+type InvoicePayload = { orderId: string };
 
 // One handler per job type. Handlers receive the parsed payload and should throw
 // on failure so the worker retries with backoff.
@@ -47,6 +62,35 @@ const HANDLERS: Record<JobType, (payload: unknown) => Promise<void>> = {
   "email:abandoned_cart": (p) => {
     const { to, items } = p as AbandonedCartPayload;
     return sendAbandonedCartReminder(to, items);
+  },
+  "email:order_status": (p) => {
+    const { to, orderId, toStatus, shippingName, tracking } = p as OrderStatusPayload;
+    return sendOrderStatusUpdate(to, { orderId, toStatus, shippingName, tracking });
+  },
+  "email:invoice": async (p) => {
+    const { orderId } = p as InvoicePayload;
+    // Lazy import avoids loading pdfkit unless an invoice job actually runs.
+    const { getOrderById, getOrderItems } = await import("@/db/queries/orders");
+    const { ensureInvoiceNumber, generateInvoicePdf } = await import("@/lib/invoice");
+
+    const order = await getOrderById(orderId);
+    if (!order) throw new Error(`Invoice job: order ${orderId} not found`);
+    if (!order.shippingEmail) throw new Error(`Invoice job: order ${orderId} has no email`);
+
+    const invoiceNumber = await ensureInvoiceNumber(orderId);
+    const items = await getOrderItems(orderId);
+    const pdf = await generateInvoicePdf({ ...order, invoiceNumber }, items);
+
+    await sendInvoiceEmail(
+      order.shippingEmail,
+      {
+        orderId,
+        invoiceNumber,
+        totalInr: order.totalInr,
+        shippingName: order.shippingName,
+      },
+      pdf
+    );
   },
 };
 

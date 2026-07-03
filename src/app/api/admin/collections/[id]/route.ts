@@ -38,6 +38,7 @@ export async function PUT(
     tag: body.tag,
     description: body.description,
     image: body.image,
+    thumbnailImage: body.thumbnailImage,
     isPublished: body.isPublished,
     showOnHomepage: body.showOnHomepage,
     homeSortOrder: body.homeSortOrder,

@@ -10,6 +10,7 @@ interface SearchResult {
   subtitle: string;
   price: string;
   image: string;
+  thumbnailImage?: string;
 }
 
 export default function NavSearch() {
@@ -142,7 +143,7 @@ export default function NavSearch() {
                   className="relative flex-shrink-0"
                   style={{ width: 38, height: 46, backgroundColor: "#F4F0E6" }}
                 >
-                  <Image src={r.image} alt={r.name} fill style={{ objectFit: "cover" }} />
+                  <Image src={r.thumbnailImage ?? r.image} alt={r.name} fill style={{ objectFit: "cover" }} />
                 </div>
                 <div className="min-w-0">
                   <p

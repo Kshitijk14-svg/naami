@@ -1,12 +1,8 @@
-import { getPublishedProducts, formatProduct, getProductSizes } from "@/db/queries/products";
+import { getPublishedProducts, formatProduct, getProductSizesBatch } from "@/db/queries/products";
 
 export async function GET() {
   const rows = await getPublishedProducts();
-  const products = await Promise.all(
-    rows.map(async (p) => {
-      const sizes = await getProductSizes(p.id);
-      return { ...formatProduct(p), sizes };
-    })
-  );
+  const sizesMap = await getProductSizesBatch(rows.map((p) => p.id));
+  const products = rows.map((p) => ({ ...formatProduct(p), sizes: sizesMap[p.id] ?? [] }));
   return Response.json(products);
 }

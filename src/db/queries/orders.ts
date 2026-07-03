@@ -1,7 +1,16 @@
 import { db, dbRead } from "@/lib/db";
-import { orders, orderItems, coupons, products } from "@/db/schema";
-import { eq, and, sql, desc, isNull, inArray, lt } from "drizzle-orm";
+import {
+  orders,
+  orderItems,
+  coupons,
+  products,
+  couponRedemptions,
+  orderStatusHistory,
+} from "@/db/schema";
+import { eq, and, or, sql, desc, isNull, inArray, lt, gte, lte, ilike } from "drizzle-orm";
 import { enqueueJob } from "@/lib/jobs";
+import { computeDiscount, validateCouponWindow, checkRedemptionLimits } from "@/lib/coupons";
+import { canTransition, ORDER_TRANSITIONS } from "@/lib/orderStatus";
 import {
   encryptField,
   decryptField,
@@ -53,8 +62,11 @@ export interface CreateOrderInput {
     quantity: number;
     size?: string;
   }[];
-  totalInr: number;
+  /** Server-computed subtotal from DB prices — never client-sent. */
+  subtotalInr: number;
   couponCode?: string;
+  /** Client IP for per-IP coupon limits; null when unknown. */
+  ip?: string | null;
   shippingName?: string;
   shippingEmail?: string;
   shippingPhone?: string;
@@ -71,6 +83,7 @@ export interface CreateOrderInput {
 export async function createOrder(input: CreateOrderInput) {
   return db.transaction(async (tx) => {
     let couponId: number | null = null;
+    let discountInr = 0;
 
     if (input.couponCode) {
       // FOR UPDATE prevents TOCTOU double-spend race on coupon usedCount
@@ -86,16 +99,18 @@ export async function createOrder(input: CreateOrderInput) {
         .for("update")
         .limit(1);
 
-      if (!coupon || !coupon.isActive)
-        throw new Error("Invalid or inactive coupon");
+      if (!coupon) throw new Error("Invalid or inactive coupon");
 
-      if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit)
-        throw new Error("Coupon usage limit reached");
+      // Authoritative validation under the lock: window/limits/min-order,
+      // then per-user + per-IP counts against coupon_redemptions.
+      const windowError = validateCouponWindow(coupon, input.subtotalInr);
+      if (windowError) throw new Error(windowError);
 
-      if (coupon.expiresAt && coupon.expiresAt < new Date())
-        throw new Error("Coupon has expired");
+      const limitError = await checkRedemptionLimits(tx, coupon, input.userId, input.ip ?? null);
+      if (limitError) throw new Error(limitError);
 
       couponId = coupon.id;
+      discountInr = computeDiscount(coupon, input.subtotalInr);
 
       await tx
         .update(coupons)
@@ -121,7 +136,8 @@ export async function createOrder(input: CreateOrderInput) {
       .values({
         id: orderId,
         userId: input.userId,
-        totalInr: input.totalInr,
+        totalInr: Math.max(0, input.subtotalInr - discountInr),
+        discountInr,
         couponId,
         status: "pending",
         shippingName: input.shippingName ?? null,
@@ -143,6 +159,18 @@ export async function createOrder(input: CreateOrderInput) {
         size: item.size ?? null,
       }))
     );
+
+    // Redemption audit row — powers per-user/per-IP limits. Same transaction,
+    // so a rollback also releases the redemption.
+    if (couponId !== null) {
+      await tx.insert(couponRedemptions).values({
+        couponId,
+        orderId,
+        userId: input.userId,
+        ip: input.ip ?? null,
+        discountInr,
+      });
+    }
 
     // Decrement stock for each product
     for (const item of input.items) {
@@ -241,16 +269,211 @@ export async function getOrderByRazorpayPaymentId(paymentId: string) {
   return rows[0] ? decryptOrderRow(rows[0]) : null;
 }
 
-export async function updateOrderStatus(id: string, status: string) {
+/** Thrown when a status change violates the transition matrix — maps to HTTP 409. */
+export class InvalidTransitionError extends Error {
+  allowed: OrderStatus[];
+  constructor(from: OrderStatus, to: OrderStatus) {
+    super(`Cannot change order status from "${from}" to "${to}".`);
+    this.allowed = ORDER_TRANSITIONS[from] ?? [];
+  }
+}
+
+export interface UpdateOrderStatusOptions {
+  note?: string;
+  trackingNumber?: string;
+  trackingCarrier?: string;
+  trackingUrl?: string;
+}
+
+/**
+ * Change an order's status atomically: validates the transition under a row
+ * lock, records it in order_status_history, optionally sets tracking fields,
+ * and enqueues a customer notification email via the transactional outbox.
+ */
+export async function updateOrderStatus(
+  id: string,
+  status: string,
+  changedBy: string,
+  opts: UpdateOrderStatusOptions = {}
+) {
   if (!VALID_STATUSES.includes(status as OrderStatus)) return null;
-  const [updated] = await db
-    .update(orders)
-    .set({ status: status as OrderStatus, updatedAt: new Date() })
-    .where(eq(orders.id, id))
-    .returning();
-  return updated ?? null;
+  const toStatus = status as OrderStatus;
+
+  return db.transaction(async (tx) => {
+    const [order] = await tx
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id))
+      .for("update")
+      .limit(1);
+    if (!order) return null;
+
+    if (!canTransition(order.status, toStatus)) {
+      throw new InvalidTransitionError(order.status, toStatus);
+    }
+
+    const [updated] = await tx
+      .update(orders)
+      .set({
+        status: toStatus,
+        updatedAt: new Date(),
+        ...(opts.trackingNumber !== undefined && { trackingNumber: opts.trackingNumber || null }),
+        ...(opts.trackingCarrier !== undefined && { trackingCarrier: opts.trackingCarrier || null }),
+        ...(opts.trackingUrl !== undefined && { trackingUrl: opts.trackingUrl || null }),
+      })
+      .where(eq(orders.id, id))
+      .returning();
+
+    await tx.insert(orderStatusHistory).values({
+      orderId: id,
+      fromStatus: order.status,
+      toStatus,
+      changedBy,
+      note: opts.note || null,
+    });
+
+    if (order.shippingEmail) {
+      await enqueueJob(
+        "email:order_status",
+        {
+          to: order.shippingEmail,
+          orderId: id,
+          toStatus,
+          shippingName: order.shippingName,
+          tracking: {
+            number: updated.trackingNumber,
+            carrier: updated.trackingCarrier,
+            url: updated.trackingUrl,
+          },
+        },
+        tx
+      );
+    }
+
+    return decryptOrderRow(updated);
+  });
+}
+
+/** Update internal admin fields (notes/tracking) without a status change. */
+export async function updateOrderAdminFields(
+  id: string,
+  fields: { adminNotes?: string; trackingNumber?: string; trackingCarrier?: string; trackingUrl?: string }
+) {
+  const set: Record<string, unknown> = { updatedAt: new Date() };
+  if (fields.adminNotes !== undefined) set.adminNotes = fields.adminNotes || null;
+  if (fields.trackingNumber !== undefined) set.trackingNumber = fields.trackingNumber || null;
+  if (fields.trackingCarrier !== undefined) set.trackingCarrier = fields.trackingCarrier || null;
+  if (fields.trackingUrl !== undefined) set.trackingUrl = fields.trackingUrl || null;
+
+  const [updated] = await db.update(orders).set(set).where(eq(orders.id, id)).returning();
+  return updated ? decryptOrderRow(updated) : null;
+}
+
+export async function getOrderStatusHistory(orderId: string) {
+  return dbRead
+    .select()
+    .from(orderStatusHistory)
+    .where(eq(orderStatusHistory.orderId, orderId))
+    .orderBy(desc(orderStatusHistory.createdAt));
+}
+
+export interface SearchOrdersInput {
+  q?: string;
+  status?: string;
+  /** UTC ISO bounds (caller converts IST dates). */
+  from?: string;
+  to?: string;
+}
+
+/** Admin order search: id/email text match + status + created-at range. */
+export async function searchOrders(input: SearchOrdersInput) {
+  const conditions = [];
+
+  if (input.q) {
+    const like = `%${input.q.trim()}%`;
+    conditions.push(or(ilike(orders.id, like), ilike(orders.shippingEmail, like)));
+  }
+  if (input.status && VALID_STATUSES.includes(input.status as OrderStatus)) {
+    conditions.push(eq(orders.status, input.status as OrderStatus));
+  }
+  if (input.from) {
+    const from = new Date(input.from);
+    if (!isNaN(from.getTime())) conditions.push(gte(orders.createdAt, from));
+  }
+  if (input.to) {
+    const to = new Date(input.to);
+    if (!isNaN(to.getTime())) conditions.push(lte(orders.createdAt, to));
+  }
+
+  const rows = await dbRead
+    .select()
+    .from(orders)
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(orders.createdAt));
+  return rows.map(decryptOrderRow);
 }
 
 export async function getOrderItems(orderId: string) {
   return dbRead.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+}
+
+export interface OrderAnalytics {
+  totalRevenue: number;
+  orderCounts: Record<OrderStatus, number>;
+  topProducts: { productId: number; name: string; count: number; revenue: number }[];
+  recentOrders: {
+    id: string;
+    shippingName: string | null;
+    totalInr: number;
+    status: OrderStatus;
+    createdAt: Date;
+  }[];
+}
+
+/** Dashboard analytics computed from real order data. */
+export async function getOrderAnalytics(): Promise<OrderAnalytics> {
+  const [countRows, revenueRow, topRows, recentRows] = await Promise.all([
+    dbRead
+      .select({ status: orders.status, n: sql<number>`count(*)::int` })
+      .from(orders)
+      .groupBy(orders.status),
+    dbRead
+      .select({ total: sql<number>`coalesce(sum(${orders.totalInr}), 0)::int` })
+      .from(orders)
+      .where(inArray(orders.status, ["shipped", "delivered"])),
+    dbRead
+      .select({
+        productId: orderItems.productId,
+        name: sql<string>`max(${orderItems.productName})`,
+        count: sql<number>`sum(${orderItems.quantity})::int`,
+        revenue: sql<number>`sum(${orderItems.unitPriceInr} * ${orderItems.quantity})::int`,
+      })
+      .from(orderItems)
+      .innerJoin(orders, eq(orderItems.orderId, orders.id))
+      .where(sql`${orders.status} != 'cancelled'`)
+      .groupBy(orderItems.productId)
+      .orderBy(desc(sql`sum(${orderItems.quantity})`))
+      .limit(5),
+    dbRead
+      .select({
+        id: orders.id,
+        shippingName: orders.shippingName,
+        totalInr: orders.totalInr,
+        status: orders.status,
+        createdAt: orders.createdAt,
+      })
+      .from(orders)
+      .orderBy(desc(orders.createdAt))
+      .limit(5),
+  ]);
+
+  const orderCounts = Object.fromEntries(VALID_STATUSES.map((s) => [s, 0])) as Record<OrderStatus, number>;
+  for (const row of countRows) orderCounts[row.status] = row.n;
+
+  return {
+    totalRevenue: revenueRow[0]?.total ?? 0,
+    orderCounts,
+    topProducts: topRows,
+    recentOrders: recentRows,
+  };
 }

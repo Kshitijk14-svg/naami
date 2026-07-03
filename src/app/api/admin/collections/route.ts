@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     tag: body.tag ?? "",
     description: body.description ?? "",
     image: body.image ?? "/images/product-jacket.png",
+    thumbnailImage: body.thumbnailImage,
     productIds: Array.isArray(body.productIds) ? body.productIds : [],
     isPublished: body.isPublished ?? true,
     showOnHomepage: body.showOnHomepage ?? false,

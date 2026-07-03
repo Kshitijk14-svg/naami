@@ -14,10 +14,13 @@ export interface CarouselProduct {
   name: string;
   subtitle: string;
   price: string;
+  priceInr: number;
   material: string;
   fit: string;
   origin: string;
   image: string;
+  thumbnailImage?: string;
+  sizes?: string[];
 }
 
 interface ProductCarouselProps {
@@ -33,7 +36,7 @@ interface ExpandedState {
 }
 
 export default function ProductCarousel({ title, tag, products, gatewayLabel }: ProductCarouselProps) {
-  const incrementItems = useCartStore((state) => state.incrementItems);
+  const addItem = useCartStore((state) => state.addItem);
   const trackRef = useRef<HTMLDivElement>(null);
   const autoScrollRaf = useRef<number | null>(null);
   const isHovered = useRef(false);
@@ -420,7 +423,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                     />
                   </div>
                 ) : (
-                  <ProductDetailContent product={expandedProduct} onClose={closeProduct} incrementItems={incrementItems} isMobile />
+                  <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
                 )}
               </div>
             </div>
@@ -442,7 +445,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                     backgroundColor: "rgba(17, 17, 17, 0.08)",
                   }}
                 />
-                <ProductDetailContent product={expandedProduct} onClose={closeProduct} incrementItems={incrementItems} />
+                <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} />
               </div>
             )}
 
@@ -620,7 +623,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
       >
         <div ref={imageRef} className="absolute inset-0 w-full h-full">
           <Image
-            src={product.image}
+            src={product.thumbnailImage ?? product.image}
             alt={product.name}
             fill
             className="object-cover pointer-events-none"
@@ -703,12 +706,12 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
 function ProductDetailContent({
   product,
   onClose,
-  incrementItems,
+  addItem,
   isMobile,
 }: {
   product: CarouselProduct;
   onClose: () => void;
-  incrementItems: () => void;
+  addItem: (item: { productId: number; name: string; priceInr: number; image: string; size: string }) => void;
   isMobile?: boolean;
 }) {
   return (
@@ -806,7 +809,13 @@ function ProductDetailContent({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            incrementItems();
+            addItem({
+              productId: product.id,
+              name: product.name,
+              priceInr: product.priceInr,
+              image: product.image,
+              size: product.sizes?.[0] ?? "One Size",
+            });
             onClose();
           }}
           className="w-full flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-90 cursor-pointer"

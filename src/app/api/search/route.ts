@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       subtitle: p.subtitle,
       price: formatINR(p.priceInr),
       image: p.image,
+      thumbnailImage: p.thumbnailImage ?? p.image,
     }))
   );
 }

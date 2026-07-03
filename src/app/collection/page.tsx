@@ -167,7 +167,7 @@ export default function CollectionPage() {
               {/* Selvedge edge */}
               <div className="absolute top-0 left-0 bottom-0 z-10" style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.7 }} />
               <Image
-                src={product.image}
+                src={product.thumbnailImage ?? product.image}
                 alt={product.name}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"

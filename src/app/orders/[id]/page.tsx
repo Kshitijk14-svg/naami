@@ -16,15 +16,35 @@ interface OrderItem {
   size?: string | null;
 }
 
+interface HistoryEntry {
+  fromStatus: string;
+  toStatus: string;
+  createdAt: string;
+}
+
 interface Order {
   id: string;
   status: string;
   totalInr: number;
+  discountInr: number;
   shippingName?: string | null;
   shippingEmail?: string | null;
   shippingAddress?: string | null;
+  trackingNumber?: string | null;
+  trackingCarrier?: string | null;
+  trackingUrl?: string | null;
+  invoiceNumber?: string | null;
   createdAt: string;
+  history?: HistoryEntry[];
 }
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Order Placed",
+  confirmed: "Confirmed",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
 
 interface OrderAddress {
   line1: string;
@@ -100,14 +120,75 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
 
         {/* Order reference */}
         <div className="mb-8 px-8 py-6" style={{ backgroundColor: "#EDE8DC", borderLeft: "3px solid #8B1A1A" }}>
-          <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#8B1A1A" }}>
-            Order Reference
-          </p>
-          <p className="font-serif font-light" style={{ fontSize: "1.5rem", color: "#111" }}>{order.id}</p>
-          <p className="font-sans mt-2" style={{ fontSize: "11px", color: "rgba(17,17,17,0.45)" }}>
-            {new Date(order.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#8B1A1A" }}>
+                Order Reference
+              </p>
+              <p className="font-serif font-light" style={{ fontSize: "1.5rem", color: "#111" }}>{order.id}</p>
+              <p className="font-sans mt-2" style={{ fontSize: "11px", color: "rgba(17,17,17,0.45)" }}>
+                {new Date(order.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#8B1A1A" }}>
+                Status
+              </p>
+              <p className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "11px", color: "#111" }}>
+                {STATUS_LABELS[order.status] ?? order.status}
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* Status timeline */}
+        {order.history && order.history.length > 0 && (
+          <div className="mb-8">
+            <p className="font-sans font-bold uppercase tracking-[0.22em] mb-4" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+              Order Journey
+            </p>
+            <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: 18 }}>
+              {[...order.history].reverse().map((h, i) => (
+                <div key={i} className="mb-4 relative">
+                  <div
+                    className="absolute rounded-full"
+                    style={{ width: 8, height: 8, backgroundColor: "#8B1A1A", left: -23, top: 4 }}
+                  />
+                  <p className="font-sans font-bold uppercase tracking-[0.12em]" style={{ fontSize: "10px", color: "#111" }}>
+                    {STATUS_LABELS[h.toStatus] ?? h.toStatus}
+                  </p>
+                  <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)" }}>
+                    {new Date(h.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tracking */}
+        {order.trackingNumber && (
+          <div className="mb-8 px-8 py-6" style={{ backgroundColor: "#EDE8DC" }}>
+            <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#8B1A1A" }}>
+              Shipment Tracking
+            </p>
+            <p className="font-serif font-light" style={{ fontSize: "1.1rem", color: "#111" }}>{order.trackingNumber}</p>
+            {order.trackingCarrier && (
+              <p className="font-sans mt-1" style={{ fontSize: "11px", color: "rgba(17,17,17,0.5)" }}>via {order.trackingCarrier}</p>
+            )}
+            {order.trackingUrl && (
+              <a
+                href={order.trackingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-3 font-sans font-bold uppercase tracking-[0.2em] py-3 px-6 hover:opacity-80 transition-opacity"
+                style={{ fontSize: "9px", backgroundColor: "#8B1A1A", color: "#F4F0E6" }}
+              >
+                Track Shipment →
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Items */}
         <div className="mb-8">

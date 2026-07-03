@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { abandonedCarts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { withIdempotency } from "@/lib/idempotency";
+import { priceCart, CheckoutPricingError } from "@/lib/checkoutPricing";
+import { clientIp } from "@/lib/requestIp";
 import { createLogger } from "@/lib/logger";
 import type { CartItem } from "@/models/cartStore";
 
@@ -84,22 +86,38 @@ export async function POST(request: NextRequest) {
         return { statusCode: 401, body: { error: "User not found." } };
       }
 
-      const orderItemsInput = items.map((i) => ({
+      // Re-price the cart from DB rows — client-sent prices are never trusted
+      // for the stored order or its item snapshots.
+      let subtotalInr: number;
+      let pricedItems;
+      try {
+        ({ subtotalInr, pricedItems } = await priceCart(
+          items.map((i) => ({ productId: i.productId, quantity: i.quantity, size: i.size }))
+        ));
+      } catch (err) {
+        if (err instanceof CheckoutPricingError) {
+          return { statusCode: 400, body: { error: err.message } };
+        }
+        throw err;
+      }
+
+      const orderItemsInput = pricedItems.map((i) => ({
         productId: i.productId,
         name: i.name,
-        unitPriceInr: i.priceInr,
+        unitPriceInr: i.unitPriceInr,
         quantity: i.quantity,
         size: i.size,
       }));
-      const totalInr = items.reduce((sum, i) => sum + i.priceInr * i.quantity, 0);
 
       // createOrder is atomic and enqueues confirmation + low-stock emails via the
       // transactional outbox (drained by the jobs worker) — no fire-and-forget here.
+      // It derives the discount and final total itself under the coupon lock.
       const order = await createOrder({
         userId: user.id,
         items: orderItemsInput,
-        totalInr,
+        subtotalInr,
         couponCode: couponCode || undefined,
+        ip: clientIp(request),
         shippingName: shippingName || undefined,
         shippingEmail: shippingEmail || undefined,
         shippingPhone: shippingPhone || undefined,

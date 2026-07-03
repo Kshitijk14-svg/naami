@@ -31,15 +31,28 @@ export async function getCouponByCode(code: string) {
   return rows[0] ?? null;
 }
 
-export async function createCoupon(data: {
+export interface CouponInput {
   code: string;
   discountType: "percent" | "fixed";
   discountValue: number;
-  minOrderValue?: number;
-  usageLimit?: number;
-  expiresAt?: number;
+  minOrderValue?: number | null;
+  maxDiscountInr?: number | null;
+  usageLimit?: number | null;
+  perUserLimit?: number | null;
+  perIpLimit?: number | null;
+  /** ISO datetime strings (UTC). */
+  startsAt?: string | null;
+  expiresAt?: string | null;
   isActive?: boolean;
-}) {
+}
+
+function toDate(iso: string | null | undefined): Date | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export async function createCoupon(data: CouponInput) {
   const code = data.code.trim().toUpperCase();
   const [coupon] = await db
     .insert(coupons)
@@ -48,34 +61,36 @@ export async function createCoupon(data: {
       discountType: data.discountType,
       discountValue: data.discountValue,
       minOrderValue: data.minOrderValue ?? null,
+      maxDiscountInr: data.maxDiscountInr ?? null,
       usageLimit: data.usageLimit ?? null,
-      expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+      perUserLimit: data.perUserLimit ?? null,
+      perIpLimit: data.perIpLimit ?? null,
+      startsAt: toDate(data.startsAt),
+      expiresAt: toDate(data.expiresAt),
       isActive: data.isActive ?? true,
     })
     .returning();
   return coupon;
 }
 
-export async function updateCoupon(
-  id: number,
-  data: Partial<{
-    code: string;
-    discountType: "percent" | "fixed";
-    discountValue: number;
-    minOrderValue: number;
-    usageLimit: number;
-    expiresAt: number;
-    isActive: boolean;
-  }>
-) {
-  const update = { ...data } as Record<string, unknown>;
-  if (data.code) update.code = data.code.trim().toUpperCase();
-  if (data.expiresAt) update.expiresAt = new Date(data.expiresAt);
+export async function updateCoupon(id: number, data: Partial<CouponInput>) {
+  const update: Record<string, unknown> = {};
+  if (data.code !== undefined) update.code = data.code.trim().toUpperCase();
+  if (data.discountType !== undefined) update.discountType = data.discountType;
+  if (data.discountValue !== undefined) update.discountValue = data.discountValue;
+  if (data.minOrderValue !== undefined) update.minOrderValue = data.minOrderValue;
+  if (data.maxDiscountInr !== undefined) update.maxDiscountInr = data.maxDiscountInr;
+  if (data.usageLimit !== undefined) update.usageLimit = data.usageLimit;
+  if (data.perUserLimit !== undefined) update.perUserLimit = data.perUserLimit;
+  if (data.perIpLimit !== undefined) update.perIpLimit = data.perIpLimit;
+  if (data.startsAt !== undefined) update.startsAt = toDate(data.startsAt);
+  if (data.expiresAt !== undefined) update.expiresAt = toDate(data.expiresAt);
+  if (data.isActive !== undefined) update.isActive = data.isActive;
 
   const [updated] = await db
     .update(coupons)
     .set(update)
-    .where(eq(coupons.id, id))
+    .where(and(eq(coupons.id, id), isNull(coupons.deletedAt)))
     .returning();
   return updated ?? null;
 }

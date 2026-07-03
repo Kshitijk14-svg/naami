@@ -4,11 +4,12 @@ import { setOtp } from "@/lib/otp";
 import { getUserByEmail } from "@/db/queries/users";
 import { createLogger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/redis";
+import { clientIp as sharedClientIp } from "@/lib/requestIp";
 
 const log = createLogger("send-otp");
 
 function clientIp(request: Request): string {
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+  return sharedClientIp(request) ?? "anon";
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

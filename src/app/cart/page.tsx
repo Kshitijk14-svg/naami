@@ -14,21 +14,15 @@ export default function CartPage() {
   const { items, updateQuantity, removeItem, cartItemsCount } = useCartStore();
   const [couponCode, setCouponCode] = useState("");
   const [couponResult, setCouponResult] = useState<{
-    discount: number;
-    type: "percent" | "fixed";
+    discountInr: number;
     error?: string;
   } | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const subtotal = items.reduce((sum, i) => sum + i.priceInr * i.quantity, 0);
 
-  let discountAmount = 0;
-  if (couponResult && !couponResult.error) {
-    discountAmount =
-      couponResult.type === "percent"
-        ? Math.round(subtotal * couponResult.discount / 100)
-        : couponResult.discount;
-  }
+  // The discount is computed server-side from DB prices; the client only displays it.
+  const discountAmount = couponResult && !couponResult.error ? couponResult.discountInr : 0;
   const total = Math.max(0, subtotal - discountAmount);
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
@@ -46,16 +40,21 @@ export default function CartPage() {
       const res = await fetch("/api/checkout/apply-coupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode, subtotal }),
+        body: JSON.stringify({
+          code: couponCode,
+          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity, size: i.size })),
+        }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setCouponResult({ discount: 0, type: "fixed", error: data.error });
+      if (res.status === 401) {
+        setCouponResult({ discountInr: 0, error: "Please log in to apply a coupon." });
+      } else if (!res.ok) {
+        setCouponResult({ discountInr: 0, error: data.error });
       } else {
-        setCouponResult({ discount: data.discountValue, type: data.discountType });
+        setCouponResult({ discountInr: data.discountInr });
       }
     } catch {
-      setCouponResult({ discount: 0, type: "fixed", error: "Failed to apply coupon." });
+      setCouponResult({ discountInr: 0, error: "Failed to apply coupon." });
     } finally {
       setApplyingCoupon(false);
     }

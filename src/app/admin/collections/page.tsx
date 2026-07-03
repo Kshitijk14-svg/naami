@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 type Collection = {
   id: number;
@@ -11,6 +12,7 @@ type Collection = {
   tag: string;
   description: string;
   image: string;
+  thumbnailImage?: string;
   isPublished: boolean;
   showOnHomepage: boolean;
   homeSortOrder: number;
@@ -23,6 +25,7 @@ type FormData = {
   tag: string;
   description: string;
   image: string;
+  thumbnailImage: string;
   productIds: string;
   isPublished: boolean;
   showOnHomepage: boolean;
@@ -31,7 +34,7 @@ type FormData = {
 
 const emptyForm: FormData = {
   number: "", name: "", tag: "", description: "",
-  image: "", productIds: "", isPublished: true,
+  image: "", thumbnailImage: "", productIds: "", isPublished: true,
   showOnHomepage: false, homeSortOrder: "0",
 };
 
@@ -95,6 +98,7 @@ export default function CollectionsPage() {
       setForm({
         number: editing.number, name: editing.name, tag: editing.tag,
         description: editing.description, image: editing.image,
+        thumbnailImage: editing.thumbnailImage ?? "",
         productIds: editing.productIds.join(","), isPublished: editing.isPublished,
         showOnHomepage: editing.showOnHomepage, homeSortOrder: String(editing.homeSortOrder),
       });
@@ -157,7 +161,12 @@ export default function CollectionsPage() {
         </div>
         {field("Name *", <input style={inputStyle} value={form.name} onChange={set("name")} placeholder="OXFORD WHITES" />)}
         {field("Description", <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} value={form.description} onChange={set("description")} />)}
-        {field("Image path", <input style={inputStyle} value={form.image} onChange={set("image")} placeholder="/images/product-jacket.png" />)}
+        <ImageUploadField
+          type="collection"
+          image={form.image}
+          onImageChange={(image) => setForm((f) => ({ ...f, image }))}
+          onUploaded={(image, thumbnailImage) => setForm((f) => ({ ...f, image, thumbnailImage }))}
+        />
         {field("Product IDs (comma-separated)", <input style={inputStyle} value={form.productIds} onChange={set("productIds")} placeholder="1,6,11" />)}
         <div style={{ marginTop: 8, marginBottom: 4 }}>
           <p className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)", marginBottom: 8 }}>

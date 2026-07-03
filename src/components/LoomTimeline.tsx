@@ -4,11 +4,17 @@ import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 
-// Easy-to-swap images for each panel.
-const SLIDE_1_IMAGE = "/images/hero-2.png";
-const SLIDE_2_IMAGE = "/images/campaign-new.png";
+export interface LoomTimelineContent {
+  panel1: { image: string; kicker: string; title: string; body: string };
+  panel2: { image: string; kicker: string; title: string; body: string };
+  panel3: { kicker: string; title: string; body: string };
+}
 
-export default function LoomTimeline() {
+interface LoomTimelineProps {
+  content: LoomTimelineContent;
+}
+
+export default function LoomTimeline({ content }: LoomTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -173,7 +179,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#8B1A1A" }}
             >
-              Albini Heritage // Stage 01
+              {content.panel1.kicker}
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -184,10 +190,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              The Weave & The Count
+              {content.panel1.title}
             </h2>
             <p className="font-sans text-[12.5px] text-[#111111]/90 leading-relaxed mb-8 max-w-md">
-              Before it is a shirt, it is raw thread count. We weave 100-count to 140-count Egyptian long-staple cotton yarns into tight poplin and Oxford constructions, tensioned to hold their structure through decades of wearing and washing.
+              {content.panel1.body}
             </p>
             <div className="flex items-center gap-3">
               <span className="font-sans font-bold text-[9px] text-[#111111]/60 tracking-widest">
@@ -207,7 +213,7 @@ export default function LoomTimeline() {
               style={{ backgroundColor: "#EDE8DC", willChange: "transform, opacity" }}
             >
               <Image
-                src={SLIDE_1_IMAGE}
+                src={content.panel1.image}
                 alt="NAAMI // The Weave & The Count"
                 fill
                 className="object-cover"
@@ -242,7 +248,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#8B1A1A" }}
             >
-              Heritage Craft // Stage 02
+              {content.panel2.kicker}
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -253,10 +259,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              The Cutting Table
+              {content.panel2.title}
             </h2>
             <p className="font-sans text-[12.5px] text-[#111111]/90 leading-relaxed mb-8 max-w-md">
-              Each shirt panel is hand-cut from a single length of cloth on a long table by a single artisan. Pattern pieces are aligned with the grain of the fabric to ensure the finished shirt hangs perfectly and the check patterns align at every seam.
+              {content.panel2.body}
             </p>
           </div>
 
@@ -268,7 +274,7 @@ export default function LoomTimeline() {
               style={{ backgroundColor: "#F4F0E6", willChange: "transform, opacity" }}
             >
               <Image
-                src={SLIDE_2_IMAGE}
+                src={content.panel2.image}
                 alt="NAAMI // The Cutting Table"
                 fill
                 className="object-cover"
@@ -323,7 +329,7 @@ export default function LoomTimeline() {
               className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
               style={{ fontSize: "9px", color: "#E8C977" }}
             >
-              Heritage Craft // Stage 03
+              {content.panel3.kicker}
             </span>
             <h2
               className="font-serif font-light uppercase mb-6"
@@ -334,10 +340,10 @@ export default function LoomTimeline() {
                 letterSpacing: "0.02em",
               }}
             >
-              The Finishing Hand
+              {content.panel3.title}
             </h2>
             <p className="font-sans text-[12.5px] text-[#FAF6EC]/85 leading-relaxed mb-8 max-w-md">
-              Each shirt passes through the hands of a finishing specialist who steams the placket flat, presses the collar roll with a curved iron, and attaches the mother-of-pearl buttons by hand. This final stage cannot be mechanised.
+              {content.panel3.body}
             </p>
             {/* Gold hairline accent */}
             <div

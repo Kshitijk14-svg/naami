@@ -192,6 +192,167 @@ export async function sendAbandonedCartReminder(
   }
 }
 
+// ─── Order status update ──────────────────────────────────────────────────────
+
+export interface StatusTracking {
+  number?: string | null;
+  carrier?: string | null;
+  url?: string | null;
+}
+
+const STATUS_COPY: Record<string, { heading: string; body: string }> = {
+  confirmed: {
+    heading: "Order Confirmed",
+    body: "Your order has been confirmed and is now being prepared by our atelier.",
+  },
+  shipped: {
+    heading: "Your Order Has Shipped",
+    body: "Your pieces are on their way. Track your shipment below.",
+  },
+  delivered: {
+    heading: "Order Delivered",
+    body: "Your order has been delivered. We hope the pieces bring you years of quiet luxury.",
+  },
+  cancelled: {
+    heading: "Order Cancelled",
+    body: "Your order has been cancelled. If this is unexpected, please contact us and we will make it right.",
+  },
+};
+
+export async function sendOrderStatusUpdate(
+  to: string,
+  update: {
+    orderId: string;
+    toStatus: string;
+    shippingName?: string | null;
+    tracking?: StatusTracking;
+  }
+): Promise<void> {
+  const copy = STATUS_COPY[update.toStatus] ?? {
+    heading: "Order Update",
+    body: `Your order status is now "${update.toStatus}".`,
+  };
+
+  const t = update.tracking;
+  const trackingBlock =
+    update.toStatus === "shipped" && t?.number
+      ? `
+      <div style="margin-top:24px;padding:20px;background:#F4F0E6;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">
+          Shipment Tracking
+        </p>
+        <p style="font-family:Georgia,serif;font-size:16px;color:#111;margin:0 0 4px;">${t.number}</p>
+        ${t.carrier ? `<p style="font-family:sans-serif;font-size:12px;color:#555;margin:0;">via ${t.carrier}</p>` : ""}
+        ${t.url ? `
+        <a href="${t.url}"
+           style="display:inline-block;margin-top:14px;padding:12px 24px;background:#8B1A1A;color:#F4F0E6;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
+          Track Shipment →
+        </a>` : ""}
+      </div>`
+      : "";
+
+  const html = `
+<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+<body style="background:#F4F0E6;margin:0;padding:40px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+      <tr><td style="padding:32px 40px 16px;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">NAAMI ATELIER</p>
+        <h1 style="font-family:Georgia,serif;font-weight:300;font-size:28px;color:#111;margin:0;letter-spacing:0.02em;">${copy.heading}</h1>
+      </td></tr>
+      <tr><td style="padding:8px 40px 32px;">
+        <p style="font-family:sans-serif;font-size:13px;color:#555;line-height:1.6;">
+          Dear ${update.shippingName ?? "Valued Customer"},<br/>
+          ${copy.body}
+        </p>
+        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:24px 0 8px;">
+          Order Reference
+        </p>
+        <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0;">${update.orderId}</p>
+        ${trackingBlock}
+        <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
+          Questions? Reply to this email or contact us at
+          <a href="mailto:${ADMIN_EMAIL}" style="color:#8B1A1A;">${ADMIN_EMAIL}</a>.
+        </p>
+      </td></tr>
+      <tr><td style="padding:20px 40px;border-top:1px solid rgba(139,26,26,0.1);text-align:center;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#bbb;margin:0;">
+          NAAMI ATELIER · Crafted with care
+        </p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `${copy.heading} — ${update.orderId}`,
+      html,
+    });
+  } catch (err) {
+    log.error("sendOrderStatusUpdate failed", { err });
+    throw err; // surface to the jobs worker so it retries with backoff
+  }
+}
+
+// ─── Invoice email (PDF attachment) ───────────────────────────────────────────
+
+export async function sendInvoiceEmail(
+  to: string,
+  invoice: { orderId: string; invoiceNumber: string; totalInr: number; shippingName?: string | null },
+  pdf: Buffer
+): Promise<void> {
+  const html = `
+<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+<body style="background:#F4F0E6;margin:0;padding:40px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+      <tr><td style="padding:32px 40px 16px;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">NAAMI ATELIER</p>
+        <h1 style="font-family:Georgia,serif;font-weight:300;font-size:28px;color:#111;margin:0;letter-spacing:0.02em;">Your Invoice</h1>
+      </td></tr>
+      <tr><td style="padding:8px 40px 32px;">
+        <p style="font-family:sans-serif;font-size:13px;color:#555;line-height:1.6;">
+          Dear ${invoice.shippingName ?? "Valued Customer"},<br/>
+          Please find your invoice attached for order <strong>${invoice.orderId}</strong>.
+        </p>
+        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:24px 0 8px;">
+          Invoice Number
+        </p>
+        <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0 0 8px;">${invoice.invoiceNumber}</p>
+        <p style="font-family:sans-serif;font-size:13px;color:#555;margin:0;">
+          Amount: <strong>${formatPrice(invoice.totalInr)}</strong>
+        </p>
+        <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
+          Questions? Reply to this email or contact us at
+          <a href="mailto:${ADMIN_EMAIL}" style="color:#8B1A1A;">${ADMIN_EMAIL}</a>.
+        </p>
+      </td></tr>
+      <tr><td style="padding:20px 40px;border-top:1px solid rgba(139,26,26,0.1);text-align:center;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#bbb;margin:0;">
+          NAAMI ATELIER · Crafted with care
+        </p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `Invoice ${invoice.invoiceNumber} — NAAMI Order ${invoice.orderId}`,
+      html,
+      attachments: [{ filename: `${invoice.invoiceNumber}.pdf`, content: pdf }],
+    });
+  } catch (err) {
+    log.error("sendInvoiceEmail failed", { err });
+    throw err; // surface to the jobs worker so it retries with backoff
+  }
+}
+
 interface LowStockProduct {
   name: string;
   number: string;

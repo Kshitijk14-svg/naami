@@ -4,14 +4,20 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { useCartStore } from "@/models/cartStore";
+import { formatINR } from "@/lib/format";
+
+interface ResolvedProduct {
+  id: number;
+  name: string;
+  priceInr: number;
+  image: string;
+}
 
 interface CardHotspot {
   id: number;
-  top: string;
-  left: string;
-  title: string;
-  price: string;
-  number: string;
+  topPct: number;
+  leftPct: number;
+  product: ResolvedProduct | null;
 }
 
 interface LookCardData {
@@ -22,29 +28,16 @@ interface LookCardData {
   hotspots: CardHotspot[];
 }
 
-const lookCards: LookCardData[] = [
+// Shown only when no admin-configured look cards exist yet.
+const FALLBACK_LOOK_CARDS: LookCardData[] = [
   {
     id: 1,
     title: "Look 01: Raw Uniform",
     subtitle: "Heavyweight utility layer combination",
     image: "/images/hero-2.png",
     hotspots: [
-      {
-        id: 101,
-        top: "32%",
-        left: "52%",
-        title: "RAW INDIGO TRUCKER",
-        price: "₹29,900",
-        number: "01",
-      },
-      {
-        id: 102,
-        top: "72%",
-        left: "48%",
-        title: "SELVEDGE STRAIGHT FIT",
-        price: "₹23,200",
-        number: "02",
-      },
+      { id: 101, topPct: 32, leftPct: 52, product: null },
+      { id: 102, topPct: 72, leftPct: 48, product: null },
     ],
   },
   {
@@ -53,22 +46,8 @@ const lookCards: LookCardData[] = [
     subtitle: "Indigo-dyed sashiko weave & hardware focus",
     image: "/images/campaign.jpg",
     hotspots: [
-      {
-        id: 201,
-        top: "38%",
-        left: "54%",
-        title: "INDIGO SASHIKO SHIRT",
-        price: "₹15,900",
-        number: "03",
-      },
-      {
-        id: 202,
-        top: "76%",
-        left: "58%",
-        title: "BRASS HARDWARE KIT",
-        price: "₹9,900",
-        number: "04",
-      },
+      { id: 201, topPct: 38, leftPct: 54, product: null },
+      { id: 202, topPct: 76, leftPct: 58, product: null },
     ],
   },
   {
@@ -77,28 +56,19 @@ const lookCards: LookCardData[] = [
     subtitle: "Classic denim overalls & loom-state canvas",
     image: "/images/campaign-new.png",
     hotspots: [
-      {
-        id: 301,
-        top: "50%",
-        left: "46%",
-        title: "NAAMI RAW OVERALLS",
-        price: "₹34,900",
-        number: "05",
-      },
-      {
-        id: 302,
-        top: "78%",
-        left: "52%",
-        title: "RIVETED DENIM TOTE",
-        price: "₹12,500",
-        number: "06",
-      },
+      { id: 301, topPct: 50, leftPct: 46, product: null },
+      { id: 302, topPct: 78, leftPct: 52, product: null },
     ],
   },
 ];
 
-export default function HotspotCards() {
-  const incrementItems = useCartStore((state) => state.incrementItems);
+interface HotspotCardsProps {
+  lookCards?: LookCardData[];
+}
+
+export default function HotspotCards({ lookCards }: HotspotCardsProps) {
+  const cards = lookCards && lookCards.length > 0 ? lookCards : FALLBACK_LOOK_CARDS;
+  const addItem = useCartStore((state) => state.addItem);
   const trackRef = useRef<HTMLDivElement>(null);
 
   const handleNavClick = (direction: "prev" | "next") => {
@@ -175,7 +145,7 @@ export default function HotspotCards() {
 
       {/* Carousel Track Wrapper */}
       <div className="relative w-full reveal-stagger-container">
-        
+
         {/* Extreme Edge Nav Hover Zones (Slick custom cursor follower hooks) */}
         <div
           className="absolute left-0 top-0 bottom-0 w-12 z-20 cursor-pointer hidden md:block"
@@ -197,7 +167,7 @@ export default function HotspotCards() {
             WebkitOverflowScrolling: "touch",
           }}
         >
-          {lookCards.map((look) => (
+          {cards.map((look) => (
             <div
               key={look.id}
               className="inline-block w-[300px] md:w-[400px] flex-shrink-0 bg-[#F4F0E6] p-6 border border-black/5 reveal-stagger-item whitespace-normal select-none"
@@ -239,11 +209,12 @@ export default function HotspotCards() {
                 />
 
                 {/* Hotspot Nodes */}
-                {look.hotspots.map((spot) => (
+                {look.hotspots.map((spot, idx) => (
                   <HotspotCardNode
                     key={spot.id}
                     spot={spot}
-                    onAdd={incrementItems}
+                    number={String(idx + 1).padStart(2, "0")}
+                    onAdd={addItem}
                   />
                 ))}
               </div>
@@ -257,10 +228,12 @@ export default function HotspotCards() {
 
 function HotspotCardNode({
   spot,
+  number,
   onAdd,
 }: {
   spot: CardHotspot;
-  onAdd: () => void;
+  number: string;
+  onAdd: (item: { productId: number; name: string; priceInr: number; image: string; size: string }) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dotRef = useRef<HTMLDivElement>(null);
@@ -308,10 +281,12 @@ function HotspotCardNode({
     setIsOpen((prev) => !prev);
   };
 
+  const product = spot.product;
+
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer z-30"
-      style={{ top: spot.top, left: spot.left }}
+      style={{ top: `${spot.topPct}%`, left: `${spot.leftPct}%` }}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -363,47 +338,64 @@ function HotspotCardNode({
           className="font-sans font-bold uppercase tracking-[0.15em] mb-1"
           style={{ fontSize: "8px", color: "#8B1A1A" }}
         >
-          {spot.number} // PIECE
+          {number} // PIECE
         </div>
-        <h4
-          className="font-sans font-bold uppercase tracking-[0.1em] mb-1"
-          style={{ fontSize: "10px", color: "#111111", lineHeight: 1.3 }}
-        >
-          {spot.title}
-        </h4>
-        <p
-          className="font-serif mb-4"
-          style={{ fontSize: "14px", color: "#111111" }}
-        >
-          {spot.price}
-        </p>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd();
-          }}
-          className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
-          style={{
-            fontSize: "8px",
-            color: "#111111",
-            borderBottom: "1px solid #111111",
-            paddingBottom: "1px",
-          }}
-        >
-          ADD TO CART
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={3}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {product ? (
+          <>
+            <h4
+              className="font-sans font-bold uppercase tracking-[0.1em] mb-1"
+              style={{ fontSize: "10px", color: "#111111", lineHeight: 1.3 }}
+            >
+              {product.name}
+            </h4>
+            <p
+              className="font-serif mb-4"
+              style={{ fontSize: "14px", color: "#111111" }}
+            >
+              {formatINR(product.priceInr)}
+            </p>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd({
+                  productId: product.id,
+                  name: product.name,
+                  priceInr: product.priceInr,
+                  image: product.image,
+                  size: "One Size",
+                });
+              }}
+              className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
+              style={{
+                fontSize: "8px",
+                color: "#111111",
+                borderBottom: "1px solid #111111",
+                paddingBottom: "1px",
+              }}
+            >
+              ADD TO CART
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <p
+            className="font-sans"
+            style={{ fontSize: "10px", color: "#111111", opacity: 0.5 }}
           >
-            <path d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+            Item unavailable
+          </p>
+        )}
       </div>
     </div>
   );

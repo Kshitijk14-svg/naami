@@ -1,6 +1,6 @@
 import { db, dbRead } from "@/lib/db";
 import { products, productSizes } from "@/db/schema";
-import { eq, and, sql, isNull, asc } from "drizzle-orm";
+import { eq, and, sql, isNull, asc, inArray } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 import { formatINR } from "@/lib/format";
@@ -9,7 +9,7 @@ export type ProductRow = typeof products.$inferSelect;
 
 /** Formatted price string for the front-end (removes the stored-string transitive dep). */
 export function formatProduct(p: ProductRow) {
-  return { ...p, price: formatINR(p.priceInr) };
+  return { ...p, price: formatINR(p.priceInr), thumbnailImage: p.thumbnailImage ?? p.image };
 }
 
 export async function getAllProducts() {
@@ -134,6 +134,7 @@ export async function searchProducts(q: string) {
         subtitle: products.subtitle,
         priceInr: products.priceInr,
         image: products.image,
+        thumbnailImage: products.thumbnailImage,
       })
       .from(products)
       .where(
@@ -153,6 +154,20 @@ export async function getProductSizes(productId: number) {
     .from(productSizes)
     .where(eq(productSizes.productId, productId));
   return rows.map((r) => r.size);
+}
+
+export async function getProductSizesBatch(productIds: number[]): Promise<Record<number, string[]>> {
+  if (productIds.length === 0) return {};
+  const rows = await dbRead
+    .select({ productId: productSizes.productId, size: productSizes.size })
+    .from(productSizes)
+    .where(inArray(productSizes.productId, productIds));
+
+  const result: Record<number, string[]> = {};
+  for (const row of rows) {
+    (result[row.productId] ??= []).push(row.size);
+  }
+  return result;
 }
 
 export async function setProductSizes(productId: number, sizes: string[]) {

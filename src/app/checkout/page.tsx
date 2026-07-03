@@ -54,12 +54,34 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<AddressForm>(EMPTY_FORM);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [discountInr, setDiscountInr] = useState(0);
 
   const subtotal = items.reduce((sum, i) => sum + i.priceInr * i.quantity, 0);
+  const payable = Math.max(0, subtotal - discountInr);
 
   useEffect(() => {
     if (cartItemsCount === 0) router.replace("/cart");
   }, [cartItemsCount, router]);
+
+  // Server-computed discount for display; the charge amount itself is
+  // recomputed server-side in create-order regardless of what's shown here.
+  useEffect(() => {
+    if (!couponParam || items.length === 0) {
+      setDiscountInr(0);
+      return;
+    }
+    fetch("/api/checkout/apply-coupon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: couponParam,
+        items: items.map((i) => ({ productId: i.productId, quantity: i.quantity, size: i.size })),
+      }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setDiscountInr(data?.discountInr ?? 0))
+      .catch(() => setDiscountInr(0));
+  }, [couponParam, items]);
 
   const update = (field: keyof AddressForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -123,7 +145,7 @@ export default function CheckoutPage() {
           if (!verifyRes.ok) { setError(verifyData.error ?? "Payment verification failed."); setProcessing(false); return; }
 
           trackEvent("Purchase", {
-            value: subtotal / 100,
+            value: payable / 100,
             currency: "INR",
             content_ids: items.map((i) => String(i.productId)),
           });
@@ -216,7 +238,7 @@ export default function CheckoutPage() {
               className="w-full font-sans font-bold uppercase tracking-[0.25em] mt-8 py-5 hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
               style={{ fontSize: "11px", backgroundColor: "#8B1A1A", color: "#F4F0E6", border: "none" }}
             >
-              {processing ? "Processing…" : `Pay ${formatPrice(subtotal)} Securely →`}
+              {processing ? "Processing…" : `Pay ${formatPrice(payable)} Securely →`}
             </button>
 
             <p className="font-sans mt-3 text-center" style={{ fontSize: "10px", color: "rgba(17,17,17,0.35)" }}>
@@ -245,9 +267,19 @@ export default function CheckoutPage() {
                   </span>
                 </div>
               ))}
+              {discountInr > 0 && (
+                <div className="flex justify-between pt-4 mt-2" style={{ borderTop: "1px solid rgba(139,26,26,0.15)" }}>
+                  <span className="font-sans" style={{ fontSize: "11px", color: "#2E6B3A" }}>
+                    Coupon ({couponParam})
+                  </span>
+                  <span className="font-sans font-bold" style={{ fontSize: "12px", color: "#2E6B3A" }}>
+                    −{formatPrice(discountInr)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between pt-4 mt-2" style={{ borderTop: "1px solid rgba(139,26,26,0.15)" }}>
                 <span className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "10px" }}>Total</span>
-                <span className="font-serif font-light" style={{ fontSize: "20px" }}>{formatPrice(subtotal)}</span>
+                <span className="font-serif font-light" style={{ fontSize: "20px" }}>{formatPrice(payable)}</span>
               </div>
               <Link
                 href="/cart"

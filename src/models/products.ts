@@ -9,6 +9,7 @@ export interface CarouselProduct {
   fit: string;
   origin: string;
   image: string;
+  thumbnailImage?: string;
   sizes?: string[];
 }
 

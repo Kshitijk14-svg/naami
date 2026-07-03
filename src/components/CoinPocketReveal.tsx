@@ -3,7 +3,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 
-export default function CoinPocketReveal() {
+export interface CoinPocketContent {
+  kicker: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  specs: { label: string; value: string }[];
+  serialCode: string;
+  seasonTag: string;
+}
+
+interface CoinPocketRevealProps {
+  content: CoinPocketContent;
+}
+
+export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -91,7 +105,7 @@ export default function CoinPocketReveal() {
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
             style={{ fontSize: "9px", color: "#8B1A1A" }}
           >
-            NAAMI // TECHNICAL ARCHIVE
+            {content.kicker}
           </span>
           <h2
             className="font-serif font-light uppercase mb-6"
@@ -102,14 +116,14 @@ export default function CoinPocketReveal() {
               letterSpacing: "0.02em",
             }}
           >
-            The Hidden
+            {content.title}
             <br />
             <span className="italic" style={{ color: "#8B1A1A" }}>
-              Button Detail
+              {content.titleAccent}
             </span>
           </h2>
           <p className="font-sans text-[12.5px] text-[#111111]/70 leading-relaxed mb-8 max-w-md">
-            True luxury is discrete. We build features that reward discovery. Pull down the fabric loop to extract the hand-stitched origin card directly from our atelier in Lisbon.
+            {content.description}
           </p>
 
           <div className="flex items-center gap-4">
@@ -215,7 +229,7 @@ export default function CoinPocketReveal() {
                       NAAMI ATELIER CARD
                     </span>
                     <span className="font-sans text-[9px] text-[#111111]/40">
-                      AW26
+                      {content.seasonTag}
                     </span>
                   </div>
                   <h3 className="font-serif font-light uppercase text-base text-[#111111] tracking-wider border-b border-[#8B1A1A]/10 pb-2">
@@ -225,13 +239,7 @@ export default function CoinPocketReveal() {
 
                 {/* Specs list */}
                 <div className="flex flex-col gap-3.5 my-4 font-sans text-[11.5px]">
-                  {[
-                    ["Fabric Source", "Albini, Bergamo"],
-                    ["Button Source", "Philippines, shell nacre"],
-                    ["Thread Count", "120s Egyptian cotton"],
-                    ["Seam Type", "Double-needle felled"],
-                    ["Construction", "Hand-finished Lisbon"],
-                  ].map(([label, value]) => (
+                  {content.specs.map(({ label, value }) => (
                     <div key={label} className="flex justify-between border-b border-black/5 pb-1.5">
                       <span className="font-bold text-[#111111]/35">{label}</span>
                       <span className="text-[#111111]/85">{value}</span>
@@ -244,7 +252,7 @@ export default function CoinPocketReveal() {
                   <div className="flex flex-col">
                     <span className="font-sans font-bold text-[8px] text-[#111111]/45">SERIAL CODE</span>
                     <span className="font-sans font-bold text-[11px] text-[#111111] tracking-wider">
-                      NM-9828-AW
+                      {content.serialCode}
                     </span>
                   </div>
                   {/* Crimson logo stamp */}

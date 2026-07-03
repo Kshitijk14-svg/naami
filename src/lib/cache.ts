@@ -39,6 +39,9 @@ export const CACHE_KEYS = {
   BLOG_ALL: "blog:all",
   BLOG_BY_SLUG: (slug: string) => `blog:${slug}`,
   DESIGN_SETTINGS: "design:settings",
+  HOMEPAGE_LOOK_CARDS: "homepage:look-cards",
+  HOMEPAGE_LOOK_CARDS_PUBLISHED: "homepage:look-cards:published",
+  HOMEPAGE_BANNER_HOTSPOTS: "homepage:banner-hotspots",
 } as const;
 
 // ─── Cache TTLs (seconds) ──────────────────────────────────────────────────────

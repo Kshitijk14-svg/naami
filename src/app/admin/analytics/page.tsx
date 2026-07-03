@@ -1,7 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Analytics, OrderStatus } from "@/models/orderStore";
+import type { OrderStatus } from "@/lib/orderStatus";
+
+interface Analytics {
+  totalRevenue: number;
+  orderCounts: Record<OrderStatus, number>;
+  topProducts: { productId: number; name: string; count: number; revenue: number }[];
+  recentOrders: {
+    id: string;
+    shippingName: string | null;
+    totalInr: number;
+    status: OrderStatus;
+    createdAt: string;
+  }[];
+}
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending:   "#D97706",
@@ -164,8 +177,8 @@ export default function AnalyticsPage() {
               {data.recentOrders.map((o) => (
                 <tr key={o.id} style={{ borderBottom: "1px solid rgba(17,17,17,0.05)" }}>
                   <td className="font-sans" style={{ padding: "11px 16px", fontSize: "11px", color: "#111111" }}>{o.id}</td>
-                  <td className="font-sans" style={{ padding: "11px 16px", fontSize: "11px", color: "#111111" }}>{o.customerName}</td>
-                  <td className="font-serif" style={{ padding: "11px 16px", fontSize: "13px", color: "#111111" }}>{fmtINR(o.totalINR)}</td>
+                  <td className="font-sans" style={{ padding: "11px 16px", fontSize: "11px", color: "#111111" }}>{o.shippingName ?? "—"}</td>
+                  <td className="font-serif" style={{ padding: "11px 16px", fontSize: "13px", color: "#111111" }}>{fmtINR(o.totalInr)}</td>
                   <td style={{ padding: "11px 16px" }}><StatusBadge status={o.status} /></td>
                   <td className="font-sans" style={{ padding: "11px 16px", fontSize: "10px", color: "rgba(17,17,17,0.5)" }}>
                     {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}

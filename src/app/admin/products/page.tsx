@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 type Product = {
   id: number;
@@ -14,6 +15,7 @@ type Product = {
   fit: string;
   origin: string;
   image: string;
+  thumbnailImage?: string;
   stock: number;
   isPublished: boolean;
   isFeaturedNewArrival: boolean;
@@ -32,6 +34,7 @@ type FormData = {
   fit: string;
   origin: string;
   image: string;
+  thumbnailImage: string;
   category: string;
   stock: string;
   sizes: string;
@@ -43,7 +46,7 @@ type FormData = {
 
 const emptyForm: FormData = {
   number: "", name: "", subtitle: "", priceINR: "",
-  material: "", fit: "", origin: "", image: "",
+  material: "", fit: "", origin: "", image: "", thumbnailImage: "",
   category: "", stock: "10", sizes: "S,M,L,XL", isPublished: true,
   isFeaturedNewArrival: false, isFeaturedBestseller: false, homeSortOrder: "0",
 };
@@ -120,6 +123,7 @@ export default function ProductsPage() {
         fit: editing.fit,
         origin: editing.origin,
         image: editing.image,
+        thumbnailImage: editing.thumbnailImage ?? "",
         category: editing.category ?? "",
         stock: String(editing.stock),
         sizes: (editing.sizes ?? []).join(","),
@@ -231,7 +235,12 @@ export default function ProductsPage() {
         {field("Material", <input style={inputStyle} value={form.material} onChange={set("material")} />)}
         {field("Fit", <input style={inputStyle} value={form.fit} onChange={set("fit")} />)}
         {field("Origin", <input style={inputStyle} value={form.origin} onChange={set("origin")} />)}
-        {field("Image path", <input style={inputStyle} value={form.image} onChange={set("image")} placeholder="/images/product-jacket.png" />)}
+        <ImageUploadField
+          type="product"
+          image={form.image}
+          onImageChange={(image) => setForm((f) => ({ ...f, image }))}
+          onUploaded={(image, thumbnailImage) => setForm((f) => ({ ...f, image, thumbnailImage }))}
+        />
         {field("Sizes (comma-separated)", <input style={inputStyle} value={form.sizes} onChange={set("sizes")} placeholder="S,M,L,XL" />)}
         <div style={{ marginTop: 8, marginBottom: 4 }}>
           <p className="font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)", marginBottom: 8 }}>
