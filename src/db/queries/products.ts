@@ -4,6 +4,7 @@ import { eq, and, sql, isNull, asc, inArray } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 import { formatINR } from "@/lib/format";
+import { enqueueJob } from "@/lib/jobs";
 
 export type ProductRow = typeof products.$inferSelect;
 
@@ -87,11 +88,50 @@ export async function updateProduct(
   id: number,
   data: Partial<Omit<ProductRow, "id" | "createdAt" | "updatedAt" | "deletedAt">>
 ) {
-  const [updated] = await db
-    .update(products)
-    .set({ ...data, updatedAt: new Date() })
-    .where(eq(products.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    // Lock the row first so a concurrent edit can't race the threshold check below.
+    const [old] = await tx
+      .select({ stock: products.stock, lowStockThreshold: products.lowStockThreshold })
+      .from(products)
+      .where(eq(products.id, id))
+      .for("update")
+      .limit(1);
+
+    const [row] = await tx
+      .update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+
+    // Edge-trigger only: alert when this edit newly crosses the threshold
+    // (was at/above, now below), not every save that happens to leave stock
+    // low — admins can move stock in either direction, unlike order checkout.
+    if (
+      row &&
+      old &&
+      data.stock !== undefined &&
+      row.stock < row.lowStockThreshold &&
+      old.stock >= old.lowStockThreshold
+    ) {
+      await enqueueJob(
+        "email:low_stock",
+        {
+          items: [
+            {
+              name: row.name,
+              number: row.number,
+              stock: row.stock,
+              lowStockThreshold: row.lowStockThreshold,
+            },
+          ],
+        },
+        tx
+      );
+    }
+
+    return row ?? null;
+  });
+
   if (updated) {
     await redisDel(
       CACHE_KEYS.PRODUCTS_ALL,
@@ -101,7 +141,7 @@ export async function updateProduct(
       CACHE_KEYS.PRODUCTS_BESTSELLERS
     );
   }
-  return updated ?? null;
+  return updated;
 }
 
 export async function deleteProduct(id: number) {
