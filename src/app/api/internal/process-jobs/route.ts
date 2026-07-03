@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { processJobs } from "@/lib/jobs";
+import { enqueueDueCartReminders } from "@/db/queries/abandonedCarts";
 import { purgeExpiredIdempotencyKeys } from "@/lib/idempotency";
 import { createLogger } from "@/lib/logger";
 
@@ -34,10 +35,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const cartRemindersEnqueued = await enqueueDueCartReminders(
+      Number(process.env.ABANDONED_CART_REMINDER_HOURS ?? 6)
+    );
     const result = await processJobs();
     const purged = await purgeExpiredIdempotencyKeys();
-    log.info("worker run complete", { ...result, purged });
-    return Response.json({ ...result, purgedIdempotencyKeys: purged });
+    log.info("worker run complete", { ...result, cartRemindersEnqueued, purged });
+    return Response.json({ ...result, cartRemindersEnqueued, purgedIdempotencyKeys: purged });
   } catch (err) {
     log.error("worker run failed", { err });
     return Response.json({ error: "Worker run failed." }, { status: 500 });
