@@ -1,5 +1,5 @@
 import { db, dbRead } from "@/lib/db";
-import { products, productSizes } from "@/db/schema";
+import { products, productSizes, productMetafields, productImages } from "@/db/schema";
 import { eq, and, sql, isNull, asc, inArray } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
@@ -7,10 +7,37 @@ import { formatINR } from "@/lib/format";
 import { enqueueJob } from "@/lib/jobs";
 
 export type ProductRow = typeof products.$inferSelect;
+export type ProductMetafield = { name: string; description: string };
+export type ProductImage = { url: string; thumbnailUrl: string | null };
 
-/** Formatted price string for the front-end (removes the stored-string transitive dep). */
+/**
+ * Admin-only formatting: spreads the full row (stock, thresholds, publish/
+ * featured flags, timestamps). Never expose this to public storefront routes
+ * — use projectPublicProduct for those.
+ */
 export function formatProduct(p: ProductRow) {
   return { ...p, price: formatINR(p.priceInr), thumbnailImage: p.thumbnailImage ?? p.image };
+}
+
+/** Public storefront shape — deliberately excludes admin-only fields. */
+export function projectPublicProduct(
+  p: ProductRow,
+  extras: { sizes?: string[]; images?: ProductImage[]; metafields?: ProductMetafield[] } = {}
+) {
+  return {
+    id: p.id,
+    number: p.number,
+    name: p.name,
+    subtitle: p.subtitle,
+    priceInr: p.priceInr,
+    price: formatINR(p.priceInr),
+    image: p.image,
+    thumbnailImage: p.thumbnailImage ?? p.image,
+    categoryId: p.categoryId,
+    sizes: extras.sizes ?? [],
+    images: extras.images ?? [],
+    metafields: extras.metafields ?? [],
+  };
 }
 
 export async function getAllProducts() {
@@ -91,7 +118,11 @@ export async function updateProduct(
   const updated = await db.transaction(async (tx) => {
     // Lock the row first so a concurrent edit can't race the threshold check below.
     const [old] = await tx
-      .select({ stock: products.stock, lowStockThreshold: products.lowStockThreshold })
+      .select({
+        stock: products.stock,
+        lowStockThreshold: products.lowStockThreshold,
+        trackStock: products.trackStock,
+      })
       .from(products)
       .where(eq(products.id, id))
       .for("update")
@@ -106,9 +137,11 @@ export async function updateProduct(
     // Edge-trigger only: alert when this edit newly crosses the threshold
     // (was at/above, now below), not every save that happens to leave stock
     // low — admins can move stock in either direction, unlike order checkout.
+    // Skipped entirely for infinite-stock products.
     if (
       row &&
       old &&
+      old.trackStock &&
       data.stock !== undefined &&
       row.stock < row.lowStockThreshold &&
       old.stock >= old.lowStockThreshold
@@ -181,7 +214,11 @@ export async function searchProducts(q: string) {
         and(
           eq(products.isPublished, true),
           isNull(products.deletedAt),
-          sql`(${products.name} ILIKE ${pattern} OR ${products.subtitle} ILIKE ${pattern} OR ${products.material} ILIKE ${pattern})`
+          sql`(${products.name} ILIKE ${pattern} OR ${products.subtitle} ILIKE ${pattern} OR EXISTS (
+            SELECT 1 FROM ${productMetafields}
+            WHERE ${productMetafields.productId} = ${products.id}
+              AND (${productMetafields.name} ILIKE ${pattern} OR ${productMetafields.description} ILIKE ${pattern})
+          ))`
         )
       )
       .limit(6);
@@ -229,4 +266,154 @@ export async function setProductSizes(productId: number, sizes: string[]) {
         .values(sizes.map((size) => ({ productId, size })));
     }
   });
+}
+
+export async function getProductMetafields(productId: number): Promise<ProductMetafield[]> {
+  const rows = await dbRead
+    .select({ name: productMetafields.name, description: productMetafields.description })
+    .from(productMetafields)
+    .where(eq(productMetafields.productId, productId))
+    .orderBy(asc(productMetafields.sortOrder));
+  return rows;
+}
+
+export async function getProductMetafieldsBatch(
+  productIds: number[]
+): Promise<Record<number, ProductMetafield[]>> {
+  if (productIds.length === 0) return {};
+  const rows = await dbRead
+    .select({
+      productId: productMetafields.productId,
+      name: productMetafields.name,
+      description: productMetafields.description,
+    })
+    .from(productMetafields)
+    .where(inArray(productMetafields.productId, productIds))
+    .orderBy(asc(productMetafields.sortOrder));
+
+  const result: Record<number, ProductMetafield[]> = {};
+  for (const row of rows) {
+    (result[row.productId] ??= []).push({ name: row.name, description: row.description });
+  }
+  return result;
+}
+
+/** Mirrors setProductSizes: lock, delete-all, reinsert in array order. */
+export async function setProductMetafields(productId: number, metafields: ProductMetafield[]) {
+  await db.transaction(async (tx) => {
+    await tx
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.id, productId))
+      .for("update")
+      .limit(1);
+
+    await tx.delete(productMetafields).where(eq(productMetafields.productId, productId));
+    if (metafields.length > 0) {
+      await tx.insert(productMetafields).values(
+        metafields.map((m, index) => ({
+          productId,
+          name: m.name,
+          description: m.description,
+          sortOrder: index,
+        }))
+      );
+    }
+  });
+  await redisDel(CACHE_KEYS.PRODUCT_BY_ID(productId));
+}
+
+export async function getProductImages(productId: number): Promise<ProductImage[]> {
+  const rows = await dbRead
+    .select({ url: productImages.url, thumbnailUrl: productImages.thumbnailUrl })
+    .from(productImages)
+    .where(eq(productImages.productId, productId))
+    .orderBy(asc(productImages.sortOrder));
+  return rows;
+}
+
+export async function getProductImagesBatch(
+  productIds: number[]
+): Promise<Record<number, ProductImage[]>> {
+  if (productIds.length === 0) return {};
+  const rows = await dbRead
+    .select({
+      productId: productImages.productId,
+      url: productImages.url,
+      thumbnailUrl: productImages.thumbnailUrl,
+    })
+    .from(productImages)
+    .where(inArray(productImages.productId, productIds))
+    .orderBy(asc(productImages.sortOrder));
+
+  const result: Record<number, ProductImage[]> = {};
+  for (const row of rows) {
+    (result[row.productId] ??= []).push({ url: row.url, thumbnailUrl: row.thumbnailUrl });
+  }
+  return result;
+}
+
+export type SetProductImagesInput = { url: string; thumbnailUrl?: string | null; sizeBytes?: number };
+
+const DEFAULT_PRODUCT_IMAGE = "/images/product-jacket.png";
+
+/**
+ * Mirrors setProductSizes (lock, delete-all, reinsert), plus keeps the
+ * denormalized products.image/thumbnailImage in sync with gallery position 0
+ * — those columns are still read by wishlist/search/cart-snapshot/seed code.
+ * Returns the images that existed before but not after, so the caller can
+ * best-effort unlink their files from disk.
+ */
+export async function setProductImages(
+  productId: number,
+  images: SetProductImagesInput[]
+): Promise<ProductImage[]> {
+  const removed = await db.transaction(async (tx) => {
+    await tx
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.id, productId))
+      .for("update")
+      .limit(1);
+
+    const before = await tx
+      .select({ url: productImages.url, thumbnailUrl: productImages.thumbnailUrl })
+      .from(productImages)
+      .where(eq(productImages.productId, productId));
+
+    await tx.delete(productImages).where(eq(productImages.productId, productId));
+    if (images.length > 0) {
+      await tx.insert(productImages).values(
+        images.map((img, index) => ({
+          productId,
+          url: img.url,
+          thumbnailUrl: img.thumbnailUrl ?? null,
+          sortOrder: index,
+          sizeBytes: img.sizeBytes ?? null,
+        }))
+      );
+    }
+
+    const main = images[0];
+    await tx
+      .update(products)
+      .set({
+        image: main?.url ?? DEFAULT_PRODUCT_IMAGE,
+        thumbnailImage: main?.thumbnailUrl ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, productId));
+
+    const afterUrls = new Set(images.map((i) => i.url));
+    return before.filter((b) => !afterUrls.has(b.url));
+  });
+
+  await redisDel(
+    CACHE_KEYS.PRODUCTS_ALL,
+    CACHE_KEYS.PRODUCTS_PUBLISHED,
+    CACHE_KEYS.PRODUCT_BY_ID(productId),
+    CACHE_KEYS.PRODUCTS_NEW_ARRIVALS,
+    CACHE_KEYS.PRODUCTS_BESTSELLERS
+  );
+  return removed;
 }

@@ -4,8 +4,8 @@ import crypto from "crypto";
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 
 export const FULL_IMAGE_MAX_EDGE = 1920;
-export const FULL_IMAGE_MIN_BYTES = 300 * 1024;
-export const FULL_IMAGE_MAX_BYTES = 600 * 1024;
+export const FULL_IMAGE_MIN_BYTES = 400 * 1024;
+export const FULL_IMAGE_MAX_BYTES = 800 * 1024;
 export const FULL_IMAGE_MAX_ITERATIONS = 8;
 export const FULL_IMAGE_QUALITY_FLOOR = 40;
 export const FULL_IMAGE_QUALITY_CEIL = 100;

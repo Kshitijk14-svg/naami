@@ -9,6 +9,9 @@ import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import WishlistButton from "@/components/WishlistButton";
 
+type ProductImage = { url: string; thumbnailUrl: string | null };
+type ProductMetafield = { name: string; description: string };
+
 type Product = {
   id: number;
   number: string;
@@ -16,10 +19,9 @@ type Product = {
   subtitle: string;
   price: string;
   priceInr: number;
-  material: string;
-  fit: string;
-  origin: string;
   image: string;
+  images?: ProductImage[];
+  metafields?: ProductMetafield[];
   sizes?: string[];
 };
 
@@ -37,6 +39,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,6 +52,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       .then((data: Product | null) => {
         if (!data) return;
         setProduct(data);
+        setSelectedImageIndex(0);
         setLoading(false);
         trackEvent("ViewContent", {
           content_ids: [String(data.id)],
@@ -118,6 +122,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   }
 
   const sizes = product.sizes ?? [];
+  const gallery: ProductImage[] = product.images?.length ? product.images : [{ url: product.image, thumbnailUrl: null }];
+  const metafields = product.metafields ?? [];
 
   return (
     <main
@@ -130,13 +136,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       <section className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-20 gap-12 md:gap-16 items-stretch">
 
         {/* Left Side: Editorial Product Image */}
-        <div className="w-full md:w-1/2 flex items-center justify-center">
+        <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
           <div
             className="relative overflow-hidden w-full border border-black/5"
             style={{ aspectRatio: "3/4", backgroundColor: "#EDE8DC" }}
           >
             <Image
-              src={product.image}
+              src={gallery[selectedImageIndex].url}
               alt={product.name}
               fill
               className="object-cover"
@@ -153,6 +159,31 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <WishlistButton productId={product.id} />
             </div>
           </div>
+          {gallery.length > 1 && (
+            <div className="flex gap-2 mt-4 w-full justify-center flex-wrap">
+              {gallery.map((img, index) => (
+                <button
+                  key={img.url + index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className="relative overflow-hidden cursor-pointer"
+                  style={{
+                    width: 56,
+                    height: 72,
+                    border: selectedImageIndex === index ? "2px solid #8B1A1A" : "1px solid rgba(17,17,17,0.15)",
+                    backgroundColor: "#EDE8DC",
+                  }}
+                >
+                  <Image
+                    src={img.thumbnailUrl ?? img.url}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="56px"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Side: Product Details Column */}
@@ -197,13 +228,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               className="mb-8"
               style={{ borderTop: "1px solid rgba(139, 26, 26, 0.15)", paddingTop: "24px" }}
             >
-              {[
-                ["Fabric & Weave", product.material],
-                ["Collar & Silhouette", product.fit],
-                ["Origin Atelier", product.origin],
-              ].map(([label, value]) => (
+              {metafields.map(({ name, description }) => (
                 <div
-                  key={label}
+                  key={name}
                   className="flex justify-between mb-4"
                   style={{ borderBottom: "1px solid rgba(139, 26, 26, 0.08)", paddingBottom: "14px" }}
                 >
@@ -211,13 +238,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     className="font-sans font-bold uppercase tracking-[0.15em]"
                     style={{ fontSize: "9px", color: "#111111", opacity: 0.35 }}
                   >
-                    {label}
+                    {name}
                   </span>
                   <span
                     className="font-sans text-right text-wrap"
                     style={{ fontSize: "12px", color: "#111111", opacity: 0.8, maxWidth: "65%" }}
                   >
-                    {value}
+                    {description}
                   </span>
                 </div>
               ))}

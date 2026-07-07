@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 interface BlogPost {
   id: number;
@@ -230,8 +231,12 @@ export default function AdminBlogPage() {
                 <textarea value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))} rows={10} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
               <div>
-                <label style={labelStyle}>Cover Image URL</label>
-                <input value={form.coverImage} onChange={(e) => setForm((p) => ({ ...p, coverImage: e.target.value }))} style={inputStyle} placeholder="/images/..." />
+                <label style={labelStyle}>Cover Image</label>
+                <ImageUploadField
+                  type="blog"
+                  image={form.coverImage}
+                  onUploaded={(image) => setForm((p) => ({ ...p, coverImage: image }))}
+                />
               </div>
               <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
                 <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm((p) => ({ ...p, isPublished: e.target.checked }))} />

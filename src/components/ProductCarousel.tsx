@@ -8,6 +8,11 @@ import { useCartStore } from "@/models/cartStore";
 import NaamiGatewayButton from "./NaamiGatewayButton";
 import WishlistButton from "./WishlistButton";
 
+export interface ProductMetafield {
+  name: string;
+  description: string;
+}
+
 export interface CarouselProduct {
   id: number;
   number: string;
@@ -15,9 +20,7 @@ export interface CarouselProduct {
   subtitle: string;
   price: string;
   priceInr: number;
-  material: string;
-  fit: string;
-  origin: string;
+  metafields: ProductMetafield[];
   image: string;
   thumbnailImage?: string;
   sizes?: string[];
@@ -761,13 +764,9 @@ function ProductDetailContent({
             paddingTop: "20px",
           }}
         >
-          {[
-            ["Fabric & Weave", product.material],
-            ["Collar & Silhouette", product.fit],
-            ["Origin Atelier", product.origin],
-          ].map(([label, value]) => (
+          {product.metafields.slice(0, 3).map(({ name, description }) => (
             <div
-              key={label}
+              key={name}
               className="flex justify-between mb-3"
               style={{ borderBottom: "1px solid rgba(139, 26, 26, 0.05)", paddingBottom: "10px" }}
             >
@@ -775,13 +774,13 @@ function ProductDetailContent({
                 className="font-sans font-bold uppercase tracking-[0.15em]"
                 style={{ fontSize: "9px", color: "#111111", opacity: 0.35 }}
               >
-                {label}
+                {name}
               </span>
               <span
                 className="font-sans text-right text-wrap"
                 style={{ fontSize: "11px", color: "#111111", opacity: 0.8, maxWidth: "60%" }}
               >
-                {value}
+                {description}
               </span>
             </div>
           ))}

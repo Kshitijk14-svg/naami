@@ -1,96 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ImageUploadField } from "@/components/admin/ImageUploadField";
-import { HotspotListEditor, type HotspotRow } from "@/components/admin/HotspotListEditor";
+import { type HotspotRow } from "@/components/admin/HotspotListEditor";
+import { toHotspotRows, sectionLabelStyle, type ResolvedHotspot, type LookCard } from "@/components/admin/design/shared";
+import { HeroBannerSection } from "@/components/admin/design/HeroBannerSection";
+import { LookbookBannerSection } from "@/components/admin/design/LookbookBannerSection";
+import { HotspotCardsSection } from "@/components/admin/design/HotspotCardsSection";
+import { LoomTimelineSection } from "@/components/admin/design/LoomTimelineSection";
+import { CoinPocketSection } from "@/components/admin/design/CoinPocketSection";
+import { ManifestoSection } from "@/components/admin/design/ManifestoSection";
+import { SectionHeadersSection } from "@/components/admin/design/SectionHeadersSection";
+import { FooterDoodleSection } from "@/components/admin/design/FooterDoodleSection";
 
-interface ResolvedHotspot {
-  id: number;
-  topPct: number;
-  leftPct: number;
-  product: { id: number; name: string; priceInr: number; image: string } | null;
-}
+const TABS = [
+  { id: "hero", label: "Hero Banner" },
+  { id: "lookbook", label: "Lookbook Banner" },
+  { id: "cards", label: "Hotspot Cards" },
+  { id: "loom", label: "Loom Timeline" },
+  { id: "coinpocket", label: "Coin Pocket Card" },
+  { id: "manifesto", label: "Manifesto" },
+  { id: "headers", label: "Section Headers" },
+  { id: "doodle", label: "Footer Doodle" },
+] as const;
 
-interface LookCard {
-  id?: number;
-  title: string;
-  subtitle: string;
-  image: string;
-  thumbnailImage: string;
-  sortOrder: number;
-  isPublished: boolean;
-  hotspots: HotspotRow[];
-}
-
-function toHotspotRows(resolved: ResolvedHotspot[]): HotspotRow[] {
-  return resolved.map((h) => ({
-    productId: h.product?.id ?? null,
-    topPct: h.topPct,
-    leftPct: h.leftPct,
-  }));
-}
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  backgroundColor: "#F4F0E6",
-  border: "1px solid rgba(139,26,26,0.15)",
-  padding: "10px 14px",
-  fontSize: "13px",
-  color: "#111",
-  outline: "none",
-  fontFamily: "inherit",
-};
-
-const textareaStyle: React.CSSProperties = {
-  ...inputStyle,
-  minHeight: "80px",
-  resize: "vertical",
-};
-
-const sectionLabelStyle: React.CSSProperties = {
-  fontSize: "9px",
-  color: "#8B1A1A",
-};
-
-const fieldLabelStyle: React.CSSProperties = {
-  fontSize: "8px",
-  color: "rgba(17,17,17,0.45)",
-};
-
-const saveButtonStyle: React.CSSProperties = {
-  fontSize: "9px",
-  backgroundColor: "#8B1A1A",
-  color: "#F4F0E6",
-  border: "none",
-};
-
-const removeCardButtonStyle: React.CSSProperties = {
-  fontSize: "9px",
-  fontWeight: 700,
-  letterSpacing: "0.15em",
-  textTransform: "uppercase",
-  color: "#8B1A1A",
-  cursor: "pointer",
-  background: "none",
-  border: "none",
-};
-
-const addCardButtonStyle: React.CSSProperties = {
-  fontSize: "9px",
-  fontWeight: 700,
-  letterSpacing: "0.15em",
-  textTransform: "uppercase",
-  color: "#8B1A1A",
-  cursor: "pointer",
-  background: "none",
-  border: "1px solid rgba(139,26,26,0.3)",
-  padding: "10px 16px",
-};
+type TabId = (typeof TABS)[number]["id"];
 
 export default function AdminDesignPage() {
   // ── Hero settings (existing) ──────────────────────────────────────────────
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabId>("hero");
 
   const [heroSaving, setHeroSaving] = useState(false);
   const [heroSaved, setHeroSaved] = useState(false);
@@ -128,6 +67,11 @@ export default function AdminDesignPage() {
   const [sectionHeadersSaving, setSectionHeadersSaving] = useState(false);
   const [sectionHeadersSaved, setSectionHeadersSaved] = useState(false);
   const [sectionHeadersError, setSectionHeadersError] = useState<string | null>(null);
+
+  // ── Footer Doodle ──────────────────────────────────────────────────────────
+  const [doodleSaving, setDoodleSaving] = useState(false);
+  const [doodleSaved, setDoodleSaved] = useState(false);
+  const [doodleError, setDoodleError] = useState<string | null>(null);
 
   const loadAll = () => {
     setLoading(true);
@@ -314,6 +258,21 @@ export default function AdminDesignPage() {
     }
   };
 
+  const saveDoodle = async () => {
+    setDoodleSaving(true);
+    setDoodleError(null);
+    setDoodleSaved(false);
+    try {
+      await saveSettingsSubset(["footer_doodle_data", "footer_doodle_enabled"]);
+      setDoodleSaved(true);
+      setTimeout(() => setDoodleSaved(false), 3000);
+    } catch (err) {
+      setDoodleError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setDoodleSaving(false);
+    }
+  };
+
   const addLookCard = () => {
     setLookCards((prev) => [
       ...prev,
@@ -376,8 +335,6 @@ export default function AdminDesignPage() {
     }
   };
 
-  const heroSections = [1, 2, 3];
-
   return (
     <div>
       <div className="mb-10">
@@ -388,416 +345,88 @@ export default function AdminDesignPage() {
           Design Manager
         </h1>
         <p className="font-sans mt-3" style={{ fontSize: "12px", color: "rgba(17,17,17,0.5)", lineHeight: 1.6 }}>
-          Changes take effect within 5 minutes (Redis TTL). Use full image URLs or paths starting with <code>/images/</code>, or upload a file directly.
+          Changes take effect within 5 minutes (Redis TTL). Upload images directly — they are compressed automatically.
         </p>
       </div>
 
       {loading ? (
         <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.5)" }}>Loading settings…</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "56px" }}>
-
-          {/* ── Hero Banner ─────────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Hero Banner
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-              {heroSections.map((n) => (
-                <div key={n} style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                  <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                    Hero Slide {n}
-                  </p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    {[
-                      { key: `hero_image_${n}`, label: "Image URL" },
-                      { key: `hero_title_${n}`, label: "Title" },
-                      { key: `hero_subtitle_${n}`, label: "Subtitle" },
-                      { key: `hero_tag_${n}`, label: "Tag" },
-                    ].map(({ key, label }) => (
-                      <div key={key} style={{ gridColumn: key === `hero_image_${n}` ? "1 / -1" : "auto" }}>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>
-                          {label}
-                        </label>
-                        <input value={settings[key] ?? ""} onChange={(e) => update(key, e.target.value)} style={inputStyle} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {heroError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{heroError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveHero} disabled={heroSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {heroSaving ? "Saving…" : "Save Hero Banner"}
-                </button>
-                {heroSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-
-          {/* ── Lookbook Banner ─────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Lookbook Banner
-            </h2>
-            <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
-              <ImageUploadField
-                type="banner"
-                image={settings.lookbook_banner_image ?? ""}
-                onImageChange={(image) => update("lookbook_banner_image", image)}
-                onUploaded={(image) => update("lookbook_banner_image", image)}
-              />
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>
-                  Section Label
-                </label>
-                <input
-                  value={settings.lookbook_banner_label ?? ""}
-                  onChange={(e) => update("lookbook_banner_label", e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <p className="font-sans font-bold uppercase tracking-[0.18em] block mb-2" style={fieldLabelStyle}>
-                  Hotspots
-                </p>
-                <HotspotListEditor hotspots={bannerHotspots} onChange={setBannerHotspots} />
-              </div>
-              {bannerError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{bannerError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveBanner} disabled={bannerSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {bannerSaving ? "Saving…" : "Save Lookbook Banner"}
-                </button>
-                {bannerSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-
-          {/* ── Hotspot Cards ───────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Hotspot Cards
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-              {lookCards.map((card, idx) => (
-                <div key={card.id ?? `new-${idx}`} style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                  <div className="flex items-center justify-between mb-5">
-                    <p className="font-sans font-bold uppercase tracking-[0.22em]" style={sectionLabelStyle}>
-                      Card {idx + 1}
-                    </p>
-                    <button type="button" style={removeCardButtonStyle} onClick={() => removeLookCard(idx)}>
-                      Remove Card
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <ImageUploadField
-                      type="lookcard"
-                      image={card.image}
-                      onImageChange={(image) => updateLookCard(idx, { image })}
-                      onUploaded={(image, thumbnailImage) => updateLookCard(idx, { image, thumbnailImage })}
-                    />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                        <input value={card.title} onChange={(e) => updateLookCard(idx, { title: e.target.value })} style={inputStyle} />
-                      </div>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Sort Order</label>
-                        <input type="number" value={card.sortOrder} onChange={(e) => updateLookCard(idx, { sortOrder: Number(e.target.value) })} style={inputStyle} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Subtitle</label>
-                      <input value={card.subtitle} onChange={(e) => updateLookCard(idx, { subtitle: e.target.value })} style={inputStyle} />
-                    </div>
-                    <div>
-                      <p className="font-sans font-bold uppercase tracking-[0.18em] block mb-2" style={fieldLabelStyle}>
-                        Hotspots
-                      </p>
-                      <HotspotListEditor
-                        hotspots={card.hotspots}
-                        onChange={(hotspots) => updateLookCard(idx, { hotspots })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button type="button" style={addCardButtonStyle} onClick={addLookCard}>
-                + Add Card
+        <>
+          <div
+            className="flex flex-wrap gap-1 mb-10"
+            style={{ borderBottom: "1px solid rgba(139,26,26,0.15)" }}
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className="font-sans font-bold uppercase tracking-[0.18em] cursor-pointer hover:opacity-80 transition-opacity"
+                style={{
+                  fontSize: "9px",
+                  padding: "12px 16px",
+                  color: activeTab === tab.id ? "#8B1A1A" : "rgba(17,17,17,0.5)",
+                  borderBottom: activeTab === tab.id ? "2px solid #8B1A1A" : "2px solid transparent",
+                  marginBottom: "-1px",
+                  background: "none",
+                }}
+              >
+                {tab.label}
               </button>
-              {cardsError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{cardsError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveLookCards} disabled={cardsSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {cardsSaving ? "Saving…" : "Save Hotspot Cards"}
-                </button>
-                {cardsSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
+            ))}
+          </div>
 
-          {/* ── Loom Timeline ───────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Loom Timeline
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-              {[1, 2].map((n) => (
-                <div key={n} style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                  <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                    Panel {n}
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <ImageUploadField
-                      type="banner"
-                      image={settings[`loom_panel${n}_image`] ?? ""}
-                      onImageChange={(image) => update(`loom_panel${n}_image`, image)}
-                      onUploaded={(image) => update(`loom_panel${n}_image`, image)}
-                    />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                        <input value={settings[`loom_panel${n}_kicker`] ?? ""} onChange={(e) => update(`loom_panel${n}_kicker`, e.target.value)} style={inputStyle} />
-                      </div>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                        <input value={settings[`loom_panel${n}_title`] ?? ""} onChange={(e) => update(`loom_panel${n}_title`, e.target.value)} style={inputStyle} />
-                      </div>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Card Label</label>
-                        <input value={settings[`loom_panel${n}_label`] ?? ""} onChange={(e) => update(`loom_panel${n}_label`, e.target.value)} style={inputStyle} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Body</label>
-                      <textarea value={settings[`loom_panel${n}_body`] ?? ""} onChange={(e) => update(`loom_panel${n}_body`, e.target.value)} style={textareaStyle} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                  Panel 3 (Finale — no image, uses the logo medallion)
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                      <input value={settings.loom_panel3_kicker ?? ""} onChange={(e) => update("loom_panel3_kicker", e.target.value)} style={inputStyle} />
-                    </div>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                      <input value={settings.loom_panel3_title ?? ""} onChange={(e) => update("loom_panel3_title", e.target.value)} style={inputStyle} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Body</label>
-                    <textarea value={settings.loom_panel3_body ?? ""} onChange={(e) => update("loom_panel3_body", e.target.value)} style={textareaStyle} />
-                  </div>
-                </div>
-              </div>
-              {loomError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{loomError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveLoom} disabled={loomSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {loomSaving ? "Saving…" : "Save Loom Timeline"}
-                </button>
-                {loomSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-
-          {/* ── Coin Pocket Card ────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Coin Pocket Card
-            </h2>
-            <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div>
-                  <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                  <input value={settings.coinpocket_kicker ?? ""} onChange={(e) => update("coinpocket_kicker", e.target.value)} style={inputStyle} />
-                </div>
-                <div>
-                  <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Season Tag</label>
-                  <input value={settings.coinpocket_season_tag ?? ""} onChange={(e) => update("coinpocket_season_tag", e.target.value)} style={inputStyle} />
-                </div>
-                <div>
-                  <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                  <input value={settings.coinpocket_title ?? ""} onChange={(e) => update("coinpocket_title", e.target.value)} style={inputStyle} />
-                </div>
-                <div>
-                  <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title Accent (italic line)</label>
-                  <input value={settings.coinpocket_title_accent ?? ""} onChange={(e) => update("coinpocket_title_accent", e.target.value)} style={inputStyle} />
-                </div>
-              </div>
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Description</label>
-                <textarea value={settings.coinpocket_description ?? ""} onChange={(e) => update("coinpocket_description", e.target.value)} style={textareaStyle} />
-              </div>
-              <div>
-                <p className="font-sans font-bold uppercase tracking-[0.18em] block mb-2" style={fieldLabelStyle}>
-                  Authenticity Card Specs
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div key={n} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Spec {n} Label</label>
-                        <input value={settings[`coinpocket_spec${n}_label`] ?? ""} onChange={(e) => update(`coinpocket_spec${n}_label`, e.target.value)} style={inputStyle} />
-                      </div>
-                      <div>
-                        <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Spec {n} Value</label>
-                        <input value={settings[`coinpocket_spec${n}_value`] ?? ""} onChange={(e) => update(`coinpocket_spec${n}_value`, e.target.value)} style={inputStyle} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Serial Code</label>
-                <input value={settings.coinpocket_serial_code ?? ""} onChange={(e) => update("coinpocket_serial_code", e.target.value)} style={inputStyle} />
-              </div>
-              {coinPocketError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{coinPocketError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveCoinPocket} disabled={coinPocketSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {coinPocketSaving ? "Saving…" : "Save Coin Pocket Card"}
-                </button>
-                {coinPocketSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-
-          {/* ── Manifesto ────────────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Manifesto
-            </h2>
-            <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-              <ImageUploadField
-                type="banner"
-                image={settings.manifesto_image ?? ""}
-                onImageChange={(image) => update("manifesto_image", image)}
-                onUploaded={(image) => update("manifesto_image", image)}
-              />
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                <input value={settings.manifesto_kicker ?? ""} onChange={(e) => update("manifesto_kicker", e.target.value)} style={inputStyle} />
-              </div>
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Quote</label>
-                <textarea value={settings.manifesto_quote ?? ""} onChange={(e) => update("manifesto_quote", e.target.value)} style={textareaStyle} />
-              </div>
-              <div>
-                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Attribution</label>
-                <input value={settings.manifesto_attribution ?? ""} onChange={(e) => update("manifesto_attribution", e.target.value)} style={inputStyle} />
-              </div>
-              {manifestoError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{manifestoError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveManifesto} disabled={manifestoSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {manifestoSaving ? "Saving…" : "Save Manifesto"}
-                </button>
-                {manifestoSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-
-          {/* ── Section Headers ─────────────────────────────────────────── */}
-          <section>
-            <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>
-              Section Headers
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                  Collections Showcase
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                      <input value={settings.collections_kicker ?? ""} onChange={(e) => update("collections_kicker", e.target.value)} style={inputStyle} />
-                    </div>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                      <input value={settings.collections_title ?? ""} onChange={(e) => update("collections_title", e.target.value)} style={inputStyle} />
-                    </div>
-                    <div>
-                      <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title Accent</label>
-                      <input value={settings.collections_title_accent ?? ""} onChange={(e) => update("collections_title_accent", e.target.value)} style={inputStyle} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Side Note (one line per row)</label>
-                    <textarea value={settings.collections_side_note ?? ""} onChange={(e) => update("collections_side_note", e.target.value)} style={textareaStyle} />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                  New Arrivals Carousel
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Tag</label>
-                    <input value={settings.new_arrivals_tag ?? ""} onChange={(e) => update("new_arrivals_tag", e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                    <input value={settings.new_arrivals_title ?? ""} onChange={(e) => update("new_arrivals_title", e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Gateway Label</label>
-                    <input value={settings.new_arrivals_gateway_label ?? ""} onChange={(e) => update("new_arrivals_gateway_label", e.target.value)} style={inputStyle} />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                  Bestsellers Carousel
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Tag</label>
-                    <input value={settings.bestsellers_tag ?? ""} onChange={(e) => update("bestsellers_tag", e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                    <input value={settings.bestsellers_title ?? ""} onChange={(e) => update("bestsellers_title", e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Gateway Label</label>
-                    <input value={settings.bestsellers_gateway_label ?? ""} onChange={(e) => update("bestsellers_gateway_label", e.target.value)} style={inputStyle} />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px" }}>
-                <p className="font-sans font-bold uppercase tracking-[0.22em] mb-5" style={sectionLabelStyle}>
-                  Shop The Look
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Kicker</label>
-                    <input value={settings.shoplook_kicker ?? ""} onChange={(e) => update("shoplook_kicker", e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title</label>
-                    <input value={settings.shoplook_title ?? ""} onChange={(e) => update("shoplook_title", e.target.value)} style={inputStyle} />
-                  </div>
-                </div>
-              </div>
-
-              {sectionHeadersError && <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{sectionHeadersError}</p>}
-              <div className="flex items-center gap-4">
-                <button onClick={saveSectionHeaders} disabled={sectionHeadersSaving} className="font-sans font-bold uppercase tracking-[0.2em] px-8 py-3 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50" style={saveButtonStyle}>
-                  {sectionHeadersSaving ? "Saving…" : "Save Section Headers"}
-                </button>
-                {sectionHeadersSaved && <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#2E6B3A" }}>Saved ✓</span>}
-              </div>
-            </div>
-          </section>
-        </div>
+          {activeTab === "hero" && (
+            <HeroBannerSection settings={settings} update={update} heroError={heroError} heroSaving={heroSaving} heroSaved={heroSaved} onSave={saveHero} />
+          )}
+          {activeTab === "lookbook" && (
+            <LookbookBannerSection
+              settings={settings}
+              update={update}
+              bannerHotspots={bannerHotspots}
+              setBannerHotspots={setBannerHotspots}
+              bannerError={bannerError}
+              bannerSaving={bannerSaving}
+              bannerSaved={bannerSaved}
+              onSave={saveBanner}
+            />
+          )}
+          {activeTab === "cards" && (
+            <HotspotCardsSection
+              lookCards={lookCards}
+              addLookCard={addLookCard}
+              updateLookCard={updateLookCard}
+              removeLookCard={removeLookCard}
+              cardsError={cardsError}
+              cardsSaving={cardsSaving}
+              cardsSaved={cardsSaved}
+              onSave={saveLookCards}
+            />
+          )}
+          {activeTab === "loom" && (
+            <LoomTimelineSection settings={settings} update={update} loomError={loomError} loomSaving={loomSaving} loomSaved={loomSaved} onSave={saveLoom} />
+          )}
+          {activeTab === "coinpocket" && (
+            <CoinPocketSection settings={settings} update={update} coinPocketError={coinPocketError} coinPocketSaving={coinPocketSaving} coinPocketSaved={coinPocketSaved} onSave={saveCoinPocket} />
+          )}
+          {activeTab === "manifesto" && (
+            <ManifestoSection settings={settings} update={update} manifestoError={manifestoError} manifestoSaving={manifestoSaving} manifestoSaved={manifestoSaved} onSave={saveManifesto} />
+          )}
+          {activeTab === "headers" && (
+            <SectionHeadersSection
+              settings={settings}
+              update={update}
+              sectionHeadersError={sectionHeadersError}
+              sectionHeadersSaving={sectionHeadersSaving}
+              sectionHeadersSaved={sectionHeadersSaved}
+              onSave={saveSectionHeaders}
+            />
+          )}
+          {activeTab === "doodle" && (
+            <FooterDoodleSection settings={settings} update={update} doodleError={doodleError} doodleSaving={doodleSaving} doodleSaved={doodleSaved} onSave={saveDoodle} />
+          )}
+        </>
       )}
     </div>
   );

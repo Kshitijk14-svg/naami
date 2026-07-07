@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
 
 type CollectionItem = {
+  id?: number;
   number: string;
   name: string;
   tag: string;
@@ -115,6 +117,7 @@ export default function CollectionsShowcase({
         {portraitItems.map((item) => (
           <div key={item.number} className="md:col-span-6 flex flex-col reveal-stagger-item">
             <PortraitCollectionCard
+              id={item.id}
               number={item.number}
               name={item.name}
               tag={item.tag}
@@ -128,6 +131,7 @@ export default function CollectionsShowcase({
         {landscapeItems.map((item) => (
           <div key={item.number} className="md:col-span-12 mt-4 md:mt-8 reveal-stagger-item">
             <LandscapeCollectionCard
+              id={item.id}
               number={item.number}
               name={item.name}
               tag={item.tag}
@@ -146,6 +150,7 @@ export default function CollectionsShowcase({
 /* Portrait Collection Card (Row 1)                                          */
 /* ========================================================================= */
 interface PortraitCardProps {
+  id?: number;
   number: string;
   name: string;
   tag: string;
@@ -153,7 +158,7 @@ interface PortraitCardProps {
   image: string;
 }
 
-function PortraitCollectionCard({ number, name, tag, description, image }: PortraitCardProps) {
+function PortraitCollectionCard({ id, number, name, tag, description, image }: PortraitCardProps) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
@@ -177,7 +182,8 @@ function PortraitCollectionCard({ number, name, tag, description, image }: Portr
   };
 
   return (
-    <div
+    <Link
+      href={id != null ? `/collection?collection=${id}` : "/collection"}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="flex flex-col h-full cursor-pointer group"
@@ -288,7 +294,7 @@ function PortraitCollectionCard({ number, name, tag, description, image }: Portr
           </svg>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -296,6 +302,7 @@ function PortraitCollectionCard({ number, name, tag, description, image }: Portr
 /* Landscape Collection Card (Row 2)                                         */
 /* ========================================================================= */
 interface LandscapeCardProps {
+  id?: number;
   number: string;
   name: string;
   tag: string;
@@ -303,7 +310,7 @@ interface LandscapeCardProps {
   image: string;
 }
 
-function LandscapeCollectionCard({ number, name, tag, description, image }: LandscapeCardProps) {
+function LandscapeCollectionCard({ id, number, name, tag, description, image }: LandscapeCardProps) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
@@ -327,7 +334,8 @@ function LandscapeCollectionCard({ number, name, tag, description, image }: Land
   };
 
   return (
-    <div
+    <Link
+      href={id != null ? `/collection?collection=${id}` : "/collection"}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="flex flex-col md:flex-row border border-black/5 bg-[#EDE8DC] hover:border-black/15 transition-colors duration-300 cursor-pointer group"
@@ -426,6 +434,6 @@ function LandscapeCollectionCard({ number, name, tag, description, image }: Land
           </svg>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -122,12 +122,14 @@ export async function createOrder(input: CreateOrderInput) {
     const sortedProductIds = [...new Set(input.items.map((i) => i.productId))].sort(
       (a, b) => a - b
     );
+    const trackStockMap = new Map<number, boolean>();
     if (sortedProductIds.length > 0) {
-      await tx
-        .select({ id: products.id, stock: products.stock })
+      const locked = await tx
+        .select({ id: products.id, stock: products.stock, trackStock: products.trackStock })
         .from(products)
         .where(sql`${products.id} = ANY(${sortedProductIds})`)
         .for("update");
+      for (const row of locked) trackStockMap.set(row.id, row.trackStock);
     }
 
     const orderId = makeOrderId();
@@ -172,8 +174,9 @@ export async function createOrder(input: CreateOrderInput) {
       });
     }
 
-    // Decrement stock for each product
+    // Decrement stock for each product — skipped for infinite-stock products.
     for (const item of input.items) {
+      if (trackStockMap.get(item.productId) === false) continue;
       await tx
         .update(products)
         .set({ stock: sql`${products.stock} - ${item.quantity}` })
@@ -219,6 +222,7 @@ export async function createOrder(input: CreateOrderInput) {
       .where(
         and(
           inArray(products.id, affectedIds),
+          eq(products.trackStock, true),
           lt(products.stock, products.lowStockThreshold)
         )
       );

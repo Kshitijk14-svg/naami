@@ -1,0 +1,491 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Naami" [ref=e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - textbox "Search the Atelier…" [ref=e9]
+    - navigation [ref=e10]:
+      - link "Collections" [ref=e11] [cursor=pointer]:
+        - /url: /collection
+      - link "About" [ref=e12] [cursor=pointer]:
+        - /url: /about
+      - link "Journal" [ref=e13] [cursor=pointer]:
+        - /url: /journal
+      - link "Sign In" [ref=e14] [cursor=pointer]:
+        - /url: /auth
+      - link "Cart" [ref=e15] [cursor=pointer]:
+        - /url: /cart
+  - main [ref=e16]:
+    - heading [level=1] [ref=e23]: NAAMI
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - img "OXFORD STRIPE SHIRT" [ref=e28]
+        - img "LINEN NATURAL CAMP" [ref=e31]
+        - img "SASHIKO BORO OVERSHIRT" [ref=e34]
+        - generic:
+          - generic: Naami // AW26 Collection — 001
+          - heading "OXFORD STRIPE SHIRT" [level=2]
+          - paragraph: 120s Egyptian Cotton Oxford
+      - generic [ref=e39]:
+        - generic [ref=e40]: "01"
+        - generic [ref=e41]: / 03
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]: NAAMI // THE ARCHIVAL SERIES
+          - heading "Seasonal Collections" [level=2] [ref=e48]:
+            - text: Seasonal
+            - text: Collections
+        - generic [ref=e49]:
+          - text: Curated Product Lines
+          - generic [ref=e50]: Built on Heritage Methods
+      - generic [ref=e51]:
+        - link "Sample Collection 1 COLLECTION COL-SMP1 Seasonal pop series Sample Collection 1 An exquisite sample collection featuring bubblegum pearl, candy stripe, and cherry pop. DISCOVER SERIES" [ref=e53] [cursor=pointer]:
+          - /url: /collection?collection=1
+          - generic [ref=e54]:
+            - img "Sample Collection 1" [ref=e56]
+            - generic [ref=e59]: COLLECTION COL-SMP1
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - generic [ref=e63]: Seasonal pop series
+              - heading "Sample Collection 1" [level=3] [ref=e65]
+              - paragraph [ref=e66]: An exquisite sample collection featuring bubblegum pearl, candy stripe, and cherry pop.
+            - generic [ref=e67]:
+              - generic [ref=e68]: DISCOVER SERIES
+              - img [ref=e69]
+        - link "Sample Collection 2 COLLECTION COL-SMP2 Shimmer series Sample Collection 2 Featuring the luxury midnight shimmer, snow shimmer, and crystal pop. DISCOVER SERIES" [ref=e72] [cursor=pointer]:
+          - /url: /collection?collection=2
+          - generic [ref=e73]:
+            - img "Sample Collection 2" [ref=e75]
+            - generic [ref=e78]: COLLECTION COL-SMP2
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - generic [ref=e82]: Shimmer series
+              - heading "Sample Collection 2" [level=3] [ref=e84]
+              - paragraph [ref=e85]: Featuring the luxury midnight shimmer, snow shimmer, and crystal pop.
+            - generic [ref=e86]:
+              - generic [ref=e87]: DISCOVER SERIES
+              - img [ref=e88]
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - generic [ref=e94]: Albini Heritage // Stage 01
+          - heading "The Weave & The Count" [level=2] [ref=e95]
+          - paragraph [ref=e96]: Before it is a shirt, it is raw thread count. We weave 100-count to 140-count Egyptian long-staple cotton yarns into tight poplin and Oxford constructions, tensioned to hold their structure through decades of wearing and washing.
+          - generic [ref=e97]:
+            - generic [ref=e98]: SCROLL TO WEAVE
+            - img [ref=e99]
+        - generic [ref=e102]:
+          - img "NAAMI // The Weave & The Count" [ref=e103]
+          - generic [ref=e105]: NAAMI // THE LOOM
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e108]: Heritage Craft // Stage 02
+          - heading "The Cutting Table" [level=2] [ref=e109]
+          - paragraph [ref=e110]: Each shirt panel is hand-cut from a single length of cloth on a long table by a single artisan. Pattern pieces are aligned with the grain of the fabric to ensure the finished shirt hangs perfectly and the check patterns align at every seam.
+        - generic [ref=e112]:
+          - img "NAAMI // The Cutting Table" [ref=e113]
+          - generic [ref=e115]: NAAMI // ATELIER FLOOR
+      - generic [ref=e117]:
+        - generic [ref=e118]: Heritage Craft // Stage 03
+        - heading "The Finishing Hand" [level=2] [ref=e119]
+        - paragraph [ref=e120]: Each shirt passes through the hands of a finishing specialist who steams the placket flat, presses the collar roll with a curved iron, and attaches the mother-of-pearl buttons by hand. This final stage cannot be mechanised.
+    - img [ref=e130]
+    - generic [ref=e132]:
+      - generic [ref=e134]:
+        - generic [ref=e135]: NAAMI // THE LATEST PIECES
+        - heading "New Arrivals" [level=2] [ref=e136]
+      - generic [ref=e140]:
+        - generic [ref=e141] [cursor=pointer]:
+          - generic [ref=e143]: SMP-001
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - img "Sample 1"
+            - button "Add to wishlist" [ref=e149]:
+              - img [ref=e150]
+          - generic [ref=e153]:
+            - heading "Sample 1" [level=3] [ref=e154]
+            - generic [ref=e155]:
+              - generic [ref=e156]: Bubblegum Pearl Shirt
+              - generic [ref=e157]: ₹15,000
+        - generic [ref=e159] [cursor=pointer]:
+          - generic [ref=e161]: SMP-002
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - img "Sample 2"
+            - button "Add to wishlist" [ref=e167]:
+              - img [ref=e168]
+          - generic [ref=e171]:
+            - heading "Sample 2" [level=3] [ref=e172]
+            - generic [ref=e173]:
+              - generic [ref=e174]: Candy Stripe Shirt
+              - generic [ref=e175]: ₹16,500
+        - generic [ref=e177] [cursor=pointer]:
+          - generic [ref=e179]: SMP-005
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - img "Sample 5"
+            - button "Add to wishlist" [ref=e185]:
+              - img [ref=e186]
+          - generic [ref=e189]:
+            - heading "Sample 5" [level=3] [ref=e190]
+            - generic [ref=e191]:
+              - generic [ref=e192]: Snow Shimmer Shirt
+              - generic [ref=e193]: ₹22,500
+        - generic [ref=e195] [cursor=pointer]:
+          - generic [ref=e197]: SMP-006
+          - generic [ref=e199]:
+            - generic [ref=e200]:
+              - img "Sample 6"
+            - button "Add to wishlist" [ref=e203]:
+              - img [ref=e204]
+          - generic [ref=e207]:
+            - heading "Sample 6" [level=3] [ref=e208]
+            - generic [ref=e209]:
+              - generic [ref=e210]: Crystal Pop Shirt
+              - generic [ref=e211]: ₹24,000
+        - generic [ref=e213] [cursor=pointer]:
+          - generic [ref=e215]: SMP-001
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - img "Sample 1"
+            - button "Add to wishlist" [ref=e221]:
+              - img [ref=e222]
+          - generic [ref=e225]:
+            - heading "Sample 1" [level=3] [ref=e226]
+            - generic [ref=e227]:
+              - generic [ref=e228]: Bubblegum Pearl Shirt
+              - generic [ref=e229]: ₹15,000
+        - generic [ref=e231] [cursor=pointer]:
+          - generic [ref=e233]: SMP-002
+          - generic [ref=e235]:
+            - generic [ref=e236]:
+              - img "Sample 2"
+            - button "Add to wishlist" [ref=e239]:
+              - img [ref=e240]
+          - generic [ref=e243]:
+            - heading "Sample 2" [level=3] [ref=e244]
+            - generic [ref=e245]:
+              - generic [ref=e246]: Candy Stripe Shirt
+              - generic [ref=e247]: ₹16,500
+        - generic [ref=e249] [cursor=pointer]:
+          - generic [ref=e251]: SMP-005
+          - generic [ref=e253]:
+            - generic [ref=e254]:
+              - img "Sample 5"
+            - button "Add to wishlist" [ref=e257]:
+              - img [ref=e258]
+          - generic [ref=e261]:
+            - heading "Sample 5" [level=3] [ref=e262]
+            - generic [ref=e263]:
+              - generic [ref=e264]: Snow Shimmer Shirt
+              - generic [ref=e265]: ₹22,500
+        - generic [ref=e267] [cursor=pointer]:
+          - generic [ref=e269]: SMP-006
+          - generic [ref=e271]:
+            - generic [ref=e272]:
+              - img "Sample 6"
+            - button "Add to wishlist" [ref=e275]:
+              - img [ref=e276]
+          - generic [ref=e279]:
+            - heading "Sample 6" [level=3] [ref=e280]
+            - generic [ref=e281]:
+              - generic [ref=e282]: Crystal Pop Shirt
+              - generic [ref=e283]: ₹24,000
+      - generic [ref=e286] [cursor=pointer]:
+        - generic [ref=e287]: Discover New Products
+        - button "Enter Naami Collection" [ref=e288]:
+          - img [ref=e289]:
+            - generic [ref=e294]: naami
+    - generic [ref=e296]:
+      - img "NAAMI — AW26 Campaign Lookbook" [ref=e298]
+      - generic [ref=e299]: NAAMI // INTERACTIVE LOOKBOOK
+      - generic [ref=e300] [cursor=pointer]:
+        - generic:
+          - generic: "01"
+          - paragraph: Item unavailable
+      - generic [ref=e305] [cursor=pointer]:
+        - generic:
+          - generic: "02"
+          - paragraph: Item unavailable
+      - generic [ref=e310] [cursor=pointer]:
+        - generic:
+          - generic: "03"
+          - paragraph: Item unavailable
+    - generic [ref=e315]:
+      - generic [ref=e316]:
+        - generic [ref=e317]:
+          - generic [ref=e318]: NAAMI // INTERACTIVE CO-ORDINATES
+          - heading "Shop The Look" [level=2] [ref=e319]
+        - generic [ref=e320]:
+          - button "Previous Look" [ref=e321] [cursor=pointer]:
+            - img [ref=e322]
+          - button "Next Look" [ref=e324] [cursor=pointer]:
+            - img [ref=e325]
+      - generic [ref=e330]:
+        - generic [ref=e331]:
+          - generic [ref=e332]:
+            - 'heading "Look 01: Raw Uniform" [level=3] [ref=e333]'
+            - paragraph [ref=e334]: Heavyweight utility layer combination
+          - generic [ref=e335]:
+            - 'img "Look 01: Raw Uniform"'
+            - generic [ref=e337] [cursor=pointer]:
+              - generic:
+                - generic: 01 // PIECE
+                - paragraph: Item unavailable
+            - generic [ref=e341] [cursor=pointer]:
+              - generic:
+                - generic: 02 // PIECE
+                - paragraph: Item unavailable
+        - generic [ref=e345]:
+          - generic [ref=e346]:
+            - 'heading "Look 02: Textured Layers" [level=3] [ref=e347]'
+            - paragraph [ref=e348]: Indigo-dyed sashiko weave & hardware focus
+          - generic [ref=e349]:
+            - 'img "Look 02: Textured Layers"'
+            - generic [ref=e351] [cursor=pointer]:
+              - generic:
+                - generic: 01 // PIECE
+                - paragraph: Item unavailable
+            - generic [ref=e355] [cursor=pointer]:
+              - generic:
+                - generic: 02 // PIECE
+                - paragraph: Item unavailable
+        - generic [ref=e359]:
+          - generic [ref=e360]:
+            - 'heading "Look 03: Heritage Workwear" [level=3] [ref=e361]'
+            - paragraph [ref=e362]: Classic denim overalls & loom-state canvas
+          - generic [ref=e363]:
+            - 'img "Look 03: Heritage Workwear"'
+            - generic [ref=e365] [cursor=pointer]:
+              - generic:
+                - generic: 01 // PIECE
+                - paragraph: Item unavailable
+            - generic [ref=e369] [cursor=pointer]:
+              - generic:
+                - generic: 02 // PIECE
+                - paragraph: Item unavailable
+    - img [ref=e374]
+    - generic [ref=e376]:
+      - generic [ref=e378]:
+        - generic [ref=e379]: NAAMI // DEMAND CLASSICS
+        - heading "Bestsellers" [level=2] [ref=e380]
+      - generic [ref=e384]:
+        - generic [ref=e385] [cursor=pointer]:
+          - generic [ref=e387]: SMP-003
+          - generic [ref=e389]:
+            - generic [ref=e390]:
+              - img "Sample 3"
+            - button "Add to wishlist" [ref=e393]:
+              - img [ref=e394]
+          - generic [ref=e397]:
+            - heading "Sample 3" [level=3] [ref=e398]
+            - generic [ref=e399]:
+              - generic [ref=e400]: Cherry Pop Shirt
+              - generic [ref=e401]: ₹18,000
+        - generic [ref=e403] [cursor=pointer]:
+          - generic [ref=e405]: SMP-004
+          - generic [ref=e407]:
+            - generic [ref=e408]:
+              - img "Sample 4"
+            - button "Add to wishlist" [ref=e411]:
+              - img [ref=e412]
+          - generic [ref=e415]:
+            - heading "Sample 4" [level=3] [ref=e416]
+            - generic [ref=e417]:
+              - generic [ref=e418]: Midnight Shimmer Shirt
+              - generic [ref=e419]: ₹21,000
+        - generic [ref=e421] [cursor=pointer]:
+          - generic [ref=e423]: SMP-005
+          - generic [ref=e425]:
+            - generic [ref=e426]:
+              - img "Sample 5"
+            - button "Add to wishlist" [ref=e429]:
+              - img [ref=e430]
+          - generic [ref=e433]:
+            - heading "Sample 5" [level=3] [ref=e434]
+            - generic [ref=e435]:
+              - generic [ref=e436]: Snow Shimmer Shirt
+              - generic [ref=e437]: ₹22,500
+        - generic [ref=e439] [cursor=pointer]:
+          - generic [ref=e441]: SMP-006
+          - generic [ref=e443]:
+            - generic [ref=e444]:
+              - img "Sample 6"
+            - button "Add to wishlist" [ref=e447]:
+              - img [ref=e448]
+          - generic [ref=e451]:
+            - heading "Sample 6" [level=3] [ref=e452]
+            - generic [ref=e453]:
+              - generic [ref=e454]: Crystal Pop Shirt
+              - generic [ref=e455]: ₹24,000
+        - generic [ref=e457] [cursor=pointer]:
+          - generic [ref=e459]: SMP-003
+          - generic [ref=e461]:
+            - generic [ref=e462]:
+              - img "Sample 3"
+            - button "Add to wishlist" [ref=e465]:
+              - img [ref=e466]
+          - generic [ref=e469]:
+            - heading "Sample 3" [level=3] [ref=e470]
+            - generic [ref=e471]:
+              - generic [ref=e472]: Cherry Pop Shirt
+              - generic [ref=e473]: ₹18,000
+        - generic [ref=e475] [cursor=pointer]:
+          - generic [ref=e477]: SMP-004
+          - generic [ref=e479]:
+            - generic [ref=e480]:
+              - img "Sample 4"
+            - button "Add to wishlist" [ref=e483]:
+              - img [ref=e484]
+          - generic [ref=e487]:
+            - heading "Sample 4" [level=3] [ref=e488]
+            - generic [ref=e489]:
+              - generic [ref=e490]: Midnight Shimmer Shirt
+              - generic [ref=e491]: ₹21,000
+        - generic [ref=e493] [cursor=pointer]:
+          - generic [ref=e495]: SMP-005
+          - generic [ref=e497]:
+            - generic [ref=e498]:
+              - img "Sample 5"
+            - button "Add to wishlist" [ref=e501]:
+              - img [ref=e502]
+          - generic [ref=e505]:
+            - heading "Sample 5" [level=3] [ref=e506]
+            - generic [ref=e507]:
+              - generic [ref=e508]: Snow Shimmer Shirt
+              - generic [ref=e509]: ₹22,500
+        - generic [ref=e511] [cursor=pointer]:
+          - generic [ref=e513]: SMP-006
+          - generic [ref=e515]:
+            - generic [ref=e516]:
+              - img "Sample 6"
+            - button "Add to wishlist" [ref=e519]:
+              - img [ref=e520]
+          - generic [ref=e523]:
+            - heading "Sample 6" [level=3] [ref=e524]
+            - generic [ref=e525]:
+              - generic [ref=e526]: Crystal Pop Shirt
+              - generic [ref=e527]: ₹24,000
+      - generic [ref=e530] [cursor=pointer]:
+        - generic [ref=e531]: Discover Bestsellers
+        - button "Enter Naami Collection" [ref=e532]:
+          - img [ref=e533]:
+            - generic [ref=e538]: naami
+    - generic [ref=e541]:
+      - generic [ref=e542]:
+        - generic [ref=e543]: NAAMI // TECHNICAL ARCHIVE
+        - heading "The Hidden Button Detail" [level=2] [ref=e544]:
+          - text: The Hidden
+          - text: Button Detail
+        - paragraph [ref=e545]: True luxury is discrete. We build features that reward discovery. Pull down the fabric loop to extract the hand-stitched origin card directly from our atelier in Lisbon.
+        - generic [ref=e549]: Pull the leather tab upwards
+      - generic [ref=e551]:
+        - img
+        - generic [ref=e553]:
+          - generic [ref=e556]: NAAMI
+          - generic [ref=e558]:
+            - generic [ref=e559]:
+              - generic [ref=e560]:
+                - generic [ref=e561]: NAAMI ATELIER CARD
+                - generic [ref=e562]: AW26
+              - heading "Authenticity Card" [level=3] [ref=e563]
+            - generic [ref=e564]:
+              - generic [ref=e565]:
+                - generic [ref=e566]: Fabric Source
+                - generic [ref=e567]: Albini, Bergamo
+              - generic [ref=e568]:
+                - generic [ref=e569]: Button Source
+                - generic [ref=e570]: Philippines, shell nacre
+              - generic [ref=e571]:
+                - generic [ref=e572]: Thread Count
+                - generic [ref=e573]: 120s Egyptian cotton
+              - generic [ref=e574]:
+                - generic [ref=e575]: Seam Type
+                - generic [ref=e576]: Double-needle felled
+              - generic [ref=e577]:
+                - generic [ref=e578]: Construction
+                - generic [ref=e579]: Hand-finished Lisbon
+            - generic [ref=e580]:
+              - generic [ref=e581]:
+                - generic [ref=e582]: SERIAL CODE
+                - generic [ref=e583]: NM-9828-AW
+              - generic [ref=e584]: "N"
+        - generic:
+          - img
+          - generic: Pull
+        - generic [ref=e585]:
+          - generic:
+            - generic: Tuck
+            - img
+    - img [ref=e591]
+    - generic [ref=e592]:
+      - generic [ref=e594]:
+        - img "NAAMI // Campaign Lookbook" [ref=e595]
+        - generic [ref=e597]: NAAMI // COLLECTION
+      - generic [ref=e600]:
+        - generic [ref=e601]: The Philosophy
+        - paragraph [ref=e602]: “True luxury is found in the fall of a collar and the quiet confidence of a perfectly pressed placket. We build refinement for the modern gentleman.”
+        - generic [ref=e603]: — The Atelier Philosophy
+    - generic [ref=e605]:
+      - generic [ref=e606]:
+        - generic [ref=e607]:
+          - button "Collections" [ref=e608]:
+            - heading "Collections" [level=4] [ref=e609]
+          - list [ref=e610]:
+            - listitem [ref=e611]:
+              - link "Full Collection" [ref=e612] [cursor=pointer]:
+                - /url: /collection
+                - text: Full Collection
+            - listitem [ref=e613]:
+              - link "Shirts" [ref=e614] [cursor=pointer]:
+                - /url: /collection?filter=SHIRTS
+                - text: Shirts
+            - listitem [ref=e615]:
+              - link "Accessories" [ref=e616] [cursor=pointer]:
+                - /url: /collection?filter=ACCESSORIES
+                - text: Accessories
+            - listitem [ref=e617]:
+              - link "Limited Editions" [ref=e618] [cursor=pointer]:
+                - /url: /collection?filter=LIMITED
+                - text: Limited Editions
+        - generic [ref=e619]:
+          - button "Philosophy" [ref=e620]:
+            - heading "Philosophy" [level=4] [ref=e621]
+          - list [ref=e622]:
+            - listitem [ref=e623]:
+              - link "Our Story" [ref=e624] [cursor=pointer]:
+                - /url: /about
+                - text: Our Story
+        - generic [ref=e625]:
+          - button "Customer Care" [ref=e626]:
+            - heading "Customer Care" [level=4] [ref=e627]
+          - list [ref=e628]:
+            - listitem [ref=e629]:
+              - link "My Orders" [ref=e630] [cursor=pointer]:
+                - /url: /profile
+                - text: My Orders
+        - generic [ref=e631]:
+          - button "Naami Universe" [ref=e632]:
+            - heading "Naami Universe" [level=4] [ref=e633]
+          - list [ref=e634]:
+            - listitem [ref=e635]:
+              - link "Naami Journal" [ref=e636] [cursor=pointer]:
+                - /url: /journal
+                - text: Naami Journal
+      - generic [ref=e637]:
+        - generic [ref=e638]:
+          - generic [ref=e639]: © 2026 Naami — All rights reserved
+          - generic [ref=e640]: Crafted with precision. Made to last lifetimes.
+        - generic [ref=e641]:
+          - img [ref=e642]
+          - img [ref=e645]
+          - img [ref=e649]
+      - generic: NAAMI
+  - img
+  - generic:
+    - img "sling button"
+  - button "Open Next.js Dev Tools" [ref=e661] [cursor=pointer]:
+    - img [ref=e662]
+  - alert [ref=e665]

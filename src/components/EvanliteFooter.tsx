@@ -1,57 +1,86 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import DoodleSvg from "@/components/DoodleSvg";
+import type { DoodleStroke } from "@/lib/doodle";
 
 interface FooterColumn {
   title: string;
   links: { label: string; href: string }[];
 }
 
-const footerData: FooterColumn[] = [
-  {
-    title: "Collections",
-    links: [
-      { label: "Oxford Stripe Shirt", href: "#" },
-      { label: "Linen Natural Camp", href: "#" },
-      { label: "Sashiko Boro Overshirt", href: "#" },
-      { label: "Chambray Work Shirt", href: "#" },
-      { label: "Bestseller Classics", href: "#" },
-    ],
-  },
-  {
-    title: "Philosophy",
-    links: [
-      { label: "Loom Heritage", href: "#" },
-      { label: "Shirt Care Guide", href: "#" },
-      { label: "Mother-of-Pearl Buttons", href: "#" },
-      { label: "Natural Dye Process", href: "#" },
-      { label: "Studio Manufacture", href: "#" },
-    ],
-  },
-  {
-    title: "Customer Care",
-    links: [
-      { label: "Atelier Guarantee", href: "#" },
-      { label: "Button & Thread Service", href: "#" },
-      { label: "Secure Payments", href: "#" },
-      { label: "Returns & Exchanges", href: "#" },
-      { label: "Global Stockists", href: "#" },
-    ],
-  },
-  {
-    title: "Naami Universe",
-    links: [
-      { label: "Naami Journal", href: "#" },
-      { label: "Campaign Archives", href: "#" },
-      { label: "Instagram Feed", href: "#" },
-      { label: "Studio Address", href: "#" },
-      { label: "Contact Support", href: "#" },
-    ],
-  },
-];
+// Module-scope memo: the doodle is fetched once per full page load and reused
+// across SPA navigations. Any failure resolves to null (footer stays as-is).
+let doodleCache: DoodleStroke[] | null | undefined; // undefined = never fetched
+let doodlePromise: Promise<DoodleStroke[] | null> | null = null;
+
+function fetchFooterDoodle(): Promise<DoodleStroke[] | null> {
+  if (!doodlePromise) {
+    // no-store: bypass the browser HTTP cache (including entries cached under
+    // earlier header policies) so a fresh doodle shows on the next page load.
+    doodlePromise = fetch("/api/design/footer-doodle", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const strokes = data?.doodle?.strokes;
+        doodleCache = Array.isArray(strokes) && strokes.length > 0 ? strokes : null;
+        return doodleCache;
+      })
+      .catch(() => {
+        doodleCache = null;
+        return null;
+      });
+  }
+  return doodlePromise;
+}
+
+function useFooterDoodle(): DoodleStroke[] | null {
+  const [doodle, setDoodle] = useState<DoodleStroke[] | null>(doodleCache ?? null);
+  useEffect(() => {
+    let mounted = true;
+    if (doodleCache === undefined) {
+      fetchFooterDoodle().then((d) => {
+        if (mounted) setDoodle(d);
+      });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return doodle;
+}
 
 export default function EvanliteFooter() {
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+  const doodle = useFooterDoodle();
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
+
+  const footerData: FooterColumn[] = [
+    {
+      title: "Collections",
+      links: [
+        { label: "Full Collection", href: "/collection" },
+        { label: "Shirts", href: "/collection?filter=SHIRTS" },
+        { label: "Accessories", href: "/collection?filter=ACCESSORIES" },
+        { label: "Limited Editions", href: "/collection?filter=LIMITED" },
+      ],
+    },
+    {
+      title: "Philosophy",
+      links: [{ label: "Our Story", href: "/about" }],
+    },
+    {
+      title: "Customer Care",
+      links: [
+        { label: "My Orders", href: "/profile" },
+        ...(contactEmail ? [{ label: "Contact Support", href: `mailto:${contactEmail}` }] : []),
+      ],
+    },
+    {
+      title: "Naami Universe",
+      links: [{ label: "Naami Journal", href: "/journal" }],
+    },
+  ];
 
   const toggleAccordion = (title: string) => {
     if (activeAccordion === title) {
@@ -123,19 +152,29 @@ export default function EvanliteFooter() {
               >
                 <div>
                   <ul className="flex flex-col gap-3 font-sans" style={{ fontSize: "11px" }}>
-                    {col.links.map((link) => (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          className="text-[#111111]/60 hover:text-[#8B1A1A] transition-colors relative group py-1 inline-block"
-                          data-cursor-text="EXPLORE"
-                        >
-                          {link.label}
-                          {/* Animated underline effect */}
-                          <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#8B1A1A] transition-all duration-300 group-hover:w-full" />
-                        </a>
-                      </li>
-                    ))}
+                    {col.links.map((link) => {
+                      const isMailto = link.href.startsWith("mailto:");
+                      const linkClassName =
+                        "text-[#111111]/60 hover:text-[#8B1A1A] transition-colors relative group py-1 inline-block";
+                      const underline = (
+                        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#8B1A1A] transition-all duration-300 group-hover:w-full" />
+                      );
+                      return (
+                        <li key={link.label}>
+                          {isMailto ? (
+                            <a href={link.href} className={linkClassName} data-cursor-text="EXPLORE">
+                              {link.label}
+                              {underline}
+                            </a>
+                          ) : (
+                            <Link href={link.href} className={linkClassName} data-cursor-text="EXPLORE">
+                              {link.label}
+                              {underline}
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
@@ -216,22 +255,47 @@ export default function EvanliteFooter() {
       </div>
 
       {/* Massive Brand Watermark Logo at the bottom of the page */}
-      <div
-        className="w-full text-center select-none pointer-events-none mt-8 z-0"
-        style={{
-          fontFamily: "var(--font-serif), serif",
-          fontSize: "16vw",
-          fontWeight: "700",
-          letterSpacing: "0.25em",
-          lineHeight: "0.8",
-          color: "#8B1A1A",
-          opacity: 0.075,
-          transform: "translateY(15%)",
-          willChange: "transform",
-        }}
-      >
-        NAAMI
-      </div>
+      {doodle ? (
+        /* Doodle present: wordmark shrinks left, doodle takes the right column */
+        <div className="w-full mt-8 z-0 flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-8">
+          <div
+            className="order-2 md:order-1 min-w-0 text-center md:text-left select-none pointer-events-none text-[16vw] md:text-[11vw]"
+            style={{
+              fontFamily: "var(--font-serif), serif",
+              fontWeight: "700",
+              letterSpacing: "0.25em",
+              lineHeight: "0.8",
+              color: "#8B1A1A",
+              opacity: 0.075,
+              transform: "translateY(15%)",
+              willChange: "transform",
+              whiteSpace: "nowrap",
+            }}
+          >
+            NAAMI
+          </div>
+          <div className="order-1 md:order-2 w-[70%] mx-auto md:mx-0 md:w-[30%] md:max-w-[420px] md:shrink-0 md:pb-[1%] pointer-events-none select-none">
+            <DoodleSvg strokes={doodle} className="w-full h-auto" faded />
+          </div>
+        </div>
+      ) : (
+        <div
+          className="w-full text-center select-none pointer-events-none mt-8 z-0"
+          style={{
+            fontFamily: "var(--font-serif), serif",
+            fontSize: "16vw",
+            fontWeight: "700",
+            letterSpacing: "0.25em",
+            lineHeight: "0.8",
+            color: "#8B1A1A",
+            opacity: 0.075,
+            transform: "translateY(15%)",
+            willChange: "transform",
+          }}
+        >
+          NAAMI
+        </div>
+      )}
     </footer>
   );
 }

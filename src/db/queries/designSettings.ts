@@ -42,7 +42,7 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   coinpocket_title: "The Hidden",
   coinpocket_title_accent: "Button Detail",
   coinpocket_description:
-    "True luxury is discrete. We build features that reward discovery. Pull down the fabric loop to extract the hand-stitched origin card directly from our atelier in Lisbon.",
+    "True luxury is discrete. We build features that reward discovery. Pull the leather tab upwards to draw the hand-stitched origin card out of the coin pocket, directly from our atelier in Lisbon.",
   coinpocket_spec1_label: "Fabric Source",
   coinpocket_spec1_value: "Albini, Bergamo",
   coinpocket_spec2_label: "Button Source",
@@ -76,6 +76,9 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   shoplook_title: "Shop The Look",
   loom_panel1_label: "NAAMI // THE LOOM",
   loom_panel2_label: "NAAMI // ATELIER FLOOR",
+
+  footer_doodle_data: "",
+  footer_doodle_enabled: "false",
 };
 
 export async function getAllDesignSettings(): Promise<Record<string, string>> {

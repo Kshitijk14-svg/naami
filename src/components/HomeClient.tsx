@@ -28,15 +28,14 @@ type CarouselProduct = {
   subtitle: string;
   price: string;
   priceInr: number;
-  material: string;
-  fit: string;
-  origin: string;
+  metafields: { name: string; description: string }[];
   image: string;
   thumbnailImage?: string;
   sizes?: string[];
 };
 
 type HomepageCollection = {
+  id: number;
   number: string;
   name: string;
   tag: string;

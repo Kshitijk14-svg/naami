@@ -14,13 +14,12 @@ const inputStyle: React.CSSProperties = {
 };
 
 interface ImageUploadFieldProps {
-  type: "product" | "collection" | "lookcard" | "banner";
+  type: "product" | "collection" | "lookcard" | "banner" | "blog";
   image: string;
   onUploaded: (image: string, thumbnailImage: string) => void;
-  onImageChange: (image: string) => void;
 }
 
-export function ImageUploadField({ type, image, onUploaded, onImageChange }: ImageUploadFieldProps) {
+export function ImageUploadField({ type, image, onUploaded }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [sizeInfo, setSizeInfo] = useState("");
@@ -90,12 +89,13 @@ export function ImageUploadField({ type, image, onUploaded, onImageChange }: Ima
           )}
         </div>
       </div>
-      <input
-        style={inputStyle}
-        value={image}
-        onChange={(e) => onImageChange(e.target.value)}
-        placeholder="/images/product-jacket.png"
-      />
+      {image && (
+        <input
+          style={{ ...inputStyle, color: "rgba(17,17,17,0.55)" }}
+          value={image}
+          readOnly
+        />
+      )}
     </div>
   );
 }

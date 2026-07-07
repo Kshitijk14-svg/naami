@@ -1,5 +1,11 @@
 import { NextRequest } from "next/server";
-import { getProductById, formatProduct, getProductSizes } from "@/db/queries/products";
+import {
+  getProductById,
+  projectPublicProduct,
+  getProductSizes,
+  getProductImages,
+  getProductMetafields,
+} from "@/db/queries/products";
 
 export async function GET(
   _request: NextRequest,
@@ -12,6 +18,10 @@ export async function GET(
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
-  const sizes = await getProductSizes(product.id);
-  return Response.json({ ...formatProduct(product), sizes });
+  const [sizes, images, metafields] = await Promise.all([
+    getProductSizes(product.id),
+    getProductImages(product.id),
+    getProductMetafields(product.id),
+  ]);
+  return Response.json(projectPublicProduct(product, { sizes, images, metafields }));
 }

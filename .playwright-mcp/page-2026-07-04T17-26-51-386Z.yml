@@ -1,0 +1,29 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - link "Naami" [ref=f1e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f1e4]:
+      - paragraph [ref=f1e5]: NAAMI // ATELIER ACCESS
+      - heading "Enter the Atelier" [level=1] [ref=f1e6]:
+        - text: Enter the
+        - text: Atelier
+      - generic [ref=f1e7]:
+        - button "Sign In" [ref=f1e8]
+        - button "Create Account" [ref=f1e9]
+      - generic [ref=f1e11]:
+        - generic [ref=f1e12]: Email Address
+        - textbox "Email Address" [ref=f1e13]:
+          - /placeholder: your@email.com
+        - generic [ref=f1e14]: Password
+        - textbox "Password" [ref=f1e15]:
+          - /placeholder: ••••••••
+        - button "Sign In" [disabled] [ref=f1e16] [cursor=pointer]
+        - generic [ref=f1e17]:
+          - button "Create account" [ref=f1e18]
+          - button "Forgot password?" [ref=f1e19]
+      - paragraph [ref=f1e21]: PASSWORD PROTECTED · SECURE · BESPOKE
+  - img
+  - generic:
+    - img "sling button"
+  - button "Open Next.js Dev Tools" [ref=f1e28] [cursor=pointer]:
+    - img [ref=f1e29]

@@ -86,13 +86,12 @@ export const products = pgTable(
     number: varchar("number", { length: 10 }).notNull(),
     name: varchar("name", { length: 200 }).notNull(),
     subtitle: text("subtitle").notNull().default(""),
-    material: text("material").notNull().default(""),
-    fit: text("fit").notNull().default(""),
-    origin: text("origin").notNull().default(""),
     image: text("image").notNull().default("/images/product-jacket.png"),
     thumbnailImage: text("thumbnail_image"),
     priceInr: integer("price_inr").notNull(),
     stock: integer("stock").notNull().default(0),
+    // false = infinite stock: admin can sell without decrementing/blocking on stock.
+    trackStock: boolean("track_stock").notNull().default(true),
     isPublished: boolean("is_published").notNull().default(true),
     isFeaturedNewArrival: boolean("is_featured_new_arrival").notNull().default(false),
     isFeaturedBestseller: boolean("is_featured_bestseller").notNull().default(false),
@@ -121,6 +120,39 @@ export const productSizes = pgTable(
     size: varchar("size", { length: 10 }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.productId, t.size] })]
+);
+
+// ─── 4a. product_metafields ───────────────────────────────────────────────────
+// Generic name/description pairs replacing the old fixed material/fit/origin
+// columns (e.g. name "Material", description "the material is cotton").
+
+export const productMetafields = pgTable(
+  "product_metafields",
+  {
+    id: serial("id").primaryKey(),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 100 }).notNull(),
+    description: text("description").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [index("product_metafields_product_idx").on(t.productId)]
+);
+
+// ─── 4b. product_images ───────────────────────────────────────────────────────
+// Gallery of up to 6 images per product. products.image/thumbnailImage stay in
+// sync with the position-0 row here (see setProductImages).
+
+export const productImages = pgTable(
+  "product_images",
+  {
+    id: serial("id").primaryKey(),
+    productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    sizeBytes: integer("size_bytes"),
+  },
+  (t) => [index("product_images_product_idx").on(t.productId, t.sortOrder)]
 );
 
 // ─── 5. collections ───────────────────────────────────────────────────────────
@@ -467,9 +499,19 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
   sizes: many(productSizes),
+  metafields: many(productMetafields),
+  images: many(productImages),
   collectionProducts: many(collectionProducts),
   orderItems: many(orderItems),
   wishlists: many(wishlists),
+}));
+
+export const productMetafieldsRelations = relations(productMetafields, ({ one }) => ({
+  product: one(products, { fields: [productMetafields.productId], references: [products.id] }),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, { fields: [productImages.productId], references: [products.id] }),
 }));
 
 export const wishlistsRelations = relations(wishlists, ({ one }) => ({

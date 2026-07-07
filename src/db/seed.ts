@@ -5,6 +5,8 @@ import {
   collections,
   collectionProducts,
   productSizes,
+  productMetafields,
+  productImages,
 } from "./schema";
 
 async function main() {
@@ -26,31 +28,57 @@ async function main() {
   console.log("Categories seeded.");
 
   // ─── Products ─────────────────────────────────────────────────────────────────
+  // material/fit/origin are seed-only metadata, migrated into product_metafields below.
+
+  const productSeedData = [
+    // New Arrivals
+    { number: "001", name: "OXFORD STRIPE SHIRT",       subtitle: "120s Egyptian Cotton Oxford",    priceInr: 29900, material: "120s Egyptian long-staple cotton", fit: "Relaxed tuck-in silhouette",     origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
+    { number: "002", name: "LINEN NATURAL CAMP",         subtitle: "8oz European Linen",            priceInr: 23200, material: "European flax 8oz plain weave",   fit: "Camp collar relaxed",            origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
+    { number: "003", name: "MOTHER-OF-PEARL BUTTON SET", subtitle: "Hand-polished Shell Buttons",   priceInr: 9900,  material: "Hand-polished nacre shell",        fit: "Universal 4-hole 15mm",          origin: "Sourced in Philippines",  image: "/images/product-hardware.png", stock: 25, categoryId: accessories?.id },
+    { number: "004", name: "CHAMBRAY WORK SHIRT",        subtitle: "7oz Cone Mills Chambray",       priceInr: 19900, material: "7oz organic Cone Mills chambray",  fit: "Classic utility fit",            origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
+    { number: "005", name: "SASHIKO BORO OVERSHIRT",     subtitle: "Hand-stitched Sashiko Weave",   priceInr: 15900, material: "Indigo-dyed heavy sashiko weave",  fit: "Relaxed workshirt fit",          origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: overshirts?.id },
+    { number: "006", name: "NAAMI DRESS SHIRT",           subtitle: "100s Sea Island Cotton Poplin", priceInr: 34900, material: "100s Sea Island cotton poplin",    fit: "Slim spread collar",             origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
+    { number: "007", name: "GURKHA COLLAR SHIRT",         subtitle: "10oz Khadi Cotton",             priceInr: 12500, material: "10oz handspun khadi cotton",       fit: "Gurkha mandarin collar",         origin: "Assembled in India",      image: "/images/product-hardware.png", stock: 10, categoryId: limited?.id },
+    // Bestsellers
+    { number: "011", name: "TUXEDO BANDED SHIRT",         subtitle: "80s Pima Poplin",               priceInr: 24000, material: "80s Superfine pima poplin",        fit: "Banded collar slim",             origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
+    { number: "012", name: "NAAMI KURTA SHIRT",            subtitle: "Chanderi Silk-Cotton",          priceInr: 43000, material: "Double-layered pure Chanderi silk-cotton", fit: "Traditional kurta cut",  origin: "Handcrafted in India",    image: "/images/product-jacket.png",   stock: 10, categoryId: limited?.id },
+    { number: "013", name: "EVERYDAY CHAMBRAY",            subtitle: "8oz Organic Chambray",          priceInr: 14900, material: "8oz organic cotton chambray",      fit: "Traditional utility cut",        origin: "Assembled in Portugal",   image: "/images/product-hardware.png", stock: 10, categoryId: shirts?.id },
+    { number: "014", name: "HAORI OVERSHIRT",              subtitle: "Japanese Shuttle-loom Cotton",  priceInr: 31500, material: "10oz raw Japanese shuttle-loom cotton", fit: "Haori collar relaxed drape", origin: "Handcrafted in Japan",    image: "/images/product-jacket.png",   stock: 10, categoryId: overshirts?.id },
+    { number: "015", name: "NAAMI HENLEY SHIRT",           subtitle: "14.5oz Slub Cotton",            priceInr: 28200, material: "14.5oz slub cotton",               fit: "Boxy henley placket",            origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
+    { number: "016", name: "STONEWASH POPLIN",             subtitle: "Washed Shuttle-loom",           priceInr: 25600, material: "13.5oz washed shuttle-loom cotton", fit: "Easy straight fit",             origin: "Finished in Portugal",    image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
+    { number: "017", name: "NAAMI COLLAR STAY SET",        subtitle: "Sterling Silver",               priceInr: 11600, material: "Sterling silver stays",            fit: "Universal shirt sizing",         origin: "Cast in Japan",           image: "/images/product-hardware.png", stock: 20, categoryId: accessories?.id },
+  ];
 
   const insertedProducts = await db
     .insert(products)
-    .values([
-      // New Arrivals
-      { number: "001", name: "OXFORD STRIPE SHIRT",       subtitle: "120s Egyptian Cotton Oxford",    priceInr: 29900, material: "120s Egyptian long-staple cotton", fit: "Relaxed tuck-in silhouette",     origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
-      { number: "002", name: "LINEN NATURAL CAMP",         subtitle: "8oz European Linen",            priceInr: 23200, material: "European flax 8oz plain weave",   fit: "Camp collar relaxed",            origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
-      { number: "003", name: "MOTHER-OF-PEARL BUTTON SET", subtitle: "Hand-polished Shell Buttons",   priceInr: 9900,  material: "Hand-polished nacre shell",        fit: "Universal 4-hole 15mm",          origin: "Sourced in Philippines",  image: "/images/product-hardware.png", stock: 25, categoryId: accessories?.id },
-      { number: "004", name: "CHAMBRAY WORK SHIRT",        subtitle: "7oz Cone Mills Chambray",       priceInr: 19900, material: "7oz organic Cone Mills chambray",  fit: "Classic utility fit",            origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
-      { number: "005", name: "SASHIKO BORO OVERSHIRT",     subtitle: "Hand-stitched Sashiko Weave",   priceInr: 15900, material: "Indigo-dyed heavy sashiko weave",  fit: "Relaxed workshirt fit",          origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: overshirts?.id },
-      { number: "006", name: "NAAMI DRESS SHIRT",           subtitle: "100s Sea Island Cotton Poplin", priceInr: 34900, material: "100s Sea Island cotton poplin",    fit: "Slim spread collar",             origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
-      { number: "007", name: "GURKHA COLLAR SHIRT",         subtitle: "10oz Khadi Cotton",             priceInr: 12500, material: "10oz handspun khadi cotton",       fit: "Gurkha mandarin collar",         origin: "Assembled in India",      image: "/images/product-hardware.png", stock: 10, categoryId: limited?.id },
-      // Bestsellers
-      { number: "011", name: "TUXEDO BANDED SHIRT",         subtitle: "80s Pima Poplin",               priceInr: 24000, material: "80s Superfine pima poplin",        fit: "Banded collar slim",             origin: "Handcrafted in Portugal", image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
-      { number: "012", name: "NAAMI KURTA SHIRT",            subtitle: "Chanderi Silk-Cotton",          priceInr: 43000, material: "Double-layered pure Chanderi silk-cotton", fit: "Traditional kurta cut",  origin: "Handcrafted in India",    image: "/images/product-jacket.png",   stock: 10, categoryId: limited?.id },
-      { number: "013", name: "EVERYDAY CHAMBRAY",            subtitle: "8oz Organic Chambray",          priceInr: 14900, material: "8oz organic cotton chambray",      fit: "Traditional utility cut",        origin: "Assembled in Portugal",   image: "/images/product-hardware.png", stock: 10, categoryId: shirts?.id },
-      { number: "014", name: "HAORI OVERSHIRT",              subtitle: "Japanese Shuttle-loom Cotton",  priceInr: 31500, material: "10oz raw Japanese shuttle-loom cotton", fit: "Haori collar relaxed drape", origin: "Handcrafted in Japan",    image: "/images/product-jacket.png",   stock: 10, categoryId: overshirts?.id },
-      { number: "015", name: "NAAMI HENLEY SHIRT",           subtitle: "14.5oz Slub Cotton",            priceInr: 28200, material: "14.5oz slub cotton",               fit: "Boxy henley placket",            origin: "Handcrafted in Portugal", image: "/images/product-jacket.png",   stock: 10, categoryId: shirts?.id },
-      { number: "016", name: "STONEWASH POPLIN",             subtitle: "Washed Shuttle-loom",           priceInr: 25600, material: "13.5oz washed shuttle-loom cotton", fit: "Easy straight fit",             origin: "Finished in Portugal",    image: "/images/product-jeans.png",    stock: 10, categoryId: shirts?.id },
-      { number: "017", name: "NAAMI COLLAR STAY SET",        subtitle: "Sterling Silver",               priceInr: 11600, material: "Sterling silver stays",            fit: "Universal shirt sizing",         origin: "Cast in Japan",           image: "/images/product-hardware.png", stock: 20, categoryId: accessories?.id },
-    ])
+    .values(
+      productSeedData.map(({ material, fit, origin, ...p }) => p)
+    )
     .onConflictDoNothing()
     .returning();
 
   console.log(`Products seeded: ${insertedProducts.length}`);
+
+  // ─── Metafields + images (mirrors the material/fit/origin/image migration) ───
+
+  const seedByNumber = Object.fromEntries(productSeedData.map((p) => [p.number, p]));
+  const metafieldRows = insertedProducts.flatMap((p) => {
+    const seed = seedByNumber[p.number];
+    if (!seed) return [];
+    return [
+      { productId: p.id, name: "Material", description: seed.material, sortOrder: 0 },
+      { productId: p.id, name: "Fit", description: seed.fit, sortOrder: 1 },
+      { productId: p.id, name: "Origin", description: seed.origin, sortOrder: 2 },
+    ];
+  });
+  if (metafieldRows.length > 0) {
+    await db.insert(productMetafields).values(metafieldRows).onConflictDoNothing();
+  }
+
+  const imageRows = insertedProducts.map((p) => ({ productId: p.id, url: p.image, thumbnailUrl: p.thumbnailImage, sortOrder: 0 }));
+  if (imageRows.length > 0) {
+    await db.insert(productImages).values(imageRows).onConflictDoNothing();
+  }
 
   // ─── Sizes for each shirt product ────────────────────────────────────────────
 
