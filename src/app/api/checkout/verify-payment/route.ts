@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { verifyAdminRequest } from "@/lib/adminAuth";
 import { getUserByEmail } from "@/db/queries/users";
-import { createOrder, getOrderByRazorpayPaymentId } from "@/db/queries/orders";
+import { createOrder, getOrderByRazorpayPaymentId, InsufficientStockError } from "@/db/queries/orders";
 import { db } from "@/lib/db";
 import { abandonedCarts } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -112,19 +112,37 @@ export async function POST(request: NextRequest) {
       // createOrder is atomic and enqueues confirmation + low-stock emails via the
       // transactional outbox (drained by the jobs worker) — no fire-and-forget here.
       // It derives the discount and final total itself under the coupon lock.
-      const order = await createOrder({
-        userId: user.id,
-        items: orderItemsInput,
-        subtotalInr,
-        couponCode: couponCode || undefined,
-        ip: clientIp(request),
-        shippingName: shippingName || undefined,
-        shippingEmail: shippingEmail || undefined,
-        shippingPhone: shippingPhone || undefined,
-        shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : undefined,
-        razorpayOrderId,
-        razorpayPaymentId,
-      });
+      let order;
+      try {
+        order = await createOrder({
+          userId: user.id,
+          items: orderItemsInput,
+          subtotalInr,
+          couponCode: couponCode || undefined,
+          ip: clientIp(request),
+          shippingName: shippingName || undefined,
+          shippingEmail: shippingEmail || undefined,
+          shippingPhone: shippingPhone || undefined,
+          shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : undefined,
+          razorpayOrderId,
+          razorpayPaymentId,
+        });
+      } catch (err) {
+        if (err instanceof InsufficientStockError) {
+          // Payment was already captured at this point (defense-in-depth guard
+          // against the narrow race window after priceCart's pre-payment
+          // check) — this needs a human to reconcile, not just a retry.
+          log.error("order creation blocked by stock guard after payment capture", {
+            err: err.message,
+            razorpayPaymentId,
+          });
+          return {
+            statusCode: 409,
+            body: { error: `${err.message} Your payment was received — please contact support to resolve this order.` },
+          };
+        }
+        throw err;
+      }
 
       if (shippingEmail) {
         await db

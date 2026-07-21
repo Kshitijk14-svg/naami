@@ -9,6 +9,7 @@ import { enqueueJob } from "@/lib/jobs";
 export type ProductRow = typeof products.$inferSelect;
 export type ProductMetafield = { name: string; description: string };
 export type ProductImage = { url: string; thumbnailUrl: string | null };
+export type ProductSize = { size: string; stock: number };
 
 /**
  * Admin-only formatting: spreads the full row (stock, thresholds, publish/
@@ -16,14 +17,24 @@ export type ProductImage = { url: string; thumbnailUrl: string | null };
  * — use projectPublicProduct for those.
  */
 export function formatProduct(p: ProductRow) {
-  return { ...p, price: formatINR(p.priceInr), thumbnailImage: p.thumbnailImage ?? p.image };
+  return {
+    ...p,
+    price: formatINR(p.priceInr),
+    compareAtPrice: p.compareAtPriceInr != null ? formatINR(p.compareAtPriceInr) : null,
+    thumbnailImage: p.thumbnailImage ?? p.image,
+  };
 }
 
 /** Public storefront shape — deliberately excludes admin-only fields. */
 export function projectPublicProduct(
   p: ProductRow,
-  extras: { sizes?: string[]; images?: ProductImage[]; metafields?: ProductMetafield[] } = {}
+  extras: { sizes?: ProductSize[]; images?: ProductImage[]; metafields?: ProductMetafield[] } = {}
 ) {
+  const sizes = extras.sizes ?? [];
+  // Infinite-stock products are always available; sized products are
+  // available if any size still has stock, sizeless ones by their own total.
+  const available = !p.trackStock || (sizes.length > 0 ? sizes.some((s) => s.stock > 0) : p.stock > 0);
+
   return {
     id: p.id,
     number: p.number,
@@ -31,10 +42,12 @@ export function projectPublicProduct(
     subtitle: p.subtitle,
     priceInr: p.priceInr,
     price: formatINR(p.priceInr),
+    compareAtPriceInr: p.compareAtPriceInr ?? null,
     image: p.image,
     thumbnailImage: p.thumbnailImage ?? p.image,
     categoryId: p.categoryId,
-    sizes: extras.sizes ?? [],
+    sizes,
+    available,
     images: extras.images ?? [],
     metafields: extras.metafields ?? [],
   };
@@ -225,29 +238,37 @@ export async function searchProducts(q: string) {
   });
 }
 
-export async function getProductSizes(productId: number) {
-  const rows = await dbRead
-    .select({ size: productSizes.size })
+export async function getProductSizes(productId: number): Promise<ProductSize[]> {
+  return dbRead
+    .select({ size: productSizes.size, stock: productSizes.stock })
     .from(productSizes)
     .where(eq(productSizes.productId, productId));
-  return rows.map((r) => r.size);
 }
 
-export async function getProductSizesBatch(productIds: number[]): Promise<Record<number, string[]>> {
+export async function getProductSizesBatch(
+  productIds: number[]
+): Promise<Record<number, ProductSize[]>> {
   if (productIds.length === 0) return {};
   const rows = await dbRead
-    .select({ productId: productSizes.productId, size: productSizes.size })
+    .select({ productId: productSizes.productId, size: productSizes.size, stock: productSizes.stock })
     .from(productSizes)
     .where(inArray(productSizes.productId, productIds));
 
-  const result: Record<number, string[]> = {};
+  const result: Record<number, ProductSize[]> = {};
   for (const row of rows) {
-    (result[row.productId] ??= []).push(row.size);
+    (result[row.productId] ??= []).push({ size: row.size, stock: row.stock });
   }
   return result;
 }
 
-export async function setProductSizes(productId: number, sizes: string[]) {
+/**
+ * Replaces a product's size rows and, when sizes are present, recomputes
+ * products.stock as their sum — every other stock-reading path (low-stock
+ * alerts, admin lists) then keeps working unmodified against products.stock.
+ * Sizeless products are untouched here; their stock is set directly via the
+ * product form's Stock field.
+ */
+export async function setProductSizes(productId: number, sizes: ProductSize[]) {
   // Wrap in a transaction and lock the product row first so two concurrent
   // calls for the same product can't interleave their DELETE + INSERT, which
   // would leave duplicate or missing sizes.
@@ -263,7 +284,13 @@ export async function setProductSizes(productId: number, sizes: string[]) {
     if (sizes.length > 0) {
       await tx
         .insert(productSizes)
-        .values(sizes.map((size) => ({ productId, size })));
+        .values(sizes.map(({ size, stock }) => ({ productId, size, stock })));
+
+      const totalStock = sizes.reduce((sum, s) => sum + s.stock, 0);
+      await tx
+        .update(products)
+        .set({ stock: totalStock, updatedAt: new Date() })
+        .where(eq(products.id, productId));
     }
   });
 }

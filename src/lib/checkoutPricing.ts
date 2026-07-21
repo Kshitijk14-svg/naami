@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { products } from "@/db/schema";
+import { products, productSizes } from "@/db/schema";
 import { inArray } from "drizzle-orm";
 import { getCouponByCode } from "@/db/queries/coupons";
 import {
@@ -49,17 +49,51 @@ export async function priceCart(
       priceInr: products.priceInr,
       isPublished: products.isPublished,
       deletedAt: products.deletedAt,
+      stock: products.stock,
+      trackStock: products.trackStock,
     })
     .from(products)
     .where(inArray(products.id, ids));
 
   const byId = new Map(rows.map((r) => [r.id, r]));
 
+  const sizeRows = await db
+    .select({ productId: productSizes.productId, size: productSizes.size, stock: productSizes.stock })
+    .from(productSizes)
+    .where(inArray(productSizes.productId, ids));
+  const sizeStockByKey = new Map(sizeRows.map((s) => [`${s.productId}::${s.size}`, s.stock]));
+  const productsWithSizes = new Set(sizeRows.map((s) => s.productId));
+
+  // Running remainders so a cart with duplicate/multiple lines for the same
+  // product+size is validated cumulatively, same as createOrder()'s guard.
+  const productRemaining = new Map(rows.map((r) => [r.id, r.stock]));
+  const sizeRemaining = new Map(sizeStockByKey);
+
   const pricedItems: PricedItem[] = items.map((item) => {
     const product = byId.get(item.productId);
     if (!product || product.deletedAt || !product.isPublished) {
       throw new CheckoutPricingError("One or more items are no longer available.");
     }
+
+    if (product.trackStock) {
+      if (productsWithSizes.has(item.productId)) {
+        const key = `${item.productId}::${item.size ?? ""}`;
+        const remaining = sizeRemaining.get(key);
+        if (remaining === undefined || remaining < item.quantity) {
+          throw new CheckoutPricingError(
+            `"${product.name}"${item.size ? ` (${item.size})` : ""} is out of stock or has insufficient quantity.`
+          );
+        }
+        sizeRemaining.set(key, remaining - item.quantity);
+      } else {
+        const remaining = productRemaining.get(item.productId) ?? 0;
+        if (remaining < item.quantity) {
+          throw new CheckoutPricingError(`"${product.name}" is out of stock or has insufficient quantity.`);
+        }
+        productRemaining.set(item.productId, remaining - item.quantity);
+      }
+    }
+
     return {
       productId: item.productId,
       name: product.name,

@@ -78,7 +78,7 @@ export default function NavSearch() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ color: "#111111", opacity: loading ? 1 : 0.35, flexShrink: 0 }}
+          style={{ color: "#1A1212", opacity: loading ? 1 : 0.35, flexShrink: 0 }}
         >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -92,14 +92,14 @@ export default function NavSearch() {
           className="bg-transparent outline-none w-full font-sans"
           style={{
             fontSize: "11px",
-            color: "#111111",
+            color: "#1A1212",
             letterSpacing: "0.04em",
           }}
         />
         {query && (
           <button
             onClick={close}
-            style={{ color: "#111111", opacity: 0.35, flexShrink: 0, lineHeight: 1, fontSize: "14px" }}
+            style={{ color: "#1A1212", opacity: 0.35, flexShrink: 0, lineHeight: 1, fontSize: "14px" }}
           >
             ×
           </button>
@@ -112,7 +112,7 @@ export default function NavSearch() {
           className="absolute left-0 right-0"
           style={{
             top: "calc(100% + 8px)",
-            backgroundColor: "#EDE8DC",
+            backgroundColor: "#F8F1E5",
             border: "1px solid rgba(17,17,17,0.08)",
             boxShadow: "0 8px 32px rgba(17,17,17,0.12)",
             zIndex: 50,
@@ -133,7 +133,7 @@ export default function NavSearch() {
                 key={r.id}
                 href={`/product/${r.id}`}
                 onClick={close}
-                className="flex items-center gap-3 hover:bg-[#F4F0E6] transition-colors"
+                className="flex items-center gap-3 hover:bg-[#FFF9EF] transition-colors"
                 style={{
                   padding: "10px 14px",
                   borderBottom: i < results.length - 1 ? "1px solid rgba(17,17,17,0.05)" : "none",
@@ -141,14 +141,14 @@ export default function NavSearch() {
               >
                 <div
                   className="relative flex-shrink-0"
-                  style={{ width: 38, height: 46, backgroundColor: "#F4F0E6" }}
+                  style={{ width: 38, height: 46, backgroundColor: "#FFF9EF" }}
                 >
                   <Image src={r.thumbnailImage ?? r.image} alt={r.name} fill style={{ objectFit: "cover" }} />
                 </div>
                 <div className="min-w-0">
                   <p
                     className="font-sans font-bold uppercase truncate"
-                    style={{ fontSize: "9px", letterSpacing: "0.14em", color: "#111111" }}
+                    style={{ fontSize: "9px", letterSpacing: "0.14em", color: "#1A1212" }}
                   >
                     {r.name}
                   </p>
@@ -158,7 +158,7 @@ export default function NavSearch() {
                   >
                     {r.subtitle}
                   </p>
-                  <p className="font-serif mt-0.5" style={{ fontSize: "13px", color: "#111111" }}>
+                  <p className="font-serif mt-0.5" style={{ fontSize: "13px", color: "#1A1212" }}>
                     {r.price}
                   </p>
                 </div>

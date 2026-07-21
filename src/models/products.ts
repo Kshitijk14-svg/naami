@@ -10,10 +10,16 @@ export interface CarouselProduct {
   subtitle: string;
   price: string;   // display string e.g. "₹29,900"
   priceInr: number; // integer for cart calculations
+  compareAtPriceInr?: number | null;
   metafields: ProductMetafield[];
   image: string;
   thumbnailImage?: string;
-  sizes?: string[];
+  sizes?: { size: string; stock: number }[];
+  available?: boolean;
+}
+
+function toSizeStock(labels: string[]): { size: string; stock: number }[] {
+  return labels.map((size) => ({ size, stock: 10 }));
 }
 
 export const newArrivals: CarouselProduct[] = [
@@ -30,7 +36,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 2,
@@ -45,7 +51,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jeans.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 3,
@@ -60,7 +66,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Sourced in Philippines" },
     ],
     image: "/images/product-hardware.png",
-    sizes: ["One Size"],
+    sizes: toSizeStock(["One Size"]),
   },
   {
     id: 4,
@@ -75,7 +81,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 5,
@@ -90,7 +96,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jeans.png",
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 6,
@@ -105,7 +111,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 7,
@@ -120,7 +126,7 @@ export const newArrivals: CarouselProduct[] = [
       { name: "Origin", description: "Assembled in India" },
     ],
     image: "/images/product-hardware.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: toSizeStock(["S", "M", "L", "XL"]),
   },
 ];
 
@@ -138,7 +144,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jeans.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 12,
@@ -153,7 +159,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in India" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: toSizeStock(["S", "M", "L", "XL"]),
   },
   {
     id: 13,
@@ -168,7 +174,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Assembled in Portugal" },
     ],
     image: "/images/product-hardware.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 14,
@@ -183,7 +189,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Japan" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: toSizeStock(["S", "M", "L", "XL"]),
   },
   {
     id: 15,
@@ -198,7 +204,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Handcrafted in Portugal" },
     ],
     image: "/images/product-jacket.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 16,
@@ -213,7 +219,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Finished in Portugal" },
     ],
     image: "/images/product-jeans.png",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: toSizeStock(["XS", "S", "M", "L", "XL", "XXL"]),
   },
   {
     id: 17,
@@ -228,7 +234,7 @@ export const bestsellers: CarouselProduct[] = [
       { name: "Origin", description: "Cast in Japan" },
     ],
     image: "/images/product-hardware.png",
-    sizes: ["One Size"],
+    sizes: toSizeStock(["One Size"]),
   },
 ];
 

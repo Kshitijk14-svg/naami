@@ -50,7 +50,7 @@ export default function WishlistButton({ productId, className = "" }: Props) {
         height: 32,
         borderRadius: "50%",
         backgroundColor: isWishlisted ? "rgba(139,26,26,0.12)" : "rgba(244,240,230,0.85)",
-        border: isWishlisted ? "1.5px solid #8B1A1A" : "1.5px solid rgba(17,17,17,0.15)",
+        border: isWishlisted ? "1.5px solid #5B1C1C" : "1.5px solid rgba(17,17,17,0.15)",
         cursor: "pointer",
         backdropFilter: "blur(4px)",
         transition: "all 0.2s ease",
@@ -60,8 +60,8 @@ export default function WishlistButton({ productId, className = "" }: Props) {
         width="14"
         height="14"
         viewBox="0 0 24 24"
-        fill={isWishlisted ? "#8B1A1A" : "none"}
-        stroke={isWishlisted ? "#8B1A1A" : "rgba(17,17,17,0.6)"}
+        fill={isWishlisted ? "#5B1C1C" : "none"}
+        stroke={isWishlisted ? "#5B1C1C" : "rgba(17,17,17,0.6)"}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"

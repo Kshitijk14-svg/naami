@@ -89,6 +89,7 @@ export const products = pgTable(
     image: text("image").notNull().default("/images/product-jacket.png"),
     thumbnailImage: text("thumbnail_image"),
     priceInr: integer("price_inr").notNull(),
+    compareAtPriceInr: integer("compare_at_price_inr"),
     stock: integer("stock").notNull().default(0),
     // false = infinite stock: admin can sell without decrementing/blocking on stock.
     trackStock: boolean("track_stock").notNull().default(true),
@@ -118,6 +119,7 @@ export const productSizes = pgTable(
   {
     productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
     size: varchar("size", { length: 10 }).notNull(),
+    stock: integer("stock").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.productId, t.size] })]
 );
@@ -485,6 +487,28 @@ export const jobs = pgTable(
   (t) => [index("jobs_status_run_at_idx").on(t.status, t.runAt)]
 );
 
+// ─── 17. brand_feedback ───────────────────────────────────────────────────────
+// Post-purchase brand-level feedback (not per-product reviews). userId/orderId
+// are nullable + set-null on delete so a deleted account or order doesn't
+// force deleting feedback history. Nothing surfaces publicly until approved.
+
+export const brandFeedback = pgTable(
+  "brand_feedback",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    orderId: varchar("order_id", { length: 20 }).references(() => orders.id, { onDelete: "set null" }),
+    rating: integer("rating").notNull(),
+    comment: text("comment"),
+    isApproved: boolean("is_approved").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("brand_feedback_order_idx").on(t.orderId),
+    index("brand_feedback_approved_idx").on(t.isApproved),
+  ]
+);
+
 // ─── Drizzle relations ────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -551,4 +575,9 @@ export const couponRedemptionsRelations = relations(couponRedemptions, ({ one })
 
 export const orderStatusHistoryRelations = relations(orderStatusHistory, ({ one }) => ({
   order: one(orders, { fields: [orderStatusHistory.orderId], references: [orders.id] }),
+}));
+
+export const brandFeedbackRelations = relations(brandFeedback, ({ one }) => ({
+  user: one(users, { fields: [brandFeedback.userId], references: [users.id] }),
+  order: one(orders, { fields: [brandFeedback.orderId], references: [orders.id] }),
 }));

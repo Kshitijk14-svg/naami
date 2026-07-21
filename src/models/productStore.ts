@@ -5,7 +5,6 @@ export interface Product extends CarouselProduct {
   category?: string;
   stock: number;
   isPublished: boolean;
-  sizes?: string[];
 }
 
 function parsePrice(price: string): number {
@@ -21,7 +20,7 @@ const productMap = new Map<number, Product>(
       stock: 10,
       isPublished: true,
       category: undefined,
-      sizes: ['S', 'M', 'L', 'XL'],
+      sizes: ['S', 'M', 'L', 'XL'].map((size) => ({ size, stock: 10 })),
     },
   ])
 );

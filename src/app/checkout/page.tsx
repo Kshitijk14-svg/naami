@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -63,6 +63,18 @@ export default function CheckoutPage() {
     if (cartItemsCount === 0) router.replace("/cart");
   }, [cartItemsCount, router]);
 
+  const initiateCheckoutFired = useRef(false);
+  useEffect(() => {
+    if (items.length === 0 || initiateCheckoutFired.current) return;
+    initiateCheckoutFired.current = true;
+    trackEvent("InitiateCheckout", {
+      value: subtotal / 100,
+      currency: "INR",
+      content_ids: items.map((i) => String(i.productId)),
+      num_items: items.length,
+    });
+  }, [items, subtotal]);
+
   // Server-computed discount for display; the charge amount itself is
   // recomputed server-side in create-order regardless of what's shown here.
   useEffect(() => {
@@ -123,7 +135,7 @@ export default function CheckoutPage() {
         name: "NAAMI Atelier",
         description: `Order — ${items.length} item${items.length > 1 ? "s" : ""}`,
         prefill: { name: form.name, email: form.email, contact: form.phone },
-        theme: { color: "#8B1A1A" },
+        theme: { color: "#5B1C1C" },
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
           // 3. Verify payment and create DB order
           const verifyRes = await fetch("/api/checkout/verify-payment", {
@@ -189,14 +201,14 @@ export default function CheckoutPage() {
 
   return (
     <main
-      className="relative w-full min-h-screen flex flex-col pt-20"
-      style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      className="relative w-full min-h-screen flex flex-col pt-[var(--site-header-h)]"
+      style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
       <div className="flex-1 w-full max-w-6xl mx-auto px-6 md:px-12 py-12">
         <div className="mb-10">
-          <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+          <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // CHECKOUT
           </p>
           <h1 className="font-serif font-light uppercase" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#111", letterSpacing: "0.03em" }}>
@@ -207,7 +219,7 @@ export default function CheckoutPage() {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Address Form */}
           <div className="flex-1">
-            <p className="font-sans font-bold uppercase tracking-[0.22em] mb-6" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+            <p className="font-sans font-bold uppercase tracking-[0.22em] mb-6" style={{ fontSize: "9px", color: "#5B1C1C" }}>
               Shipping Details
             </p>
 
@@ -228,7 +240,7 @@ export default function CheckoutPage() {
 
             {error && (
               <div className="mt-6 px-4 py-3" style={{ backgroundColor: "rgba(139,26,26,0.08)", border: "1px solid rgba(139,26,26,0.2)" }}>
-                <p className="font-sans" style={{ fontSize: "12px", color: "#8B1A1A" }}>{error}</p>
+                <p className="font-sans" style={{ fontSize: "12px", color: "#5B1C1C" }}>{error}</p>
               </div>
             )}
 
@@ -236,7 +248,7 @@ export default function CheckoutPage() {
               onClick={handlePay}
               disabled={processing}
               className="w-full font-sans font-bold uppercase tracking-[0.25em] mt-8 py-5 hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
-              style={{ fontSize: "11px", backgroundColor: "#8B1A1A", color: "#F4F0E6", border: "none" }}
+              style={{ fontSize: "11px", backgroundColor: "#5B1C1C", color: "#FFF9EF", border: "none" }}
             >
               {processing ? "Processing…" : `Pay ${formatPrice(payable)} Securely →`}
             </button>
@@ -248,8 +260,8 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:w-80 flex-shrink-0">
-            <div style={{ backgroundColor: "#EDE8DC", padding: "28px" }}>
-              <p className="font-sans font-bold uppercase tracking-[0.25em] mb-6" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+            <div style={{ backgroundColor: "#F8F1E5", padding: "28px" }}>
+              <p className="font-sans font-bold uppercase tracking-[0.25em] mb-6" style={{ fontSize: "9px", color: "#5B1C1C" }}>
                 Your Order
               </p>
               {items.map((item) => (

@@ -35,13 +35,13 @@ export default function SizeGuideModal({ onClose }: Props) {
     >
       <div
         className="relative w-full max-w-xl mx-4 overflow-auto max-h-[90vh]"
-        style={{ backgroundColor: "#F4F0E6", borderTop: "3px solid #8B1A1A" }}
+        style={{ backgroundColor: "#FFF9EF", borderTop: "3px solid #5B1C1C" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-8 pt-7 pb-5" style={{ borderBottom: "1px solid rgba(139,26,26,0.12)" }}>
           <div>
-            <p className="font-sans font-bold uppercase tracking-[0.28em] mb-1" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+            <p className="font-sans font-bold uppercase tracking-[0.28em] mb-1" style={{ fontSize: "9px", color: "#5B1C1C" }}>
               NAAMI // FIT GUIDE
             </p>
             <h2 className="font-serif font-light uppercase" style={{ fontSize: "1.5rem", color: "#111", letterSpacing: "0.03em" }}>
@@ -75,7 +75,7 @@ export default function SizeGuideModal({ onClose }: Props) {
                     style={{
                       fontSize: "8px",
                       letterSpacing: "0.2em",
-                      color: "#8B1A1A",
+                      color: "#5B1C1C",
                       padding: "0 12px 10px 0",
                       borderBottom: "1px solid rgba(139,26,26,0.15)",
                       whiteSpace: "nowrap",
@@ -96,7 +96,7 @@ export default function SizeGuideModal({ onClose }: Props) {
                       style={{
                         fontSize: j === 0 ? "12px" : "12px",
                         fontWeight: j === 0 ? "700" : "400",
-                        color: j === 0 ? "#8B1A1A" : "#111",
+                        color: j === 0 ? "#5B1C1C" : "#111",
                         padding: "10px 12px 10px 0",
                         borderBottom: "1px solid rgba(17,17,17,0.05)",
                       }}

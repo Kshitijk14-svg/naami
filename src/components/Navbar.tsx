@@ -67,9 +67,8 @@ export default function Navbar() {
   return (
     <header
       ref={navbarRef}
-      className="fixed top-0 left-0 right-0 h-20 flex items-center gap-6 px-6 md:px-12"
+      className="w-full h-20 flex items-center gap-6 px-6 md:px-12"
       style={{
-        zIndex: 40,
         backgroundColor: "rgba(244, 240, 230, 0.9)",
         backdropFilter: "blur(8px)",
         borderBottom: "1px solid rgba(139, 26, 26, 0.08)",
@@ -80,7 +79,7 @@ export default function Navbar() {
       <Link
         href="/"
         className="font-serif uppercase font-semibold hover:opacity-75 transition-opacity flex-shrink-0"
-        style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#8B1A1A" }}
+        style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
         data-cursor-text={pathname.startsWith("/product/") ? "BACK" : "HOME"}
       >
         Naami
@@ -94,7 +93,7 @@ export default function Navbar() {
         <Link
           href="/collection"
           className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-          style={{ color: "#111111" }}
+          style={{ color: "#1A1212" }}
           data-cursor-text="VIEW"
         >
           Collections
@@ -102,7 +101,7 @@ export default function Navbar() {
         <Link
           href="/about"
           className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-          style={{ color: "#111111" }}
+          style={{ color: "#1A1212" }}
           data-cursor-text="READ"
         >
           About
@@ -110,7 +109,7 @@ export default function Navbar() {
         <Link
           href="/journal"
           className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-          style={{ color: "#111111" }}
+          style={{ color: "#1A1212" }}
           data-cursor-text="READ"
         >
           Journal
@@ -123,7 +122,7 @@ export default function Navbar() {
           <Link
             href="/auth"
             className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-            style={{ color: "#111111" }}
+            style={{ color: "#1A1212" }}
             data-cursor-text="ENTER"
           >
             Sign In
@@ -138,7 +137,7 @@ export default function Navbar() {
         <Link
           href="/cart"
           className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
-          style={{ color: "#111111" }}
+          style={{ color: "#1A1212" }}
           data-cursor-text="CART"
         >
           Cart
@@ -149,8 +148,8 @@ export default function Navbar() {
                 width: 16,
                 height: 16,
                 fontSize: "8px",
-                backgroundColor: "#8B1A1A",
-                color: "#F4F0E6",
+                backgroundColor: "#5B1C1C",
+                color: "#FFF9EF",
               }}
             >
               {cartItemsCount}

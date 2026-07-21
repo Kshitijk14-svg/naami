@@ -44,8 +44,8 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
         style={{
           width: 30,
           height: 30,
-          backgroundColor: "#8B1A1A",
-          color: "#F4F0E6",
+          backgroundColor: "#5B1C1C",
+          color: "#FFF9EF",
           fontSize: "11px",
           letterSpacing: "0.04em",
           cursor: "pointer",
@@ -62,7 +62,7 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
           style={{
             top: "calc(100% + 10px)",
             width: 240,
-            backgroundColor: "#EDE8DC",
+            backgroundColor: "#F8F1E5",
             border: "1px solid rgba(17,17,17,0.08)",
             boxShadow: "0 8px 32px rgba(17,17,17,0.14)",
             zIndex: 50,
@@ -70,7 +70,7 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
         >
           {/* Identity section */}
           <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(17,17,17,0.06)" }}>
-            <p className="font-serif" style={{ fontSize: "1rem", color: "#111111", lineHeight: 1.3 }}>
+            <p className="font-serif" style={{ fontSize: "1rem", color: "#1A1212", lineHeight: 1.3 }}>
               {session.name ?? "Guest"}
             </p>
             <p
@@ -84,7 +84,7 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
               style={{
                 fontSize: "8px",
                 letterSpacing: "0.18em",
-                color: "#8B1A1A",
+                color: "#5B1C1C",
                 backgroundColor: "rgba(139,26,26,0.08)",
                 padding: "3px 7px",
               }}
@@ -98,12 +98,12 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between font-sans font-bold uppercase hover:bg-[#F4F0E6] transition-colors"
+              className="flex items-center justify-between font-sans font-bold uppercase hover:bg-[#FFF9EF] transition-colors"
               style={{
                 padding: "10px 18px",
                 fontSize: "9px",
                 letterSpacing: "0.18em",
-                color: "#111111",
+                color: "#1A1212",
               }}
             >
               My Profile
@@ -113,12 +113,12 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between font-sans font-bold uppercase hover:bg-[#F4F0E6] transition-colors"
+                className="flex items-center justify-between font-sans font-bold uppercase hover:bg-[#FFF9EF] transition-colors"
                 style={{
                   padding: "10px 18px",
                   fontSize: "9px",
                   letterSpacing: "0.18em",
-                  color: "#8B1A1A",
+                  color: "#5B1C1C",
                 }}
               >
                 Admin Dashboard
@@ -127,12 +127,12 @@ export default function ProfileDropdown({ session, onSignOut }: Props) {
             )}
             <button
               onClick={() => { setIsOpen(false); onSignOut(); }}
-              className="w-full text-left flex items-center justify-between font-sans font-bold uppercase hover:bg-[#F4F0E6] transition-colors"
+              className="w-full text-left flex items-center justify-between font-sans font-bold uppercase hover:bg-[#FFF9EF] transition-colors"
               style={{
                 padding: "10px 18px",
                 fontSize: "9px",
                 letterSpacing: "0.18em",
-                color: "#111111",
+                color: "#1A1212",
                 cursor: "pointer",
               }}
             >

@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { CarouselProduct } from "@/models/products";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { useCartStore } from "@/models/cartStore";
+import { formatINR } from "@/lib/format";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,6 +23,14 @@ const FILTER_KEYWORDS: Record<FilterKey, string[]> = {
 
 function isFilterKey(value: string | null): value is FilterKey {
   return value === "ALL" || value === "SHIRTS" || value === "ACCESSORIES" || value === "LIMITED";
+}
+
+function getDiscount(product: CarouselProduct) {
+  if (!product.compareAtPriceInr || product.compareAtPriceInr <= product.priceInr) return null;
+  const percentOff = Math.round(
+    ((product.compareAtPriceInr - product.priceInr) / product.compareAtPriceInr) * 100
+  );
+  return { compareAtPrice: formatINR(product.compareAtPriceInr), percentOff };
 }
 
 function matchesFilter(product: CarouselProduct, filter: FilterKey): boolean {
@@ -136,13 +145,13 @@ export default function CollectionPageContent() {
   };
 
   return (
-    <main className="w-full min-h-screen flex flex-col" style={{ backgroundColor: "#F4F0E6", color: "#111111" }}>
+    <main className="w-full min-h-screen flex flex-col" style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}>
 
       {/* Hero bar */}
-      <section className="pt-28 pb-8 px-8 md:px-12" style={{ borderBottom: "1px solid rgba(17,17,17,0.06)" }}>
+      <section className="pb-8 px-8 md:px-12" style={{ borderBottom: "1px solid rgba(17,17,17,0.06)", paddingTop: "calc(var(--site-header-h) + 2rem)" }}>
         <span
           className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-          style={{ fontSize: "9px", color: "#8B1A1A" }}
+          style={{ fontSize: "9px", color: "#5B1C1C" }}
         >
           {collectionInfo ? `NAAMI // ${collectionInfo.tag}` : "NAAMI // AW26"}
         </span>
@@ -150,7 +159,7 @@ export default function CollectionPageContent() {
           className="font-serif font-light uppercase"
           style={{
             fontSize: "clamp(2.5rem, 6vw, 5rem)",
-            color: "#111111",
+            color: "#1A1212",
             lineHeight: 1.0,
             letterSpacing: "0.02em",
           }}
@@ -161,7 +170,7 @@ export default function CollectionPageContent() {
             <>
               The
               <br />
-              <span style={{ color: "#8B1A1A", fontStyle: "italic" }}>Collection</span>
+              <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>Collection</span>
             </>
           )}
         </h1>
@@ -176,8 +185,8 @@ export default function CollectionPageContent() {
             className="font-sans font-bold uppercase tracking-[0.2em] transition-colors whitespace-nowrap"
             style={{
               fontSize: "9px",
-              color: activeFilter === f ? "#8B1A1A" : "rgba(17,17,17,0.35)",
-              borderBottom: activeFilter === f ? "1.5px solid #8B1A1A" : "1.5px solid transparent",
+              color: activeFilter === f ? "#5B1C1C" : "rgba(17,17,17,0.35)",
+              borderBottom: activeFilter === f ? "1.5px solid #5B1C1C" : "1.5px solid transparent",
               paddingBottom: "4px",
             }}
           >
@@ -203,11 +212,11 @@ export default function CollectionPageContent() {
           >
             {/* Image */}
             <div
-              className="relative overflow-hidden w-full border border-black/5 bg-[#EDE8DC]"
+              className="relative overflow-hidden w-full border border-black/5 bg-[#F8F1E5]"
               style={{ aspectRatio: "3/4" }}
             >
               {/* Selvedge edge */}
-              <div className="absolute top-0 left-0 bottom-0 z-10" style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.7 }} />
+              <div className="absolute top-0 left-0 bottom-0 z-10" style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.7 }} />
               <Image
                 src={product.thumbnailImage ?? product.image}
                 alt={product.name}
@@ -219,7 +228,7 @@ export default function CollectionPageContent() {
               {/* Number badge */}
               <div
                 className="absolute bottom-3 left-3 font-sans font-bold uppercase tracking-[0.2em]"
-                style={{ fontSize: "8px", color: "#FAF8F5", backgroundColor: "#8B1A1A", padding: "3px 6px", zIndex: 10 }}
+                style={{ fontSize: "8px", color: "#FFF9EF", backgroundColor: "#5B1C1C", padding: "3px 6px", zIndex: 10 }}
               >
                 {product.number}
               </div>
@@ -228,7 +237,7 @@ export default function CollectionPageContent() {
             {/* Details */}
             <div className="pt-4">
               <h3
-                className="font-serif font-light uppercase mb-0.5 group-hover:text-[#8B1A1A] transition-colors"
+                className="font-serif font-light uppercase mb-0.5 group-hover:text-[#5B1C1C] transition-colors"
                 style={{ fontSize: "0.95rem", letterSpacing: "0.03em", lineHeight: 1.2 }}
               >
                 {product.name}
@@ -236,8 +245,23 @@ export default function CollectionPageContent() {
               <p className="font-sans mb-2" style={{ fontSize: "10px", color: "rgba(17,17,17,0.5)" }}>
                 {product.subtitle}
               </p>
-              <p className="font-sans font-bold" style={{ fontSize: "12px", color: "#111111" }}>
-                {product.price}
+              <p className="flex items-baseline gap-1.5">
+                <span className="font-sans font-bold" style={{ fontSize: "12px", color: "#1A1212" }}>
+                  {product.price}
+                </span>
+                {getDiscount(product) && (
+                  <>
+                    <span
+                      className="font-sans"
+                      style={{ fontSize: "10px", color: "#1A1212", opacity: 0.4, textDecoration: "line-through" }}
+                    >
+                      {getDiscount(product)!.compareAtPrice}
+                    </span>
+                    <span className="font-sans font-bold" style={{ fontSize: "9px", color: "#5B1C1C" }}>
+                      −{getDiscount(product)!.percentOff}%
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -256,22 +280,22 @@ export default function CollectionPageContent() {
         >
           <div
             className="relative w-full max-w-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl"
-            style={{ backgroundColor: "#F4F0E6", maxHeight: "90vh" }}
+            style={{ backgroundColor: "#FFF9EF", maxHeight: "90vh" }}
           >
             {/* Close */}
             <button
               onClick={closeProduct}
               className="absolute top-4 right-4 z-10 font-sans font-bold text-[10px] uppercase tracking-widest hover:opacity-60 transition-opacity"
-              style={{ color: "#111111" }}
+              style={{ color: "#1A1212" }}
             >
               ✕ Close
             </button>
 
             {/* Selvedge edge */}
-            <div className="absolute top-0 left-0 bottom-0" style={{ width: "3.5px", backgroundColor: "#8B1A1A", opacity: 0.8 }} />
+            <div className="absolute top-0 left-0 bottom-0" style={{ width: "3.5px", backgroundColor: "#5B1C1C", opacity: 0.8 }} />
 
             {/* Image */}
-            <div className="relative w-full md:w-5/12 bg-[#EDE8DC]" style={{ minHeight: "260px" }}>
+            <div className="relative w-full md:w-5/12 bg-[#F8F1E5]" style={{ minHeight: "260px" }}>
               <Image
                 src={expandedProduct.image}
                 alt={expandedProduct.name}
@@ -284,7 +308,7 @@ export default function CollectionPageContent() {
             {/* Details */}
             <div className="w-full md:w-7/12 p-8 md:p-10 flex flex-col justify-between overflow-y-auto">
               <div>
-                <span className="font-sans font-bold uppercase tracking-[0.25em] block mb-2" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+                <span className="font-sans font-bold uppercase tracking-[0.25em] block mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
                   {expandedProduct.number} // NAAMI ATELIER
                 </span>
                 <h2
@@ -301,20 +325,35 @@ export default function CollectionPageContent() {
                   {expandedProduct.metafields.slice(0, 3).map(({ name, description }) => (
                     <div key={name} className="flex justify-between" style={{ borderBottom: "1px solid rgba(139,26,26,0.05)", paddingBottom: "10px" }}>
                       <span className="font-sans font-bold" style={{ fontSize: "10px", color: "rgba(17,17,17,0.4)" }}>{name}</span>
-                      <span className="font-sans" style={{ fontSize: "10px", color: "#111111" }}>{description}</span>
+                      <span className="font-sans" style={{ fontSize: "10px", color: "#1A1212" }}>{description}</span>
                     </div>
                   ))}
                 </div>
 
-                <p className="font-serif" style={{ fontSize: "1.5rem", color: "#111111", letterSpacing: "0.02em" }}>
-                  {expandedProduct.price}
+                <p className="flex items-baseline gap-2">
+                  <span className="font-serif" style={{ fontSize: "1.5rem", color: "#1A1212", letterSpacing: "0.02em" }}>
+                    {expandedProduct.price}
+                  </span>
+                  {getDiscount(expandedProduct) && (
+                    <>
+                      <span
+                        className="font-sans"
+                        style={{ fontSize: "13px", color: "#1A1212", opacity: 0.4, textDecoration: "line-through" }}
+                      >
+                        {getDiscount(expandedProduct)!.compareAtPrice}
+                      </span>
+                      <span className="font-sans font-bold" style={{ fontSize: "10px", color: "#5B1C1C" }}>
+                        −{getDiscount(expandedProduct)!.percentOff}%
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
 
               <button
                 onClick={() => { incrementItems(); closeProduct(); }}
                 className="mt-6 w-full py-4 font-sans font-bold uppercase tracking-[0.25em] hover:opacity-80 transition-opacity"
-                style={{ fontSize: "10px", backgroundColor: "#8B1A1A", color: "#F4F0E6" }}
+                style={{ fontSize: "10px", backgroundColor: "#5B1C1C", color: "#FFF9EF" }}
               >
                 Add to Wardrobe
               </button>

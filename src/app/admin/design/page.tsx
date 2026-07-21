@@ -11,6 +11,8 @@ import { CoinPocketSection } from "@/components/admin/design/CoinPocketSection";
 import { ManifestoSection } from "@/components/admin/design/ManifestoSection";
 import { SectionHeadersSection } from "@/components/admin/design/SectionHeadersSection";
 import { FooterDoodleSection } from "@/components/admin/design/FooterDoodleSection";
+import { AnnouncementBarSection } from "@/components/admin/design/AnnouncementBarSection";
+import { ReelsSection } from "@/components/admin/design/ReelsSection";
 
 const TABS = [
   { id: "hero", label: "Hero Banner" },
@@ -21,6 +23,8 @@ const TABS = [
   { id: "manifesto", label: "Manifesto" },
   { id: "headers", label: "Section Headers" },
   { id: "doodle", label: "Footer Doodle" },
+  { id: "announcements", label: "Announcements" },
+  { id: "reels", label: "Instagram Reels" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -72,6 +76,16 @@ export default function AdminDesignPage() {
   const [doodleSaving, setDoodleSaving] = useState(false);
   const [doodleSaved, setDoodleSaved] = useState(false);
   const [doodleError, setDoodleError] = useState<string | null>(null);
+
+  // ── Announcements ──────────────────────────────────────────────────────────
+  const [announcementsSaving, setAnnouncementsSaving] = useState(false);
+  const [announcementsSaved, setAnnouncementsSaved] = useState(false);
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
+
+  // ── Instagram Reels ────────────────────────────────────────────────────────
+  const [reelsSaving, setReelsSaving] = useState(false);
+  const [reelsSaved, setReelsSaved] = useState(false);
+  const [reelsError, setReelsError] = useState<string | null>(null);
 
   const loadAll = () => {
     setLoading(true);
@@ -273,6 +287,43 @@ export default function AdminDesignPage() {
     }
   };
 
+  const saveAnnouncements = async () => {
+    setAnnouncementsSaving(true);
+    setAnnouncementsError(null);
+    setAnnouncementsSaved(false);
+    try {
+      await saveSettingsSubset([
+        "announcement_1_enabled", "announcement_1_text", "announcement_1_link",
+        "announcement_2_enabled", "announcement_2_text", "announcement_2_link",
+      ]);
+      setAnnouncementsSaved(true);
+      setTimeout(() => setAnnouncementsSaved(false), 3000);
+    } catch (err) {
+      setAnnouncementsError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setAnnouncementsSaving(false);
+    }
+  };
+
+  const saveReels = async () => {
+    setReelsSaving(true);
+    setReelsError(null);
+    setReelsSaved(false);
+    try {
+      await saveSettingsSubset([
+        "instagram_reels_enabled", "instagram_reels_kicker", "instagram_reels_title",
+        "instagram_reels_url_1", "instagram_reels_url_2", "instagram_reels_url_3",
+        "instagram_reels_url_4", "instagram_reels_url_5", "instagram_reels_url_6",
+      ]);
+      setReelsSaved(true);
+      setTimeout(() => setReelsSaved(false), 3000);
+    } catch (err) {
+      setReelsError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setReelsSaving(false);
+    }
+  };
+
   const addLookCard = () => {
     setLookCards((prev) => [
       ...prev,
@@ -425,6 +476,26 @@ export default function AdminDesignPage() {
           )}
           {activeTab === "doodle" && (
             <FooterDoodleSection settings={settings} update={update} doodleError={doodleError} doodleSaving={doodleSaving} doodleSaved={doodleSaved} onSave={saveDoodle} />
+          )}
+          {activeTab === "announcements" && (
+            <AnnouncementBarSection
+              settings={settings}
+              update={update}
+              announcementsError={announcementsError}
+              announcementsSaving={announcementsSaving}
+              announcementsSaved={announcementsSaved}
+              onSave={saveAnnouncements}
+            />
+          )}
+          {activeTab === "reels" && (
+            <ReelsSection
+              settings={settings}
+              update={update}
+              reelsError={reelsError}
+              reelsSaving={reelsSaving}
+              reelsSaved={reelsSaved}
+              onSave={saveReels}
+            />
           )}
         </>
       )}

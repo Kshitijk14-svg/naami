@@ -1,12 +1,12 @@
 export default function AboutLoading() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F4F0E6" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFF9EF" }}>
       {/* Hero section */}
       <div className="pt-36 pb-16 px-8 md:px-12">
-        <div className="animate-pulse rounded-none h-2 w-24 mb-8" style={{ backgroundColor: "#EDE8DC" }} />
+        <div className="animate-pulse rounded-none h-2 w-24 mb-8" style={{ backgroundColor: "#F8F1E5" }} />
         <div className="space-y-3">
-          <div className="animate-pulse rounded-none h-16 w-full" style={{ backgroundColor: "#EDE8DC" }} />
-          <div className="animate-pulse rounded-none h-16 w-3/4" style={{ backgroundColor: "#EDE8DC" }} />
+          <div className="animate-pulse rounded-none h-16 w-full" style={{ backgroundColor: "#F8F1E5" }} />
+          <div className="animate-pulse rounded-none h-16 w-3/4" style={{ backgroundColor: "#F8F1E5" }} />
         </div>
       </div>
 
@@ -19,22 +19,22 @@ export default function AboutLoading() {
         <div className="md:col-span-5">
           <div
             className="animate-pulse rounded-none w-full aspect-[4/5]"
-            style={{ backgroundColor: "#EDE8DC" }}
+            style={{ backgroundColor: "#F8F1E5" }}
           />
         </div>
 
         {/* Right text */}
         <div className="md:col-span-6 md:col-start-7 flex flex-col gap-5 justify-center">
-          <div className="animate-pulse rounded-none h-2 w-24" style={{ backgroundColor: "#EDE8DC" }} />
+          <div className="animate-pulse rounded-none h-2 w-24" style={{ backgroundColor: "#F8F1E5" }} />
           <div className="space-y-3">
-            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#EDE8DC" }} />
-            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#EDE8DC" }} />
-            <div className="animate-pulse rounded-none h-5 w-4/5" style={{ backgroundColor: "#EDE8DC" }} />
+            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#F8F1E5" }} />
+            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#F8F1E5" }} />
+            <div className="animate-pulse rounded-none h-5 w-4/5" style={{ backgroundColor: "#F8F1E5" }} />
           </div>
           <div className="space-y-3 mt-4">
-            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#EDE8DC" }} />
-            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#EDE8DC" }} />
-            <div className="animate-pulse rounded-none h-5 w-2/3" style={{ backgroundColor: "#EDE8DC" }} />
+            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#F8F1E5" }} />
+            <div className="animate-pulse rounded-none h-5 w-full" style={{ backgroundColor: "#F8F1E5" }} />
+            <div className="animate-pulse rounded-none h-5 w-2/3" style={{ backgroundColor: "#F8F1E5" }} />
           </div>
         </div>
       </div>

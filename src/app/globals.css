@@ -1,20 +1,27 @@
 @import "tailwindcss";
 
+:root {
+  /* Fallback matches navbar-only height (h-20); SiteHeader's ResizeObserver
+     overwrites this once mounted, so pages don't jump when an announcement
+     bar is enabled/disabled. */
+  --site-header-h: 80px;
+}
+
 @theme inline {
-  --font-serif: var(--font-cormorant);
-  --font-sans: var(--font-inter);
+  --font-serif: var(--font-august);
+  --font-sans: var(--font-glacial);
 
   /* === NAAMI BRAND COLOR PALETTE === */
-  --color-canvas: #F4F0E6;
-  /* Warm Parchment Logo BG  */
-  --color-surface: #EDE8DC;
+  --color-canvas: #FFF9EF;
+  /* Warm Cream Logo BG      */
+  --color-surface: #F8F1E5;
   /* Muted Cream Logo Accent */
-  --color-ecru: #111111;
-  /* Off-black/Charcoal Text */
-  --color-brass: #8B1A1A;
-  /* Deep Crimson Logo Mark  */
-  --color-crimson: #8B1A1A;
-  /* Deep Crimson Red        */
+  --color-ecru: #1A1212;
+  /* Warm Off-black Text     */
+  --color-brass: #5B1C1C;
+  /* Deep Maroon Logo Mark   */
+  --color-crimson: #5B1C1C;
+  /* Deep Maroon             */
 }
 
 /* ─── Global Reset ─────────────────────────────────────────── */
@@ -26,13 +33,13 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: #F4F0E6;
+  background-color: #FFF9EF;
 }
 
 body {
   overflow-x: hidden;
-  background-color: #F4F0E6;
-  color: #111111;
+  background-color: #FFF9EF;
+  color: #1A1212;
 }
 
 /* ─── Scrollbar Suppression ─────────────────────────────────── */
@@ -58,8 +65,23 @@ body,
 
 /* ─── Text Selection ─────────────────────────────────────────── */
 ::selection {
-  background-color: #8B1A1A;
-  color: #F4F0E6;
+  background-color: #5B1C1C;
+  color: #FFF9EF;
+}
+
+/* ─── Announcement Bar ───────────────────────────────────────── */
+@keyframes announcementFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.announcement-bar-fade {
+  animation: announcementFade 0.6s ease;
 }
 
 /* ─── Loader Animations ──────────────────────────────────────── */
@@ -85,7 +107,7 @@ body,
   right: 0;
   width: 4px;
   height: 100vh;
-  background-color: #EDE8DC;
+  background-color: #F8F1E5;
   z-index: 40;
   overflow: hidden;
 }
@@ -104,7 +126,7 @@ body,
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #8B1A1A;
+  background-color: #5B1C1C;
 }
 
 .selvedge-ribbon-inner::after {
@@ -115,7 +137,7 @@ body,
   transform: translateX(-50%);
   width: 1.5px;
   height: 100%;
-  background-color: #F4F0E6;
+  background-color: #FFF9EF;
 }
 
 /* ─── Product Card FLIP Overlay ──────────────────────────────── */
@@ -123,7 +145,7 @@ body,
   position: fixed;
   inset: 0;
   z-index: 50;
-  background-color: #F4F0E6;
+  background-color: #FFF9EF;
   will-change: transform, opacity;
 }
 
@@ -151,4 +173,10 @@ body,
 
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/* ─── Custom Cursor: hide native cursor while the dot cursor is active ─── */
+html.naami-cursor-active,
+html.naami-cursor-active * {
+  cursor: none !important;
 }

@@ -63,13 +63,13 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"/></head>
-<body style="background:#F4F0E6;margin:0;padding:40px 0;">
+<body style="background:#FFF9EF;margin:0;padding:40px 0;">
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #5B1C1C;">
         <!-- Header -->
         <tr><td style="padding:32px 40px 16px;">
-          <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">
+          <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">
             NAAMI ATELIER
           </p>
           <h1 style="font-family:Georgia,serif;font-weight:300;font-size:28px;color:#111;margin:0;letter-spacing:0.02em;">
@@ -84,27 +84,27 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
             Thank you for your order. We will begin crafting your pieces shortly.
           </p>
 
-          <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:24px 0 8px;">
+          <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
             Order Reference
           </p>
           <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0 0 20px;">${order.id}</p>
 
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <th style="text-align:left;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;padding-bottom:8px;">Item</th>
-              <th style="text-align:center;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;padding-bottom:8px;">Qty</th>
-              <th style="text-align:right;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;padding-bottom:8px;">Amount</th>
+              <th style="text-align:left;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;padding-bottom:8px;">Item</th>
+              <th style="text-align:center;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;padding-bottom:8px;">Qty</th>
+              <th style="text-align:right;font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;padding-bottom:8px;">Amount</th>
             </tr>
             ${itemRows}
             <tr>
-              <td colspan="2" style="padding-top:16px;font-family:sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#8B1A1A;">Total</td>
+              <td colspan="2" style="padding-top:16px;font-family:sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#5B1C1C;">Total</td>
               <td style="padding-top:16px;text-align:right;font-family:Georgia,serif;font-size:18px;color:#111;">${formatPrice(order.totalInr)}</td>
             </tr>
           </table>
 
           ${addressBlock ? `
           <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(139,26,26,0.12);">
-            <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">
+            <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">
               Shipping To
             </p>
             ${addressBlock}
@@ -112,7 +112,7 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
 
           <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
             Questions? Reply to this email or contact us at
-            <a href="mailto:${ADMIN_EMAIL}" style="color:#8B1A1A;">${ADMIN_EMAIL}</a>.
+            <a href="mailto:${ADMIN_EMAIL}" style="color:#5B1C1C;">${ADMIN_EMAIL}</a>.
           </p>
         </td></tr>
 
@@ -156,11 +156,11 @@ export async function sendAbandonedCartReminder(
     .join("");
 
   const html = `
-<!DOCTYPE html><html><body style="background:#F4F0E6;margin:0;padding:40px 0;">
+<!DOCTYPE html><html><body style="background:#FFF9EF;margin:0;padding:40px 0;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #5B1C1C;">
       <tr><td style="padding:32px 40px 16px;">
-        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">NAAMI ATELIER</p>
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">NAAMI ATELIER</p>
         <h1 style="font-family:Georgia,serif;font-weight:300;font-size:26px;color:#111;margin:0;">
           Your wardrobe is waiting.
         </h1>
@@ -171,7 +171,7 @@ export async function sendAbandonedCartReminder(
         </p>
         <ul style="padding-left:16px;">${itemList}</ul>
         <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://naami.in"}/cart"
-           style="display:inline-block;margin-top:20px;padding:14px 28px;background:#8B1A1A;color:#F4F0E6;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
+           style="display:inline-block;margin-top:20px;padding:14px 28px;background:#5B1C1C;color:#FFF9EF;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
           Complete Your Order →
         </a>
       </td></tr>
@@ -244,15 +244,15 @@ export async function sendOrderStatusUpdate(
   const trackingBlock =
     (update.toStatus === "shipped" || update.toStatus === "tracking_updated") && t?.number
       ? `
-      <div style="margin-top:24px;padding:20px;background:#F4F0E6;">
-        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">
+      <div style="margin-top:24px;padding:20px;background:#FFF9EF;">
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">
           Shipment Tracking
         </p>
         <p style="font-family:Georgia,serif;font-size:16px;color:#111;margin:0 0 4px;">${t.number}</p>
         ${t.carrier ? `<p style="font-family:sans-serif;font-size:12px;color:#555;margin:0;">via ${t.carrier}</p>` : ""}
         ${t.url ? `
         <a href="${t.url}"
-           style="display:inline-block;margin-top:14px;padding:12px 24px;background:#8B1A1A;color:#F4F0E6;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
+           style="display:inline-block;margin-top:14px;padding:12px 24px;background:#5B1C1C;color:#FFF9EF;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
           Track Shipment →
         </a>` : ""}
       </div>`
@@ -260,11 +260,11 @@ export async function sendOrderStatusUpdate(
 
   const html = `
 <!DOCTYPE html><html><head><meta charset="utf-8"/></head>
-<body style="background:#F4F0E6;margin:0;padding:40px 0;">
+<body style="background:#FFF9EF;margin:0;padding:40px 0;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #5B1C1C;">
       <tr><td style="padding:32px 40px 16px;">
-        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">NAAMI ATELIER</p>
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">NAAMI ATELIER</p>
         <h1 style="font-family:Georgia,serif;font-weight:300;font-size:28px;color:#111;margin:0;letter-spacing:0.02em;">${copy.heading}</h1>
       </td></tr>
       <tr><td style="padding:8px 40px 32px;">
@@ -272,14 +272,14 @@ export async function sendOrderStatusUpdate(
           Dear ${update.shippingName ?? "Valued Customer"},<br/>
           ${copy.body}
         </p>
-        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:24px 0 8px;">
+        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
           Order Reference
         </p>
         <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0;">${update.orderId}</p>
         ${trackingBlock}
         <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
           Questions? Reply to this email or contact us at
-          <a href="mailto:${ADMIN_EMAIL}" style="color:#8B1A1A;">${ADMIN_EMAIL}</a>.
+          <a href="mailto:${ADMIN_EMAIL}" style="color:#5B1C1C;">${ADMIN_EMAIL}</a>.
         </p>
       </td></tr>
       <tr><td style="padding:20px 40px;border-top:1px solid rgba(139,26,26,0.1);text-align:center;">
@@ -313,11 +313,11 @@ export async function sendInvoiceEmail(
 ): Promise<void> {
   const html = `
 <!DOCTYPE html><html><head><meta charset="utf-8"/></head>
-<body style="background:#F4F0E6;margin:0;padding:40px 0;">
+<body style="background:#FFF9EF;margin:0;padding:40px 0;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #5B1C1C;">
       <tr><td style="padding:32px 40px 16px;">
-        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 8px;">NAAMI ATELIER</p>
+        <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">NAAMI ATELIER</p>
         <h1 style="font-family:Georgia,serif;font-weight:300;font-size:28px;color:#111;margin:0;letter-spacing:0.02em;">Your Invoice</h1>
       </td></tr>
       <tr><td style="padding:8px 40px 32px;">
@@ -325,7 +325,7 @@ export async function sendInvoiceEmail(
           Dear ${invoice.shippingName ?? "Valued Customer"},<br/>
           Please find your invoice attached for order <strong>${invoice.orderId}</strong>.
         </p>
-        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8B1A1A;margin:24px 0 8px;">
+        <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
           Invoice Number
         </p>
         <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0 0 8px;">${invoice.invoiceNumber}</p>
@@ -334,7 +334,7 @@ export async function sendInvoiceEmail(
         </p>
         <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
           Questions? Reply to this email or contact us at
-          <a href="mailto:${ADMIN_EMAIL}" style="color:#8B1A1A;">${ADMIN_EMAIL}</a>.
+          <a href="mailto:${ADMIN_EMAIL}" style="color:#5B1C1C;">${ADMIN_EMAIL}</a>.
         </p>
       </td></tr>
       <tr><td style="padding:20px 40px;border-top:1px solid rgba(139,26,26,0.1);text-align:center;">
@@ -377,7 +377,7 @@ export async function sendLowStockAlert(
       (p) =>
         `<tr>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">${p.number} — ${p.name}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;color:#8B1A1A;text-align:center;">${p.stock}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;color:#5B1C1C;text-align:center;">${p.stock}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;color:#888;text-align:center;">${p.lowStockThreshold}</td>
         </tr>`
     )
@@ -385,7 +385,7 @@ export async function sendLowStockAlert(
 
   const html = `
 <!DOCTYPE html><html><body style="font-family:sans-serif;padding:32px;">
-  <h2 style="color:#8B1A1A;">⚠ Low Stock Alert — NAAMI</h2>
+  <h2 style="color:#5B1C1C;">⚠ Low Stock Alert — NAAMI</h2>
   <p>The following products have fallen below their stock threshold:</p>
   <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:500px;">
     <thead>

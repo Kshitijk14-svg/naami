@@ -24,52 +24,6 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
   const vatOverlayRef = useRef<HTMLDivElement>(null);
   const slide3TextRef = useRef<HTMLDivElement>(null);
   const slide3LogoRef = useRef<HTMLDivElement>(null);
-  const logoCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Load and clean the logo image to strip the checkerboard background
-  useEffect(() => {
-    const canvas = logoCanvasRef.current;
-    if (!canvas) return;
-
-    const img = new window.Image();
-    img.onload = () => {
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      ctx.drawImage(img, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const px = imageData.data;
-
-      // Known logo crimson: #8B1A1A = (139, 26, 26)
-      const LR = 139, LG = 26, LB = 26;
-      // Keep pixels within KEEP distance, fade pixels up to FADE, erase the rest
-      const KEEP = 110;
-      const FADE = 170;
-
-      for (let i = 0; i < px.length; i += 4) {
-        const dist = Math.sqrt(
-          (px[i] - LR) ** 2 +
-          (px[i + 1] - LG) ** 2 +
-          (px[i + 2] - LB) ** 2
-        );
-
-        if (dist >= FADE) {
-          // Far from logo crimson (white, grey, checkerboard) -> fully transparent
-          px[i + 3] = 0;
-        } else if (dist > KEEP) {
-          // Anti-aliased edge pixel -> fade proportionally
-          px[i + 3] = Math.round(px[i + 3] * (1 - (dist - KEEP) / (FADE - KEEP)));
-        }
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-    };
-    img.src = "/images/naami-icon.png";
-  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -123,16 +77,6 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
         { opacity: 0, y: 15 },
         { opacity: 1, y: 0, ease: "power2.out", duration: 0.3 },
         0.45
-      );
-    }
-
-    // Slide 1 — image scales/fades into frame as it scrolls in
-    if (slide1ImageRef.current) {
-      tl.fromTo(
-        slide1ImageRef.current,
-        { opacity: 0, scale: 1.12 },
-        { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" },
-        0.02
       );
     }
 
@@ -195,14 +139,6 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
             <p className="font-sans text-[12.5px] text-[#111111]/90 leading-relaxed mb-8 max-w-md">
               {content.panel1.body}
             </p>
-            <div className="flex items-center gap-3">
-              <span className="font-sans font-bold text-[9px] text-[#111111]/60 tracking-widest">
-                SCROLL TO WEAVE
-              </span>
-              <svg width="24" height="8" viewBox="0 0 24 8" fill="none" stroke="rgba(17,17,17,0.3)" strokeWidth="1.5">
-                <path d="M0 4h20M16 0l4 4-4 4" strokeLinecap="round" />
-              </svg>
-            </div>
           </div>
 
           {/* Right editorial image */}
@@ -220,11 +156,6 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
                 style={{ filter: "brightness(0.94)" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
-              />
-              {/* Selvedge red edge line */}
-              <div
-                className="absolute top-0 left-0 bottom-0 z-10"
-                style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
               />
               {/* Card label */}
               <div
@@ -280,11 +211,6 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
                 className="object-cover"
                 style={{ filter: "brightness(0.94)" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              {/* Selvedge red edge line */}
-              <div
-                className="absolute top-0 left-0 bottom-0 z-10"
-                style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
               />
               {/* Card label */}
               <div
@@ -382,10 +308,13 @@ export default function LoomTimeline({ content }: LoomTimelineProps) {
                   boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
                 }}
               >
-                <div style={{ width: "70%", height: "70%" }} className="flex items-center justify-center">
-                  <canvas
-                    ref={logoCanvasRef}
-                    style={{ width: "100%", height: "auto", display: "block" }}
+                <div style={{ width: "91%", height: "91%", position: "relative" }}>
+                  <Image
+                    src="/images/hindi-logo-brown.png"
+                    alt="नामी"
+                    fill
+                    className="object-contain"
+                    sizes="190px"
                   />
                 </div>
               </div>

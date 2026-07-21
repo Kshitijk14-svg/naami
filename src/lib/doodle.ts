@@ -1,8 +1,8 @@
 export const DOODLE_VIEWBOX = { w: 400, h: 250 } as const; // 8:5
 
 export const DOODLE_COLORS = [
-  "#8B1A1A",
-  "#111111",
+  "#5B1C1C",
+  "#1A1212",
   "#2E6B3A",
   "#1F3A5F",
   "#B8752C",

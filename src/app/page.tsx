@@ -1,6 +1,7 @@
 import { getHomeContent } from "@/db/queries/home";
 import { getAllDesignSettings } from "@/db/queries/designSettings";
 import { getHomepageExtras } from "@/db/queries/homepageContent";
+import { getInstagramReelsContent } from "@/db/queries/instagramReels";
 import HomeClient from "@/components/HomeClient";
 
 const DEFAULT_HERO_SLIDES = [
@@ -25,10 +26,11 @@ const DEFAULT_HERO_SLIDES = [
 ];
 
 export default async function Home() {
-  const [content, designSettings, extras] = await Promise.all([
+  const [content, designSettings, extras, instagramReels] = await Promise.all([
     getHomeContent(),
     getAllDesignSettings(),
     getHomepageExtras(),
+    getInstagramReelsContent(),
   ]);
 
   const heroSlides = [1, 2, 3].map((n, i) => ({
@@ -123,6 +125,7 @@ export default async function Home() {
       newArrivalsSection={newArrivalsSection}
       bestsellersSection={bestsellersSection}
       shopLookHeader={shopLookHeader}
+      instagramReels={instagramReels}
     />
   );
 }

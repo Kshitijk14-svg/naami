@@ -1,9 +1,9 @@
 export default function CollectionLoading() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F4F0E6" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFF9EF" }}>
       {/* Header bar */}
       <div className="h-28 px-8 md:px-12 flex items-end pb-6">
-        <div className="animate-pulse rounded-none h-8 w-48" style={{ backgroundColor: "#EDE8DC" }} />
+        <div className="animate-pulse rounded-none h-8 w-48" style={{ backgroundColor: "#F8F1E5" }} />
       </div>
 
       {/* Filter pills */}
@@ -12,7 +12,7 @@ export default function CollectionLoading() {
           <div
             key={i}
             className="animate-pulse rounded-none h-8"
-            style={{ backgroundColor: "#EDE8DC", width: w }}
+            style={{ backgroundColor: "#F8F1E5", width: w }}
           />
         ))}
       </div>
@@ -23,12 +23,12 @@ export default function CollectionLoading() {
           <div key={i}>
             <div
               className="animate-pulse rounded-none w-full aspect-[3/4]"
-              style={{ backgroundColor: "#EDE8DC" }}
+              style={{ backgroundColor: "#F8F1E5" }}
             />
             <div className="mt-3 space-y-2">
-              <div className="animate-pulse rounded-none h-3 w-3/4" style={{ backgroundColor: "#EDE8DC" }} />
-              <div className="animate-pulse rounded-none h-3 w-1/2" style={{ backgroundColor: "#EDE8DC" }} />
-              <div className="animate-pulse rounded-none h-4 w-1/3" style={{ backgroundColor: "#EDE8DC" }} />
+              <div className="animate-pulse rounded-none h-3 w-3/4" style={{ backgroundColor: "#F8F1E5" }} />
+              <div className="animate-pulse rounded-none h-3 w-1/2" style={{ backgroundColor: "#F8F1E5" }} />
+              <div className="animate-pulse rounded-none h-4 w-1/3" style={{ backgroundColor: "#F8F1E5" }} />
             </div>
           </div>
         ))}

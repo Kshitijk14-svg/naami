@@ -1,3 +1,3 @@
 export default function HomeLoading() {
-  return <div className="w-full min-h-screen" style={{ backgroundColor: "#EDE8DC" }} />;
+  return <div className="w-full min-h-screen" style={{ backgroundColor: "#F8F1E5" }} />;
 }

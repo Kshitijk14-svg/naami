@@ -79,6 +79,23 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
 
   footer_doodle_data: "",
   footer_doodle_enabled: "false",
+
+  announcement_1_enabled: "false",
+  announcement_1_text: "",
+  announcement_1_link: "",
+  announcement_2_enabled: "false",
+  announcement_2_text: "",
+  announcement_2_link: "",
+
+  instagram_reels_enabled: "false",
+  instagram_reels_kicker: "NAAMI // FROM THE REEL",
+  instagram_reels_title: "As Seen In Motion",
+  instagram_reels_url_1: "",
+  instagram_reels_url_2: "",
+  instagram_reels_url_3: "",
+  instagram_reels_url_4: "",
+  instagram_reels_url_5: "",
+  instagram_reels_url_6: "",
 };
 
 export async function getAllDesignSettings(): Promise<Record<string, string>> {

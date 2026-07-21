@@ -12,10 +12,23 @@ import {
   getProductMetafields,
   getProductImages,
   type ProductMetafield,
+  type ProductSize,
   type SetProductImagesInput,
 } from "@/db/queries/products";
 
 const MAX_IMAGES = 6;
+
+function validateSizes(input: unknown): input is ProductSize[] {
+  if (!Array.isArray(input)) return false;
+  return input.every(
+    (s) =>
+      s &&
+      typeof s.size === "string" &&
+      s.size.trim().length > 0 &&
+      Number.isInteger(s.stock) &&
+      s.stock >= 0
+  );
+}
 
 function validateMetafields(input: unknown): input is ProductMetafield[] {
   if (!Array.isArray(input)) return false;
@@ -65,10 +78,27 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+  if (body.sizes !== undefined && !validateSizes(body.sizes)) {
+    return Response.json(
+      { error: "Each size needs a non-empty label and a non-negative integer stock" },
+      { status: 400 }
+    );
+  }
+  if (
+    body.compareAtPriceInr !== undefined &&
+    body.compareAtPriceInr !== null &&
+    (typeof body.compareAtPriceInr !== "number" || body.compareAtPriceInr <= 0)
+  ) {
+    return Response.json(
+      { error: "compareAtPriceInr must be a positive number or null" },
+      { status: 400 }
+    );
+  }
 
   const product = await createProduct({
     name: body.name,
     priceInr,
+    compareAtPriceInr: body.compareAtPriceInr ?? null,
     stock: body.stock,
     trackStock: body.trackStock ?? true,
     isPublished: body.isPublished ?? true,

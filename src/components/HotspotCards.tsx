@@ -101,14 +101,14 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
   return (
     <section
       className="px-6 md:px-12 py-24 relative overflow-hidden"
-      style={{ backgroundColor: "#EDE8DC" }}
+      style={{ backgroundColor: "#F8F1E5" }}
     >
       {/* Header and Controls */}
       <div className="mb-14 flex flex-row items-end justify-between reveal-fade-up">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             {headerKicker}
           </span>
@@ -116,7 +116,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
             className="font-serif font-light uppercase"
             style={{
               fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "#111111",
+              color: "#1A1212",
               lineHeight: 1.1,
               letterSpacing: "0.02em",
             }}
@@ -129,7 +129,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
         <div className="flex items-center gap-4">
           <button
             onClick={() => handleNavClick("prev")}
-            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#8B1A1A] transition-colors cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#5B1C1C] transition-colors cursor-pointer"
             aria-label="Previous Look"
             data-cursor-text="PREV"
           >
@@ -139,7 +139,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
           </button>
           <button
             onClick={() => handleNavClick("next")}
-            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#8B1A1A] transition-colors cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#5B1C1C] transition-colors cursor-pointer"
             aria-label="Next Look"
             data-cursor-text="NEXT"
           >
@@ -177,19 +177,19 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
           {cards.map((look) => (
             <div
               key={look.id}
-              className="inline-block w-[300px] md:w-[400px] flex-shrink-0 bg-[#F4F0E6] p-6 border border-black/5 reveal-stagger-item whitespace-normal select-none"
+              className="inline-block w-[300px] md:w-[400px] flex-shrink-0 bg-[#FFF9EF] p-6 border border-black/5 reveal-stagger-item whitespace-normal select-none"
             >
               {/* Card Meta Info */}
               <div className="mb-4">
                 <h3
                   className="font-serif font-light uppercase"
-                  style={{ fontSize: "1.25rem", color: "#111111" }}
+                  style={{ fontSize: "1.25rem", color: "#1A1212" }}
                 >
                   {look.title}
                 </h3>
                 <p
                   className="font-sans truncate"
-                  style={{ fontSize: "11px", color: "#111111", opacity: 0.5 }}
+                  style={{ fontSize: "11px", color: "#1A1212", opacity: 0.5 }}
                 >
                   {look.subtitle}
                 </p>
@@ -212,7 +212,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
                 {/* Selvedge red edge line */}
                 <div
                   className="absolute top-0 left-0 bottom-0"
-                  style={{ width: "2.5px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
+                  style={{ width: "2.5px", backgroundColor: "#5B1C1C", opacity: 0.8 }}
                 />
 
                 {/* Hotspot Nodes */}
@@ -330,12 +330,12 @@ function HotspotCardNode({
       <div
         className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 pointer-events-auto transition-all duration-300"
         style={{
-          backgroundColor: "#F4F0E6",
-          color: "#111111",
+          backgroundColor: "#FFF9EF",
+          color: "#1A1212",
           padding: "16px",
           width: "200px",
           boxShadow: "0 12px 32px rgba(139,26,26,0.1), 0 4px 8px rgba(0,0,0,0.06)",
-          borderLeft: `2px solid #8B1A1A`,
+          borderLeft: `2px solid #5B1C1C`,
           opacity: isOpen ? 1 : 0,
           transform: isOpen ? "translateY(0px)" : "translateY(8px)",
           pointerEvents: isOpen ? "auto" : "none",
@@ -343,7 +343,7 @@ function HotspotCardNode({
       >
         <div
           className="font-sans font-bold uppercase tracking-[0.15em] mb-1"
-          style={{ fontSize: "8px", color: "#8B1A1A" }}
+          style={{ fontSize: "8px", color: "#5B1C1C" }}
         >
           {number} // PIECE
         </div>
@@ -351,13 +351,13 @@ function HotspotCardNode({
           <>
             <h4
               className="font-sans font-bold uppercase tracking-[0.1em] mb-1"
-              style={{ fontSize: "10px", color: "#111111", lineHeight: 1.3 }}
+              style={{ fontSize: "10px", color: "#1A1212", lineHeight: 1.3 }}
             >
               {product.name}
             </h4>
             <p
               className="font-serif mb-4"
-              style={{ fontSize: "14px", color: "#111111" }}
+              style={{ fontSize: "14px", color: "#1A1212" }}
             >
               {formatINR(product.priceInr)}
             </p>
@@ -375,8 +375,8 @@ function HotspotCardNode({
               className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
               style={{
                 fontSize: "8px",
-                color: "#111111",
-                borderBottom: "1px solid #111111",
+                color: "#1A1212",
+                borderBottom: "1px solid #1A1212",
                 paddingBottom: "1px",
               }}
             >
@@ -398,7 +398,7 @@ function HotspotCardNode({
         ) : (
           <p
             className="font-sans"
-            style={{ fontSize: "10px", color: "#111111", opacity: 0.5 }}
+            style={{ fontSize: "10px", color: "#1A1212", opacity: 0.5 }}
           >
             Item unavailable
           </p>

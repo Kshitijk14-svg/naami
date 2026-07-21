@@ -14,11 +14,24 @@ import {
   getProductImages,
   setProductImages,
   type ProductMetafield,
+  type ProductSize,
   type SetProductImagesInput,
 } from "@/db/queries/products";
 
 const MAX_IMAGES = 6;
 const PRODUCT_IMAGES_DIR = path.join(process.cwd(), "public", "images", "products");
+
+function validateSizes(input: unknown): input is ProductSize[] {
+  if (!Array.isArray(input)) return false;
+  return input.every(
+    (s) =>
+      s &&
+      typeof s.size === "string" &&
+      s.size.trim().length > 0 &&
+      Number.isInteger(s.stock) &&
+      s.stock >= 0
+  );
+}
 
 function validateMetafields(input: unknown): input is ProductMetafield[] {
   if (!Array.isArray(input)) return false;
@@ -87,6 +100,22 @@ export async function PUT(
       { status: 400 }
     );
   }
+  if (body.sizes !== undefined && !validateSizes(body.sizes)) {
+    return Response.json(
+      { error: "Each size needs a non-empty label and a non-negative integer stock" },
+      { status: 400 }
+    );
+  }
+  if (
+    body.compareAtPriceInr !== undefined &&
+    body.compareAtPriceInr !== null &&
+    (typeof body.compareAtPriceInr !== "number" || body.compareAtPriceInr <= 0)
+  ) {
+    return Response.json(
+      { error: "compareAtPriceInr must be a positive number or null" },
+      { status: 400 }
+    );
+  }
 
   const updateData: Record<string, unknown> = {};
   if (body.name !== undefined) updateData.name = body.name;
@@ -103,6 +132,7 @@ export async function PUT(
   // Accept both camelCase variants for price
   const priceInr = body.priceInr ?? body.priceINR;
   if (priceInr !== undefined) updateData.priceInr = priceInr;
+  if (body.compareAtPriceInr !== undefined) updateData.compareAtPriceInr = body.compareAtPriceInr;
 
   const updated = await updateProduct(Number(id), updateData);
   if (!updated) return Response.json({ error: "Not found" }, { status: 404 });

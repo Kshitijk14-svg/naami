@@ -63,7 +63,7 @@ export default function HotspotBanner({ image, label, hotspots }: HotspotBannerP
     <section
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ height: "90vh", backgroundColor: "#EDE8DC" }}
+      style={{ height: "90vh", backgroundColor: "#F8F1E5" }}
     >
       {/* Parallax Image Container */}
       <div
@@ -85,7 +85,7 @@ export default function HotspotBanner({ image, label, hotspots }: HotspotBannerP
       {/* Section label */}
       <div
         className="absolute top-8 left-12 font-sans font-bold uppercase tracking-[0.25em]"
-        style={{ fontSize: "10px", color: "#111111", opacity: 0.6, zIndex: 10 }}
+        style={{ fontSize: "10px", color: "#1A1212", opacity: 0.6, zIndex: 10 }}
       >
         {bannerLabel}
       </div>
@@ -207,13 +207,13 @@ function HotspotNode({
         ref={cardRef}
         className="absolute bottom-full mb-5 left-1/2 -translate-x-1/2 pointer-events-auto transition-all duration-300"
         style={{
-          backgroundColor: "#F4F0E6",
-          color: "#111111",
+          backgroundColor: "#FFF9EF",
+          color: "#1A1212",
           padding: "20px",
           maxWidth: "230px",
           width: "max-content",
           boxShadow: "0 20px 50px rgba(139,26,26,0.12), 0 4px 12px rgba(0,0,0,0.08)",
-          borderLeft: `2px solid #8B1A1A`,
+          borderLeft: `2px solid #5B1C1C`,
           opacity: isOpen ? 1 : 0,
           transform: isOpen ? "translateY(0px)" : "translateY(12px)",
           pointerEvents: isOpen ? "auto" : "none",
@@ -221,7 +221,7 @@ function HotspotNode({
       >
         <div
           className="font-sans font-bold uppercase tracking-[0.15em] mb-1"
-          style={{ fontSize: "9px", color: "#8B1A1A" }}
+          style={{ fontSize: "9px", color: "#5B1C1C" }}
         >
           {number}
         </div>
@@ -229,13 +229,13 @@ function HotspotNode({
           <>
             <h4
               className="font-sans font-bold uppercase tracking-[0.1em] mb-2"
-              style={{ fontSize: "11px", color: "#111111", lineHeight: 1.4 }}
+              style={{ fontSize: "11px", color: "#1A1212", lineHeight: 1.4 }}
             >
               {product.name}
             </h4>
             <p
               className="font-serif mb-5"
-              style={{ fontSize: "15px", color: "#111111" }}
+              style={{ fontSize: "15px", color: "#1A1212" }}
             >
               {formatINR(product.priceInr)}
             </p>
@@ -253,8 +253,8 @@ function HotspotNode({
               className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
               style={{
                 fontSize: "9px",
-                color: "#111111",
-                borderBottom: "1px solid #111111",
+                color: "#1A1212",
+                borderBottom: "1px solid #1A1212",
                 paddingBottom: "2px",
               }}
               data-cursor-text="ADD"
@@ -275,7 +275,7 @@ function HotspotNode({
             </button>
           </>
         ) : (
-          <p className="font-sans" style={{ fontSize: "10px", color: "#111111", opacity: 0.5 }}>
+          <p className="font-sans" style={{ fontSize: "10px", color: "#1A1212", opacity: 0.5 }}>
             Item unavailable
           </p>
         )}

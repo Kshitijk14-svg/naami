@@ -21,12 +21,12 @@ export default async function JournalPage() {
 
   return (
     <main
-      className="relative w-full min-h-screen flex flex-col pt-20"
-      style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      className="relative w-full min-h-screen flex flex-col pt-[var(--site-header-h)]"
+      style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       {/* Header */}
       <section className="px-6 md:px-12 py-16">
-        <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+        <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
           NAAMI // THE JOURNAL
         </p>
         <h1
@@ -44,7 +44,7 @@ export default async function JournalPage() {
         {/* Selvedge rule */}
         <div
           className="mt-8"
-          style={{ height: "1px", background: "linear-gradient(to right, #8B1A1A 2px, rgba(17,17,17,0.1) 2px, transparent)" }}
+          style={{ height: "1px", background: "linear-gradient(to right, #5B1C1C 2px, rgba(17,17,17,0.1) 2px, transparent)" }}
         />
       </section>
 
@@ -52,7 +52,7 @@ export default async function JournalPage() {
       <section className="flex-1 px-6 md:px-12 pb-20">
         {posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="w-[3px] h-12 bg-[#8B1A1A] opacity-50 mx-auto mb-8" />
+            <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-50 mx-auto mb-8" />
             <p className="font-serif font-light italic" style={{ fontSize: "1.3rem", color: "rgba(17,17,17,0.4)" }}>
               New stories coming soon.
             </p>
@@ -69,7 +69,7 @@ export default async function JournalPage() {
                 {/* Cover image */}
                 <div
                   className="relative w-full overflow-hidden mb-5"
-                  style={{ aspectRatio: "4/3", backgroundColor: "#EDE8DC" }}
+                  style={{ aspectRatio: "4/3", backgroundColor: "#F8F1E5" }}
                 >
                   {post.coverImage ? (
                     <Image
@@ -82,7 +82,7 @@ export default async function JournalPage() {
                   ) : (
                     <div
                       className="absolute inset-0 flex items-center justify-center"
-                      style={{ backgroundColor: "#EDE8DC" }}
+                      style={{ backgroundColor: "#F8F1E5" }}
                     >
                       <span className="font-serif font-light italic opacity-30" style={{ fontSize: "1.2rem" }}>
                         NAAMI
@@ -90,18 +90,18 @@ export default async function JournalPage() {
                     </div>
                   )}
                   {/* Selvedge line */}
-                  <div className="absolute top-0 left-0 bottom-0" style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.75 }} />
+                  <div className="absolute top-0 left-0 bottom-0" style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.75 }} />
                 </div>
 
                 {/* Post meta */}
                 {post.publishedAt && (
-                  <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#8B1A1A" }}>
+                  <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#5B1C1C" }}>
                     {new Date(post.publishedAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
                   </p>
                 )}
 
                 <h2
-                  className="font-serif font-light uppercase group-hover:text-[#8B1A1A] transition-colors mb-3"
+                  className="font-serif font-light uppercase group-hover:text-[#5B1C1C] transition-colors mb-3"
                   style={{ fontSize: "1.15rem", color: "#111", letterSpacing: "0.03em", lineHeight: 1.25 }}
                 >
                   {post.title}
@@ -114,7 +114,7 @@ export default async function JournalPage() {
                 )}
 
                 <span
-                  className="inline-block font-sans font-bold uppercase tracking-[0.2em] mt-4 group-hover:text-[#8B1A1A] transition-colors"
+                  className="inline-block font-sans font-bold uppercase tracking-[0.2em] mt-4 group-hover:text-[#5B1C1C] transition-colors"
                   style={{
                     fontSize: "8.5px",
                     color: "#111",

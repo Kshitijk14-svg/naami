@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
 // NAAMI brand colours extracted from the official logo
-const NAAMI_BG = "#EDE8DC";       // cream / parchment — matches logo background
-const NAAMI_CRIMSON = "#8B1A1A";  // deep crimson — matches logo mark & wordmark
+const NAAMI_BG = "#F8F1E5";       // cream / parchment — matches logo background
+const NAAMI_CRIMSON = "#5B1C1C";  // deep crimson — matches logo mark & wordmark
 
 export default function BrandLoader() {
   const containerRef  = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export default function BrandLoader() {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const px = imageData.data;
 
-      // Known logo crimson: #8B1A1A = (139, 26, 26)
+      // Known logo crimson: #5B1C1C = (139, 26, 26)
       const LR = 139, LG = 26, LB = 26;
       // Keep pixels within KEEP distance, fade pixels up to FADE, erase the rest
       const KEEP = 110;
@@ -159,7 +159,7 @@ export default function BrandLoader() {
       {/* ── Brand name — anchored below the center line ────────────────── */}
       <h1
         ref={textRef}
-        className="absolute font-serif uppercase font-light"
+        className="absolute font-serif lowercase font-bold"
         style={{
           zIndex: 102,
           left: 0, right: 0,
@@ -173,7 +173,7 @@ export default function BrandLoader() {
           margin: 0,
         }}
       >
-        NAAMI
+        naami
       </h1>
     </div>
   );

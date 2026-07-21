@@ -70,14 +70,14 @@ export default function CollectionsShowcase({
   return (
     <section
       className="px-6 md:px-12 py-28 relative"
-      style={{ backgroundColor: "#F4F0E6" }}
+      style={{ backgroundColor: "#FFF9EF" }}
     >
       {/* Section Header */}
       <div className="mb-20 pb-8 border-b border-black/5 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             {headerKicker}
           </span>
@@ -85,14 +85,14 @@ export default function CollectionsShowcase({
             className="font-serif font-light uppercase"
             style={{
               fontSize: "clamp(2.5rem, 5vw, 4rem)",
-              color: "#111111",
+              color: "#1A1212",
               lineHeight: 1.05,
               letterSpacing: "0.02em",
             }}
           >
             {headerTitle}
             <br />
-            <span style={{ color: "#8B1A1A", fontStyle: "italic" }}>
+            <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>
               {headerTitleAccent}
             </span>
           </h2>
@@ -191,7 +191,7 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
     >
       {/* Image Block */}
       <div
-        className="relative overflow-hidden w-full border border-black/5 bg-[#EDE8DC]"
+        className="relative overflow-hidden w-full border border-black/5 bg-[#F8F1E5]"
         style={{ aspectRatio: "4/5" }}
       >
         <div ref={imageRef} className="absolute inset-0 w-full h-full">
@@ -205,29 +205,13 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
           />
         </div>
 
-        {/* Crimson corner rivet accent */}
-        <div
-          className="absolute top-4 right-4 rounded-full"
-          style={{
-            width: 8,
-            height: 8,
-            backgroundColor: "#8B1A1A",
-          }}
-        />
-
-        {/* Selvedge red edge line */}
-        <div
-          className="absolute top-0 left-0 bottom-0"
-          style={{ width: "3.5px", backgroundColor: "#8B1A1A", opacity: 0.85 }}
-        />
-
         {/* Floating Category Number Tag */}
         <div
           className="absolute bottom-6 left-6 font-sans font-bold uppercase tracking-[0.25em]"
           style={{
             fontSize: "9px",
-            color: "#FAF8F5",
-            backgroundColor: "#8B1A1A",
+            color: "#FFF9EF",
+            backgroundColor: "#5B1C1C",
             padding: "4px 8px",
           }}
         >
@@ -248,10 +232,10 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
             <div className="h-px flex-1 bg-black/5" />
           </div>
           <h3
-            className="font-serif font-light uppercase mb-3 transition-colors group-hover:text-[#8B1A1A]"
+            className="font-serif font-light uppercase mb-3 transition-colors group-hover:text-[#5B1C1C]"
             style={{
               fontSize: "1.6rem",
-              color: "#111111",
+              color: "#1A1212",
               letterSpacing: "0.03em",
             }}
           >
@@ -274,8 +258,8 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
             className="font-sans font-bold uppercase tracking-widest"
             style={{
               fontSize: "8.5px",
-              color: "#111111",
-              borderBottom: "1px solid #111111",
+              color: "#1A1212",
+              borderBottom: "1px solid #1A1212",
               paddingBottom: "2px",
             }}
           >
@@ -287,7 +271,7 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
             height="10"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#8B1A1A"
+            stroke="#5B1C1C"
             strokeWidth={3}
           >
             <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -338,12 +322,12 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
       href={id != null ? `/collection?collection=${id}` : "/collection"}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="flex flex-col md:flex-row border border-black/5 bg-[#EDE8DC] hover:border-black/15 transition-colors duration-300 cursor-pointer group"
+      className="flex flex-col md:flex-row border border-black/5 bg-[#F8F1E5] hover:border-black/15 transition-colors duration-300 cursor-pointer group"
       data-cursor-text="DISCOVER"
     >
       {/* Image Block (Left/Top) */}
       <div
-        className="relative overflow-hidden w-full md:w-7/12 bg-[#EDE8DC]"
+        className="relative overflow-hidden w-full md:w-7/12 bg-[#F8F1E5]"
         style={{ aspectRatio: "16/10" }}
       >
         <div ref={imageRef} className="absolute inset-0 w-full h-full">
@@ -356,12 +340,6 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
             sizes="(max-width: 768px) 100vw, 60vw"
           />
         </div>
-
-        {/* Selvedge red edge line */}
-        <div
-          className="absolute top-0 left-0 bottom-0"
-          style={{ width: "3.5px", backgroundColor: "#8B1A1A", opacity: 0.85 }}
-        />
       </div>
 
       {/* Details Block (Right/Bottom) */}
@@ -381,15 +359,15 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.25em] mb-4 block"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             COLLECTION {number} // {tag}
           </span>
           <h3
-            className="font-serif font-light uppercase mb-4 transition-colors group-hover:text-[#8B1A1A]"
+            className="font-serif font-light uppercase mb-4 transition-colors group-hover:text-[#5B1C1C]"
             style={{
               fontSize: "1.85rem",
-              color: "#111111",
+              color: "#1A1212",
               letterSpacing: "0.03em",
               lineHeight: 1.1,
             }}
@@ -414,8 +392,8 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
             className="font-sans font-bold uppercase tracking-widest"
             style={{
               fontSize: "8.5px",
-              color: "#111111",
-              borderBottom: "1px solid #111111",
+              color: "#1A1212",
+              borderBottom: "1px solid #1A1212",
               paddingBottom: "2px",
             }}
           >
@@ -427,7 +405,7 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
             height="10"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#8B1A1A"
+            stroke="#5B1C1C"
             strokeWidth={3}
           >
             <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />

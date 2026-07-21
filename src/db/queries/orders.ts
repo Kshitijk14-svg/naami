@@ -4,10 +4,11 @@ import {
   orderItems,
   coupons,
   products,
+  productSizes,
   couponRedemptions,
   orderStatusHistory,
 } from "@/db/schema";
-import { eq, and, or, sql, desc, isNull, inArray, lt, gte, lte, ilike } from "drizzle-orm";
+import { eq, and, or, sql, desc, isNull, inArray, gte, lte, ilike } from "drizzle-orm";
 import { enqueueJob } from "@/lib/jobs";
 import { computeDiscount, validateCouponWindow, checkRedemptionLimits } from "@/lib/coupons";
 import { canTransition, ORDER_TRANSITIONS } from "@/lib/orderStatus";
@@ -52,6 +53,9 @@ const VALID_STATUSES: OrderStatus[] = [
 function makeOrderId(): string {
   return `ORD-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 }
+
+/** Thrown when an item's requested quantity exceeds available stock under the lock. */
+export class InsufficientStockError extends Error {}
 
 export interface CreateOrderInput {
   userId: number;
@@ -118,18 +122,63 @@ export async function createOrder(input: CreateOrderInput) {
         .where(eq(coupons.id, coupon.id));
     }
 
-    // Lock product rows in ascending ID order — consistent ordering prevents deadlocks
+    // Lock product rows (and their size rows, if any) in ascending ID order —
+    // consistent ordering prevents deadlocks with concurrent orders.
     const sortedProductIds = [...new Set(input.items.map((i) => i.productId))].sort(
       (a, b) => a - b
     );
     const trackStockMap = new Map<number, boolean>();
+    const productStockRemaining = new Map<number, number>();
     if (sortedProductIds.length > 0) {
       const locked = await tx
         .select({ id: products.id, stock: products.stock, trackStock: products.trackStock })
         .from(products)
-        .where(sql`${products.id} = ANY(${sortedProductIds})`)
+        .where(inArray(products.id, sortedProductIds))
         .for("update");
-      for (const row of locked) trackStockMap.set(row.id, row.trackStock);
+      for (const row of locked) {
+        trackStockMap.set(row.id, row.trackStock);
+        productStockRemaining.set(row.id, row.stock);
+      }
+    }
+
+    const sizeRows =
+      sortedProductIds.length > 0
+        ? await tx
+            .select({ productId: productSizes.productId, size: productSizes.size, stock: productSizes.stock })
+            .from(productSizes)
+            .where(inArray(productSizes.productId, sortedProductIds))
+            .for("update")
+        : [];
+    const sizeStockRemaining = new Map<string, number>();
+    const productsWithSizes = new Set<number>();
+    for (const row of sizeRows) {
+      sizeStockRemaining.set(`${row.productId}::${row.size}`, row.stock);
+      productsWithSizes.add(row.productId);
+    }
+
+    // Insufficient-stock guard: defense in depth against a stale client-side
+    // cart check (priceCart already checks this pre-payment, but re-verify
+    // under the lock here). Runs against running per-item remainders so
+    // duplicate lines for the same product+size are validated cumulatively.
+    for (const item of input.items) {
+      if (trackStockMap.get(item.productId) === false) continue; // infinite stock
+      if (productsWithSizes.has(item.productId)) {
+        const key = `${item.productId}::${item.size ?? ""}`;
+        const remaining = sizeStockRemaining.get(key);
+        if (remaining === undefined) {
+          throw new InsufficientStockError(`"${item.name}" is no longer available in size ${item.size}.`);
+        }
+        if (remaining < item.quantity) {
+          throw new InsufficientStockError(`Not enough stock for "${item.name}" (${item.size}).`);
+        }
+        sizeStockRemaining.set(key, remaining - item.quantity);
+      } else {
+        const remaining = productStockRemaining.get(item.productId) ?? 0;
+        if (remaining < item.quantity) {
+          throw new InsufficientStockError(`Not enough stock for "${item.name}".`);
+        }
+        productStockRemaining.set(item.productId, remaining - item.quantity);
+      }
     }
 
     const orderId = makeOrderId();
@@ -175,8 +224,17 @@ export async function createOrder(input: CreateOrderInput) {
     }
 
     // Decrement stock for each product — skipped for infinite-stock products.
+    // Sized products also decrement their specific size row; products.stock
+    // is always kept in sync as the derived aggregate so every other
+    // stock-reading path (low-stock alerts, admin lists) needs no changes.
     for (const item of input.items) {
       if (trackStockMap.get(item.productId) === false) continue;
+      if (productsWithSizes.has(item.productId)) {
+        await tx
+          .update(productSizes)
+          .set({ stock: sql`${productSizes.stock} - ${item.quantity}` })
+          .where(and(eq(productSizes.productId, item.productId), eq(productSizes.size, item.size ?? "")));
+      }
       await tx
         .update(products)
         .set({ stock: sql`${products.stock} - ${item.quantity}` })
@@ -210,22 +268,52 @@ export async function createOrder(input: CreateOrderInput) {
     }
 
     // Low-stock check on the affected products (post-decrement), also enqueued.
+    // Checks both the product's aggregate stock AND each individual size touched
+    // by this order — a size selling out completely can otherwise hide behind
+    // other sizes still having healthy stock, since the aggregate stays above
+    // threshold. Both kinds of breach batch into a single job for the order.
     const affectedIds = [...new Set(input.items.map((i) => i.productId))];
-    const lowStock = await tx
+    const affectedProducts = await tx
       .select({
+        id: products.id,
         name: products.name,
         number: products.number,
         stock: products.stock,
         lowStockThreshold: products.lowStockThreshold,
+        trackStock: products.trackStock,
       })
       .from(products)
-      .where(
-        and(
-          inArray(products.id, affectedIds),
-          eq(products.trackStock, true),
-          lt(products.stock, products.lowStockThreshold)
-        )
-      );
+      .where(inArray(products.id, affectedIds));
+
+    const lowStock: { name: string; number: string; stock: number; lowStockThreshold: number }[] = [];
+    const productById = new Map(affectedProducts.map((p) => [p.id, p]));
+
+    for (const p of affectedProducts) {
+      if (p.trackStock && p.stock < p.lowStockThreshold) {
+        lowStock.push({ name: p.name, number: p.number, stock: p.stock, lowStockThreshold: p.lowStockThreshold });
+      }
+    }
+
+    const touchedSizeKeys = new Set(
+      input.items
+        .filter((i) => productsWithSizes.has(i.productId))
+        .map((i) => `${i.productId}::${i.size ?? ""}`)
+    );
+    for (const key of touchedSizeKeys) {
+      const [productIdStr, size] = key.split("::");
+      const p = productById.get(Number(productIdStr));
+      if (!p || !p.trackStock) continue;
+      const remaining = sizeStockRemaining.get(key);
+      if (remaining !== undefined && remaining < p.lowStockThreshold) {
+        lowStock.push({
+          name: `${p.name} — Size ${size}`,
+          number: p.number,
+          stock: remaining,
+          lowStockThreshold: p.lowStockThreshold,
+        });
+      }
+    }
+
     if (lowStock.length > 0) {
       await enqueueJob("email:low_stock", { items: lowStock }, tx);
     }

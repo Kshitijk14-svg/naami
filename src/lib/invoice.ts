@@ -4,8 +4,8 @@ import { orders, invoiceCounters, coupons } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import type { OrderRow, OrderItemRow } from "@/db/queries/orders";
 
-const BRAND = "#8B1A1A";
-const INK = "#111111";
+const BRAND = "#5B1C1C";
+const INK = "#1A1212";
 const MUTED = "#666666";
 
 function formatPrice(inr: number): string {

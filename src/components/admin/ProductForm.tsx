@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { field, checkboxRow, inputStyle, labelCls, labelStyle } from "./formFields";
-import { SizeChipsField } from "./SizeChipsField";
+import { SizeStockField, type SizeStockDraft } from "./SizeStockField";
 import { MetafieldsField, type MetafieldDraft } from "./MetafieldsField";
 import { ProductImagesField, type ProductImageDraft } from "./ProductImagesField";
 
@@ -18,6 +18,7 @@ interface ProductDetail {
   name: string;
   subtitle: string;
   priceInr: number;
+  compareAtPriceInr: number | null;
   categoryId: number | null;
   stock: number;
   trackStock: boolean;
@@ -26,7 +27,7 @@ interface ProductDetail {
   isFeaturedNewArrival: boolean;
   isFeaturedBestseller: boolean;
   homeSortOrder: number;
-  sizes: string[];
+  sizes: SizeStockDraft[];
   metafields: MetafieldDraft[];
   images: ProductImageDraft[];
 }
@@ -36,6 +37,7 @@ interface FormState {
   name: string;
   subtitle: string;
   priceINR: string;
+  compareAtPriceINR: string;
   categoryId: string;
   stock: string;
   trackStock: boolean;
@@ -44,7 +46,7 @@ interface FormState {
   isFeaturedNewArrival: boolean;
   isFeaturedBestseller: boolean;
   homeSortOrder: string;
-  sizes: string[];
+  sizes: SizeStockDraft[];
   metafields: MetafieldDraft[];
   images: ProductImageDraft[];
 }
@@ -54,6 +56,7 @@ const emptyForm: FormState = {
   name: "",
   subtitle: "",
   priceINR: "",
+  compareAtPriceINR: "",
   categoryId: "",
   stock: "10",
   trackStock: true,
@@ -62,7 +65,12 @@ const emptyForm: FormState = {
   isFeaturedNewArrival: false,
   isFeaturedBestseller: false,
   homeSortOrder: "0",
-  sizes: ["S", "M", "L", "XL"],
+  sizes: [
+    { size: "S", stock: 0 },
+    { size: "M", stock: 0 },
+    { size: "L", stock: 0 },
+    { size: "XL", stock: 0 },
+  ],
   metafields: [],
   images: [],
 };
@@ -93,6 +101,7 @@ export function ProductForm({ productId }: { productId?: number }) {
           name: p.name,
           subtitle: p.subtitle,
           priceINR: String(p.priceInr),
+          compareAtPriceINR: p.compareAtPriceInr != null ? String(p.compareAtPriceInr) : "",
           categoryId: p.categoryId != null ? String(p.categoryId) : "",
           stock: String(p.stock),
           trackStock: p.trackStock,
@@ -117,6 +126,13 @@ export function ProductForm({ productId }: { productId?: number }) {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
 
+  // Once sizes exist, product-level stock is derived from them rather than
+  // edited directly — the server recomputes this anyway (setProductSizes),
+  // but sending the live total here keeps the low-stock-alert comparison
+  // in updateProduct() accurate instead of comparing against a stale value.
+  const sizesStockTotal = form.sizes.reduce((sum, s) => sum + s.stock, 0);
+  const effectiveStock = form.sizes.length > 0 ? sizesStockTotal : Number(form.stock);
+
   const handleSubmit = async () => {
     setSubmitting(true);
     setError("");
@@ -125,8 +141,9 @@ export function ProductForm({ productId }: { productId?: number }) {
       name: form.name,
       subtitle: form.subtitle,
       priceINR: Number(form.priceINR),
+      compareAtPriceInr: form.compareAtPriceINR ? Number(form.compareAtPriceINR) : null,
       categoryId: form.categoryId ? Number(form.categoryId) : null,
-      stock: Number(form.stock),
+      stock: effectiveStock,
       trackStock: form.trackStock,
       lowStockThreshold: Number(form.lowStockThreshold),
       isPublished: form.isPublished,
@@ -181,6 +198,24 @@ export function ProductForm({ productId }: { productId?: number }) {
         {field("Name *", <input style={inputStyle} value={form.name} onChange={set("name")} placeholder="OXFORD STRIPE SHIRT" />)}
         {field("Subtitle", <input style={inputStyle} value={form.subtitle} onChange={set("subtitle")} placeholder="120s Egyptian Cotton" />)}
         {field("Price (INR) *", <input style={inputStyle} type="number" value={form.priceINR} onChange={set("priceINR")} placeholder="29900" />)}
+        {field("Compare-at Price (INR)", (
+          <>
+            <input
+              style={inputStyle}
+              type="number"
+              value={form.compareAtPriceINR}
+              onChange={set("compareAtPriceINR")}
+              placeholder="Optional — shown struck-through with a discount badge"
+            />
+            {form.compareAtPriceINR &&
+              form.priceINR &&
+              Number(form.compareAtPriceINR) <= Number(form.priceINR) && (
+                <p className="font-sans" style={{ fontSize: "10px", color: "#8B1A1A", marginTop: 4 }}>
+                  Compare-at price should be higher than the actual price to show a discount.
+                </p>
+              )}
+          </>
+        ))}
 
         <div style={{ marginBottom: 14, padding: "12px 14px", backgroundColor: "#EDE8DC", border: "1px solid rgba(17,17,17,0.08)" }}>
           <p className={labelCls} style={{ ...labelStyle, marginBottom: 10 }}>Stock Manager</p>
@@ -191,13 +226,13 @@ export function ProductForm({ productId }: { productId?: number }) {
             (checked) => setForm((f) => ({ ...f, trackStock: !checked }))
           )}
           <div className="grid grid-cols-2 gap-x-4">
-            {field("Stock", (
+            {field(form.sizes.length > 0 ? "Stock (auto-calculated from sizes below)" : "Stock", (
               <input
                 style={{ ...inputStyle, opacity: form.trackStock ? 1 : 0.5 }}
                 type="number"
-                value={form.stock}
+                value={form.sizes.length > 0 ? sizesStockTotal : form.stock}
                 onChange={set("stock")}
-                disabled={!form.trackStock}
+                disabled={!form.trackStock || form.sizes.length > 0}
               />
             ))}
             {field("Low Stock Alert Threshold", (
@@ -212,7 +247,7 @@ export function ProductForm({ productId }: { productId?: number }) {
           </div>
         </div>
 
-        <SizeChipsField sizes={form.sizes} onChange={(sizes) => setForm((f) => ({ ...f, sizes }))} />
+        <SizeStockField sizes={form.sizes} onChange={(sizes) => setForm((f) => ({ ...f, sizes }))} />
         <MetafieldsField metafields={form.metafields} onChange={(metafields) => setForm((f) => ({ ...f, metafields }))} />
         <ProductImagesField images={form.images} onChange={(images) => setForm((f) => ({ ...f, images }))} />
 

@@ -31,7 +31,7 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
 
     // 2. Subtle shine/glow effect on the polished crimson components
     gsap.to([leftArchRef.current, rightArchRef.current, innerMRef.current], {
-      stroke: '#8B1A1A', // Turn to crimson accent
+      stroke: '#5B1C1C', // Turn to crimson accent
       duration: 0.4,
       ease: 'power2.out'
     });
@@ -41,7 +41,7 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
     // Reset back to premium charcoal theme state
     gsap.to(svgRef.current, { scale: 1, duration: 0.5, ease: 'power2.out' });
     gsap.to([leftArchRef.current, rightArchRef.current, innerMRef.current], {
-      stroke: '#111111',
+      stroke: '#1A1212',
       duration: 0.4,
       ease: 'power2.out'
     });
@@ -61,15 +61,15 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
 
     // Step 1: Drop the "naami" text off-screen downwards with gravity fade
     tl.to(textRef.current, {
-      y: 40,
+      y: 360,
       opacity: 0,
       duration: 0.4,
       ease: 'power2.in'
     }, 0);
 
     // Step 2: Split the arches apart horizontally (Left half goes left, right half goes right)
-    tl.to(leftArchRef.current, { x: -50, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
-    tl.to(rightArchRef.current, { x: 50, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
+    tl.to(leftArchRef.current, { x: -450, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
+    tl.to(rightArchRef.current, { x: 450, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
     tl.to(innerMRef.current, { scaleY: 0, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0.1);
 
     // Step 3: Align circle start point and expand it globally
@@ -90,7 +90,7 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
       ref={containerRef} 
       className="flex flex-col items-center justify-center py-1 cursor-pointer relative w-full overflow-hidden"
     >
-      <span className="text-[10px] tracking-[0.4em] text-[#111111]/45 uppercase mb-3 block font-light">
+      <span className="text-[10px] tracking-[0.4em] text-[#1A1212]/45 uppercase mb-3 block font-light">
         {label}
       </span>
 
@@ -101,62 +101,89 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
         className="focus:outline-none z-10 transition-transform"
         aria-label="Enter Naami Collection"
       >
-        {/* Exact Symmetrical Path Representation of your uploaded logo */}
+        {/* Traced from brand.png via pixel-scanline measurement (1080x1350 source) */}
         <svg
           ref={svgRef}
-          width="80"
-          height="120"
-          viewBox="0 0 120 180"
+          width="90"
+          height="112"
+          viewBox="0 0 1080 1350"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="will-change-transform"
         >
-          {/* LEFT HALF OF OUTER ARCH */}
+          {/* LEFT HALF OF OUTER ARCH — foot spur + leg + arc to apex */}
           <path
             ref={leftArchRef}
-            d="M24 90 H36 M30 90 V50 A 30 30 0 0 1 60 20"
-            stroke="#111111"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            className="will-change-transform"
-          />
-          
-          {/* RIGHT HALF OF OUTER ARCH */}
-          <path
-            ref={rightArchRef}
-            d="M96 90 H84 M90 90 V50 A 30 30 0 0 0 60 20"
-            stroke="#111111"
-            strokeWidth="2.5"
+            d="M380,772 L448,772 M414,760 V425 C414,350 460,310 540,310"
+            stroke="#1A1212"
+            strokeWidth="26"
             strokeLinecap="round"
             className="will-change-transform"
           />
 
-          {/* INNER LOWERCASE 'M' VAULTS */}
+          {/* RIGHT HALF OF OUTER ARCH — mirrored */}
+          <path
+            ref={rightArchRef}
+            d="M634,772 L702,772 M668,760 V425 C668,350 620,310 540,310"
+            stroke="#1A1212"
+            strokeWidth="26"
+            strokeLinecap="round"
+            className="will-change-transform"
+          />
+
+          {/* INNER TWIN 'M' VAULTS — humps merging into a shared center bar */}
           <path
             ref={innerMRef}
-            d="M30 65 A 15 15 0 0 1 60 65 V90 M54 90 H66 M60 65 A 15 15 0 0 1 90 65"
-            stroke="#111111"
-            strokeWidth="1.75"
+            d="M426,535 Q450,495 476,505 Q502,515 531,555 V772 M656,535 Q632,495 606,505 Q580,515 551,555 V772"
+            stroke="#1A1212"
+            strokeWidth="13"
             strokeLinecap="round"
             strokeLinejoin="round"
             className="will-change-transform"
           />
 
-          {/* COMPRESSED TYPOGRAPHY: naami */}
+          {/* TRACED WORDMARK: naami */}
           <g ref={textRef} className="will-change-transform">
-            <text
-              x="60"
-              y="135"
-              fill="#111111"
-              fontFamily="var(--font-serif), serif"
-              fontSize="24"
-              fontWeight="300"
-              letterSpacing="2.5"
-              textAnchor="middle"
-              className="lowercase tracking-[0.1em]"
-            >
-              naami
-            </text>
+            {/* n */}
+            <path
+              d="M368,1035 V885 C368,860 380,852 386,852 C392,852 404,860 404,885 V1035"
+              stroke="#1A1212"
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* a */}
+            <path
+              d="M444,1030 V885 C444,860 456,852 462,852 C468,852 481,860 481,885 V1030 L462,1050 Z"
+              stroke="#1A1212"
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* a */}
+            <path
+              d="M521,1030 V885 C521,860 533,852 539,852 C545,852 557,860 557,885 V1030 L539,1050 Z"
+              stroke="#1A1212"
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* m */}
+            <path
+              d="M598,1035 V885 C598,860 610,852 616,852 C622,852 635,860 635,885 C635,860 647,852 653,852 C659,852 671,860 671,885 V1035"
+              stroke="#1A1212"
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* i (stem + dot) */}
+            <path
+              d="M711,1035 V885 M712,826 L712,827"
+              stroke="#1A1212"
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </g>
         </svg>
       </button>
@@ -165,7 +192,7 @@ export default function NaamiGatewayButton({ label = "Discover Collection" }: { 
       {mounted && createPortal(
         <div
           ref={overlayRef}
-          className="fixed inset-0 bg-[#EDE8DC] z-[100000] hidden"
+          className="fixed inset-0 bg-[#F8F1E5] z-[100000] hidden"
           style={{ pointerEvents: 'none' }}
         />,
         document.body

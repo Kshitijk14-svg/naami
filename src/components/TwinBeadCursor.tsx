@@ -97,12 +97,12 @@ export default function TwinBeadCursor() {
     // Color themes
     const DARK_BG = {
       leaderFill: "#D4AF37",     // brass gold
-      trailerFill: "#FAF8F5",    // ecru
-      slingStroke: "#FAF8F5",
+      trailerFill: "#FFF9EF",    // ecru
+      slingStroke: "#FFF9EF",
       glowLeaderColor: "#D4AF37",
-      glowTrailerColor: "#FAF8F5",
+      glowTrailerColor: "#FFF9EF",
       ringStroke: "#D4AF37",
-      textFill: "#FAF8F5",
+      textFill: "#FFF9EF",
     };
     const LIGHT_BG = {
       leaderFill: "#1a1a2e",     // dark navy — pops on light
@@ -277,7 +277,7 @@ export default function TwinBeadCursor() {
         </filter>
         <filter id="ecru-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="2" result="blur" />
-          <feFlood floodColor="#FAF8F5" floodOpacity="0.5" result="color" />
+          <feFlood floodColor="#FFF9EF" floodOpacity="0.5" result="color" />
           <feComposite in="color" in2="blur" operator="in" result="glow" />
           <feMerge>
             <feMergeNode in="glow" />
@@ -289,7 +289,7 @@ export default function TwinBeadCursor() {
       {/* Elastic sling tether path */}
       <path
         ref={slingPathRef}
-        stroke="#FAF8F5"
+        stroke="#FFF9EF"
         strokeWidth="0.8"
         strokeDasharray="3 5"
         fill="none"
@@ -301,7 +301,7 @@ export default function TwinBeadCursor() {
       <circle
         ref={trailerCircleRef}
         r="3.5"
-        fill="#FAF8F5"
+        fill="#FFF9EF"
         cx="-100"
         cy="-100"
         filter="url(#ecru-glow)"
@@ -335,7 +335,7 @@ export default function TwinBeadCursor() {
         ref={hoverTextRef}
         textAnchor="middle"
         dominantBaseline="middle"
-        fill="#FAF8F5"
+        fill="#FFF9EF"
         fontSize="7"
         fontFamily="var(--font-inter), sans-serif"
         fontWeight="700"

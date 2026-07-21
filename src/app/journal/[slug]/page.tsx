@@ -43,14 +43,14 @@ export default async function JournalPostPage({ params }: Props) {
 
   return (
     <main
-      className="relative w-full min-h-screen flex flex-col pt-20"
-      style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      className="relative w-full min-h-screen flex flex-col pt-[var(--site-header-h)]"
+      style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       {/* Hero image */}
       {post.coverImage && (
         <div
           className="relative w-full overflow-hidden"
-          style={{ height: "clamp(280px, 50vh, 520px)", backgroundColor: "#EDE8DC" }}
+          style={{ height: "clamp(280px, 50vh, 520px)", backgroundColor: "#F8F1E5" }}
         >
           <Image
             src={post.coverImage}
@@ -61,7 +61,7 @@ export default async function JournalPostPage({ params }: Props) {
             priority
             sizes="100vw"
           />
-          <div className="absolute top-0 left-0 bottom-0" style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }} />
+          <div className="absolute top-0 left-0 bottom-0" style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.8 }} />
         </div>
       )}
 
@@ -72,7 +72,7 @@ export default async function JournalPostPage({ params }: Props) {
           <Link
             href="/journal"
             className="font-sans font-bold uppercase tracking-[0.2em] hover:opacity-50 transition-opacity"
-            style={{ fontSize: "8px", color: "#8B1A1A" }}
+            style={{ fontSize: "8px", color: "#5B1C1C" }}
           >
             ← Journal
           </Link>
@@ -101,7 +101,7 @@ export default async function JournalPostPage({ params }: Props) {
             </p>
           )}
 
-          <div className="mt-8" style={{ height: "1px", background: "linear-gradient(to right, #8B1A1A 2px, rgba(17,17,17,0.1) 2px, transparent)" }} />
+          <div className="mt-8" style={{ height: "1px", background: "linear-gradient(to right, #5B1C1C 2px, rgba(17,17,17,0.1) 2px, transparent)" }} />
         </div>
 
         {/* Content */}
@@ -113,7 +113,7 @@ export default async function JournalPostPage({ params }: Props) {
 
         {/* Footer rule */}
         <div className="mt-16">
-          <div style={{ height: "1px", background: "linear-gradient(to right, #8B1A1A 2px, rgba(17,17,17,0.08) 2px, transparent)" }} />
+          <div style={{ height: "1px", background: "linear-gradient(to right, #5B1C1C 2px, rgba(17,17,17,0.08) 2px, transparent)" }} />
           <div className="flex justify-between items-center mt-6">
             <Link
               href="/journal"
@@ -122,7 +122,7 @@ export default async function JournalPostPage({ params }: Props) {
             >
               ← All Stories
             </Link>
-            <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#8B1A1A" }}>
+            <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#5B1C1C" }}>
               NAAMI // ATELIER
             </span>
           </div>

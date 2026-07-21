@@ -7,17 +7,31 @@ export default function CustomCursor() {
   const pathname = usePathname();
   const svgRef = useRef<SVGSVGElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
+
+  // Toggle native-cursor hiding to match the current route/pointer type.
+  useEffect(() => {
+    const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+    const isAdmin = pathname.startsWith("/admin");
+    const shouldHide = !isCoarse && !isAdmin;
+    document.documentElement.classList.toggle("naami-cursor-active", shouldHide);
+
+    return () => {
+      document.documentElement.classList.remove("naami-cursor-active");
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const svgEl = svgRef.current;
     const button = buttonRef.current;
+    const dot = dotRef.current;
     const path = pathRef.current;
     const label = labelRef.current;
-    if (!svgEl || !button || !path || !label) return;
+    if (!svgEl || !button || !dot || !path || !label) return;
 
     // ── Mouse position ─────────────────────────────────────────
     const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
@@ -57,6 +71,10 @@ export default function CustomCursor() {
       button.style.transform =
         `translate(calc(${pos.x}px - 50%), calc(${pos.y}px - 50%))`;
 
+      // ── Dot tracks the true pointer position, no lag ─────────
+      dot.style.transform =
+        `translate(calc(${mouse.x}px - 50%), calc(${mouse.y}px - 50%))`;
+
       // ── Draw rubber-band string ─────────────────────────────
       const bx = pos.x;
       const by = pos.y;
@@ -95,6 +113,7 @@ export default function CustomCursor() {
         pos.y = e.clientY + 70;
         visible = true;
         button.style.opacity = "1";
+        dot.style.opacity = "1";
         svgEl.style.opacity = "1";
       }
 
@@ -143,12 +162,12 @@ export default function CustomCursor() {
       <svg
         ref={svgRef}
         className="hidden md:block fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: 9998, opacity: 0, transition: "opacity 0.4s ease" }}
+        style={{ zIndex: 999998, opacity: 0, transition: "opacity 0.4s ease" }}
         aria-hidden="true"
       >
         <path
           ref={pathRef}
-          stroke="#8B1A1A"
+          stroke="#5B1C1C"
           strokeWidth="1.2"
           strokeDasharray="4 6"
           fill="none"
@@ -157,14 +176,40 @@ export default function CustomCursor() {
         />
       </svg>
 
-      {/* Gold medallion button */}
+      {/* Small dot marking the true pointer position (replaces the native cursor) */}
+      <div
+        ref={dotRef}
+        className="hidden md:block fixed top-0 left-0 pointer-events-none"
+        style={{
+          width: 12,
+          height: 12,
+          zIndex: 1000000,
+          willChange: "transform",
+          opacity: 0,
+          transition: "opacity 0.4s ease",
+        }}
+      >
+        <div
+          className="select-none"
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: "50%",
+            backgroundColor: "#5B1C1C",
+            border: "1.5px solid #FFF9EF",
+            boxShadow: "0 0 6px rgba(139,26,26,0.4)",
+          }}
+        />
+      </div>
+
+      {/* Silver pearl medallion — hangs from the dot via the elastic string */}
       <div
         ref={buttonRef}
         className="hidden md:block fixed top-0 left-0 pointer-events-none"
         style={{
           width: 48,
           height: 48,
-          zIndex: 9999,
+          zIndex: 999999,
           willChange: "transform",
           opacity: 0,
           transition: "opacity 0.4s ease",
@@ -172,8 +217,8 @@ export default function CustomCursor() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/button-cursor.png"
-          alt="sling button"
+          src="/images/silver-pearl.png"
+          alt="sling pearl"
           style={{
             width: "100%",
             height: "100%",
@@ -187,11 +232,12 @@ export default function CustomCursor() {
         {/* Text label floating to the right of the pearl */}
         <div
           ref={labelRef}
-          className="absolute top-1/2 left-14 font-sans font-bold uppercase tracking-[0.25em] text-[#8B1A1A] opacity-0 pointer-events-none"
+          className="absolute top-1/2 font-sans font-bold uppercase tracking-[0.25em] text-[#5B1C1C] opacity-0 pointer-events-none"
           style={{
+            left: 56,
             fontSize: "8.5px",
             whiteSpace: "nowrap",
-            backgroundColor: "#F4F0E6",
+            backgroundColor: "#FFF9EF",
             padding: "5px 10px",
             border: "1px solid rgba(139, 26, 26, 0.25)",
             borderRadius: "3px",

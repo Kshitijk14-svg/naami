@@ -19,6 +19,7 @@ import CollectionsShowcase from "@/components/CollectionsShowcase";
 import HotspotCards from "@/components/HotspotCards";
 import LoomTimeline, { type LoomTimelineContent } from "@/components/LoomTimeline";
 import CoinPocketReveal, { type CoinPocketContent } from "@/components/CoinPocketReveal";
+import InstagramReelsSection from "@/components/InstagramReelsSection";
 import { useCartStore } from "@/models/cartStore";
 
 type CarouselProduct = {
@@ -28,10 +29,12 @@ type CarouselProduct = {
   subtitle: string;
   price: string;
   priceInr: number;
+  compareAtPriceInr?: number | null;
   metafields: { name: string; description: string }[];
   image: string;
   thumbnailImage?: string;
-  sizes?: string[];
+  sizes?: { size: string; stock: number }[];
+  available?: boolean;
 };
 
 type HomepageCollection = {
@@ -94,6 +97,13 @@ type ShopLookHeader = {
   title: string;
 };
 
+type InstagramReels = {
+  enabled: boolean;
+  kicker: string;
+  title: string;
+  reels: { thumbnailUrl: string; authorName: string; title: string; permalink: string }[];
+};
+
 interface HomeClientProps {
   heroSlides: HeroSlide[];
   newArrivals: CarouselProduct[];
@@ -108,6 +118,7 @@ interface HomeClientProps {
   newArrivalsSection: ProductCarouselSection;
   bestsellersSection: ProductCarouselSection;
   shopLookHeader: ShopLookHeader;
+  instagramReels: InstagramReels;
 }
 
 export default function HomeClient({
@@ -124,6 +135,7 @@ export default function HomeClient({
   newArrivalsSection,
   bestsellersSection,
   shopLookHeader,
+  instagramReels,
 }: HomeClientProps) {
   // Force scroll to top on reload/mount
   useEffect(() => {
@@ -237,7 +249,7 @@ export default function HomeClient({
   return (
     <main
       className="relative w-full min-h-screen"
-      style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       {/* Cinematic unzipping loader */}
       <BrandLoader />
@@ -245,19 +257,13 @@ export default function HomeClient({
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
         className="pt-28 pb-10 px-6 md:px-12"
-        style={{ backgroundColor: "#F4F0E6" }}
+        style={{ backgroundColor: "#FFF9EF" }}
       >
         <div
           ref={heroTitleRef}
           className="relative w-full h-[65vh] md:h-[75vh] overflow-hidden border border-black/5"
           style={{ opacity: 0 }}
         >
-          {/* Red edge selvedge line */}
-          <div
-            className="absolute top-0 left-0 bottom-0 z-30"
-            style={{ width: "3.5px", backgroundColor: "#8B1A1A", opacity: 0.85 }}
-          />
-
           {heroSlides.map((slide, idx) => (
             <div
               key={idx}
@@ -319,7 +325,7 @@ export default function HomeClient({
           >
             <span
               className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-              style={{ fontSize: "9px", color: "#8B1A1A" }}
+              style={{ fontSize: "9px", color: "#5B1C1C" }}
             >
               {heroSlides[currentSlide].tag}
             </span>
@@ -327,7 +333,7 @@ export default function HomeClient({
               className="font-serif font-light uppercase leading-none mb-3"
               style={{
                 fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
-                color: "#FAF8F5",
+                color: "#FFF9EF",
                 letterSpacing: "-0.01em",
               }}
             >
@@ -335,7 +341,7 @@ export default function HomeClient({
             </h2>
             <p
               className="font-sans font-bold uppercase tracking-[0.2em]"
-              style={{ fontSize: "10px", color: "#FAF8F5", opacity: 0.7 }}
+              style={{ fontSize: "10px", color: "#FFF9EF", opacity: 0.7 }}
             >
               {heroSlides[currentSlide].subtitle}
             </p>
@@ -348,14 +354,14 @@ export default function HomeClient({
           className="flex flex-col gap-2 mt-4 w-full"
           style={{ opacity: 0 }}
         >
-          <div className="flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#111111" }}>
+          <div className="flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#1A1212" }}>
             <span>0{currentSlide + 1}</span>
             <span style={{ opacity: 0.35 }}>/ 0{heroSlides.length}</span>
           </div>
           {/* Progress bar track */}
-          <div className="w-full h-[1.5px] bg-[#111111]/10 relative overflow-hidden">
+          <div className="w-full h-[1.5px] bg-[#1A1212]/10 relative overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full bg-[#8B1A1A] transition-all duration-700 ease-out"
+              className="absolute left-0 top-0 h-full bg-[#5B1C1C] transition-all duration-700 ease-out"
               style={{
                 width: `${((currentSlide + 1) / heroSlides.length) * 100}%`,
               }}
@@ -377,9 +383,9 @@ export default function HomeClient({
       <LoomTimeline content={loomContent} />
 
       {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F4F0E6" }}>
+      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#FFF9EF" }}>
         <svg width="100%" height="8" className="w-full opacity-50">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#8B1A1A" strokeWidth="1.2" className="reveal-stitch-line" />
+          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
         </svg>
       </div>
 
@@ -410,9 +416,9 @@ export default function HomeClient({
       />
 
       {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#EDE8DC" }}>
+      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F8F1E5" }}>
         <svg width="100%" height="8" className="w-full opacity-40">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#8B1A1A" strokeWidth="1.2" className="reveal-stitch-line" />
+          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
         </svg>
       </div>
 
@@ -432,16 +438,32 @@ export default function HomeClient({
       </div>
 
       {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F4F0E6" }}>
+      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#FFF9EF" }}>
         <svg width="100%" height="8" className="w-full opacity-50">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#8B1A1A" strokeWidth="1.2" className="reveal-stitch-line" />
+          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
         </svg>
       </div>
+
+      {/* ── Instagram Reels (admin-curated) ─────────────────────── */}
+      {instagramReels.enabled && instagramReels.reels.length > 0 && (
+        <>
+          <InstagramReelsSection
+            kicker={instagramReels.kicker}
+            title={instagramReels.title}
+            reels={instagramReels.reels}
+          />
+          <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F8F1E5" }}>
+            <svg width="100%" height="8" className="w-full opacity-40">
+              <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
+            </svg>
+          </div>
+        </>
+      )}
 
       {/* ── Asymmetric Manifesto Split ─────────────────────────── */}
       <section
         className="px-6 md:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
-        style={{ backgroundColor: "#F4F0E6" }}
+        style={{ backgroundColor: "#FFF9EF" }}
       >
         {/* Left: Editorial lookbook block */}
         <div className="md:col-span-6 reveal-stagger-item">
@@ -449,7 +471,7 @@ export default function HomeClient({
             className="relative overflow-hidden hw-accelerate border border-black/5"
             style={{
               aspectRatio: "3/4",
-              backgroundColor: "#EDE8DC",
+              backgroundColor: "#F8F1E5",
             }}
             data-cursor-text="EXPLORE"
           >
@@ -484,7 +506,7 @@ export default function HomeClient({
             {/* Card label */}
             <div
               className="absolute bottom-6 left-6 font-sans font-bold uppercase tracking-[0.25em]"
-              style={{ fontSize: "9px", color: "#111111", opacity: 0.7 }}
+              style={{ fontSize: "9px", color: "#1A1212", opacity: 0.7 }}
             >
               NAAMI // COLLECTION
             </div>
@@ -494,14 +516,14 @@ export default function HomeClient({
               style={{
                 width: 8,
                 height: 8,
-                backgroundColor: "#8B1A1A",
+                backgroundColor: "#5B1C1C",
                 boxShadow: "0 0 8px rgba(139,26,26,0.4)",
               }}
             />
             {/* Selvedge red edge line */}
             <div
               className="absolute top-0 left-0 bottom-0"
-              style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.75 }}
+              style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.75 }}
             />
           </div>
         </div>
@@ -512,7 +534,7 @@ export default function HomeClient({
         >
           <div
             className="font-sans font-bold uppercase tracking-[0.25em] mb-6"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             {manifesto.kicker}
           </div>
@@ -538,7 +560,7 @@ export default function HomeClient({
             className="mt-10"
             style={{
               height: "1px",
-              background: `linear-gradient(to right, #8B1A1A 2px, rgba(17,17,17,0.1) 2px, transparent)`,
+              background: `linear-gradient(to right, #5B1C1C 2px, rgba(17,17,17,0.1) 2px, transparent)`,
             }}
           />
         </div>

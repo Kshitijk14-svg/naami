@@ -3,54 +3,72 @@
 import { useState } from "react";
 import { inputStyle, labelCls, labelStyle } from "./formFields";
 
-interface SizeChipsFieldProps {
-  sizes: string[];
-  onChange: (sizes: string[]) => void;
+export interface SizeStockDraft {
+  size: string;
+  stock: number;
+}
+
+interface SizeStockFieldProps {
+  sizes: SizeStockDraft[];
+  onChange: (sizes: SizeStockDraft[]) => void;
 }
 
 const MAX_SIZE_LENGTH = 10;
 
-export function SizeChipsField({ sizes, onChange }: SizeChipsFieldProps) {
+export function SizeStockField({ sizes, onChange }: SizeStockFieldProps) {
   const [draft, setDraft] = useState("");
 
   const addSize = () => {
     const value = draft.trim().slice(0, MAX_SIZE_LENGTH);
     if (!value) return;
-    if (sizes.some((s) => s.toLowerCase() === value.toLowerCase())) {
+    if (sizes.some((s) => s.size.toLowerCase() === value.toLowerCase())) {
       setDraft("");
       return;
     }
-    onChange([...sizes, value]);
+    onChange([...sizes, { size: value, stock: 0 }]);
     setDraft("");
   };
 
   const removeSize = (size: string) => {
-    onChange(sizes.filter((s) => s !== size));
+    onChange(sizes.filter((s) => s.size !== size));
+  };
+
+  const updateStock = (size: string, stock: number) => {
+    onChange(sizes.map((s) => (s.size === size ? { ...s, stock } : s)));
   };
 
   return (
     <div style={{ marginBottom: 14 }}>
       <label className={labelCls} style={labelStyle}>
-        Sizes
+        Sizes &amp; Stock
       </label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-        {sizes.map((size) => (
-          <span
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
+        {sizes.map(({ size, stock }) => (
+          <div
             key={size}
-            className="font-sans font-bold uppercase"
             style={{
-              fontSize: "10px",
-              letterSpacing: "0.08em",
-              color: "#111111",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
               backgroundColor: "#EDE8DC",
               border: "1px solid rgba(17,17,17,0.15)",
-              padding: "5px 8px 5px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
+              padding: "6px 10px",
             }}
           >
-            {size}
+            <span
+              className="font-sans font-bold uppercase"
+              style={{ fontSize: "10px", letterSpacing: "0.08em", color: "#111111", flex: "0 0 60px" }}
+            >
+              {size}
+            </span>
+            <input
+              type="number"
+              min={0}
+              value={stock}
+              onChange={(e) => updateStock(size, Math.max(0, Number(e.target.value) || 0))}
+              style={{ ...inputStyle, flex: 1 }}
+              placeholder="Stock"
+            />
             <button
               type="button"
               onClick={() => removeSize(size)}
@@ -59,11 +77,11 @@ export function SizeChipsField({ sizes, onChange }: SizeChipsFieldProps) {
             >
               ×
             </button>
-          </span>
+          </div>
         ))}
         {sizes.length === 0 && (
           <span className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.4)" }}>
-            No sizes added yet
+            No sizes added yet — product stock is managed by the Stock field above.
           </span>
         )}
       </div>

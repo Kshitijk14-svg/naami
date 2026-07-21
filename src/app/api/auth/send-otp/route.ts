@@ -21,12 +21,12 @@ function shell(inner: string): string {
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"/></head>
-<body style="background:#F4F0E6;margin:0;padding:40px 0;font-family:sans-serif;">
+<body style="background:#FFF9EF;margin:0;padding:40px 0;font-family:sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr><td align="center">
-      <table width="480" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #8B1A1A;">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#fff;border-top:3px solid #5B1C1C;">
         <tr><td style="padding:36px 40px 20px;">
-          <p style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#8B1A1A;margin:0 0 12px;">NAAMI ATELIER</p>
+          <p style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#5B1C1C;margin:0 0 12px;">NAAMI ATELIER</p>
           ${inner}
         </td></tr>
         <tr><td style="padding:16px 40px;border-top:1px solid rgba(139,26,26,0.1);text-align:center;">
@@ -52,7 +52,7 @@ function otpEmail(purpose: Purpose, name: string, otp: string): string {
     <p style="font-size:13px;color:#555;margin:0 0 28px;line-height:1.6;">
       ${name ? `Hello ${name},<br/>` : ""}${intro}
     </p>
-    <div style="background:#F4F0E6;border-left:3px solid #8B1A1A;padding:20px 28px;margin-bottom:28px;">
+    <div style="background:#FFF9EF;border-left:3px solid #5B1C1C;padding:20px 28px;margin-bottom:28px;">
       <span style="font-family:Georgia,serif;font-size:36px;letter-spacing:0.2em;color:#111;">${otp}</span>
     </div>
     <p style="font-size:11px;color:#aaa;margin:0;">

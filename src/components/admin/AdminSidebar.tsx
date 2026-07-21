@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Orders",      href: "/admin/orders",       roles: ["staff", "admin", "super_admin"] },
   { label: "Blog",        href: "/admin/blog",         roles: ["admin", "super_admin"] },
   { label: "Design",      href: "/admin/design",       roles: ["admin", "super_admin"] },
+  { label: "Feedback",    href: "/admin/feedback",     roles: ["admin", "super_admin"] },
 ];
 
 interface Props {

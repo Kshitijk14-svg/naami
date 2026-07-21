@@ -79,8 +79,8 @@ export default function ProfilePage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F4F0E6" }}>
-        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#8B1A1A" }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFF9EF" }}>
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5B1C1C" }} />
       </div>
     );
   }
@@ -102,23 +102,23 @@ export default function ProfilePage() {
   return (
     <main
       className="relative w-full min-h-screen flex flex-col"
-      style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+      style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       {/* Header */}
       <div
-        className="w-full pt-28 pb-10 px-6 md:px-12"
-        style={{ borderBottom: "1px solid rgba(17,17,17,0.06)" }}
+        className="w-full pb-10 px-6 md:px-12"
+        style={{ borderBottom: "1px solid rgba(17,17,17,0.06)", paddingTop: "calc(var(--site-header-h) + 2rem)" }}
       >
         <div className="max-w-4xl mx-auto">
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             NAAMI // MY ACCOUNT
           </span>
           <h1
             className="font-serif font-light uppercase mb-2"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#111111", lineHeight: 1.05 }}
+            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1A1212", lineHeight: 1.05 }}
           >
             {session.name ?? session.email?.split("@")[0]}
           </h1>
@@ -139,13 +139,13 @@ export default function ProfilePage() {
                 className="font-sans font-bold uppercase tracking-[0.18em] pb-4 mr-8 transition-all"
                 style={{
                   fontSize: "9px",
-                  color: activeTab === tab.id ? "#8B1A1A" : "rgba(17,17,17,0.45)",
+                  color: activeTab === tab.id ? "#5B1C1C" : "rgba(17,17,17,0.45)",
                   borderTopStyle: "none",
                   borderLeftStyle: "none",
                   borderRightStyle: "none",
                   borderBottomStyle: "solid",
                   borderBottomWidth: "2px",
-                  borderBottomColor: activeTab === tab.id ? "#8B1A1A" : "transparent",
+                  borderBottomColor: activeTab === tab.id ? "#5B1C1C" : "transparent",
                   background: "none",
                   cursor: "pointer",
                   paddingBottom: "16px",
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                   >
                     {label}
                   </span>
-                  <span className="font-sans" style={{ fontSize: "13px", color: "#111111" }}>
+                  <span className="font-sans" style={{ fontSize: "13px", color: "#1A1212" }}>
                     {value}
                   </span>
                 </div>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
             <div className="pb-16">
               {ordersLoading && (
                 <div className="flex justify-center py-12">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#8B1A1A" }} />
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5B1C1C" }} />
                 </div>
               )}
               {!ordersLoading && orders.length === 0 && (
@@ -198,7 +198,7 @@ export default function ProfilePage() {
                   </p>
                   <Link
                     href="/"
-                    className="inline-block mt-4 font-sans font-bold uppercase tracking-[0.2em] text-[9px] text-[#8B1A1A] border-b border-[#8B1A1A] pb-0.5"
+                    className="inline-block mt-4 font-sans font-bold uppercase tracking-[0.2em] text-[9px] text-[#5B1C1C] border-b border-[#5B1C1C] pb-0.5"
                   >
                     Shop the Collection →
                   </Link>
@@ -208,11 +208,11 @@ export default function ProfilePage() {
                 <Link
                   key={order.id}
                   href={`/orders/${order.id}`}
-                  className="flex items-center justify-between py-4 hover:bg-[#EDE8DC] transition-colors px-2 -mx-2"
+                  className="flex items-center justify-between py-4 hover:bg-[#F8F1E5] transition-colors px-2 -mx-2"
                   style={{ borderBottom: "1px solid rgba(17,17,17,0.06)" }}
                 >
                   <div>
-                    <p className="font-sans font-bold uppercase" style={{ fontSize: "11px", color: "#111111", letterSpacing: "0.1em" }}>
+                    <p className="font-sans font-bold uppercase" style={{ fontSize: "11px", color: "#1A1212", letterSpacing: "0.1em" }}>
                       {order.id}
                     </p>
                     <p className="font-sans mt-0.5" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)" }}>
@@ -225,14 +225,14 @@ export default function ProfilePage() {
                       style={{
                         fontSize: "8px",
                         letterSpacing: "0.15em",
-                        color: STATUS_COLORS[order.status] ?? "#111111",
-                        backgroundColor: `${STATUS_COLORS[order.status] ?? "#111111"}14`,
+                        color: STATUS_COLORS[order.status] ?? "#1A1212",
+                        backgroundColor: `${STATUS_COLORS[order.status] ?? "#1A1212"}14`,
                         padding: "3px 8px",
                       }}
                     >
                       {order.status}
                     </span>
-                    <span className="font-serif font-light" style={{ fontSize: "1.1rem", color: "#111111" }}>
+                    <span className="font-serif font-light" style={{ fontSize: "1.1rem", color: "#1A1212" }}>
                       {formatINR(order.totalInr)}
                     </span>
                   </div>
@@ -246,7 +246,7 @@ export default function ProfilePage() {
             <div className="pb-16">
               {wishlistLoading && (
                 <div className="flex justify-center py-12">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#8B1A1A" }} />
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5B1C1C" }} />
                 </div>
               )}
               {!wishlistLoading && wishlist.length === 0 && (
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                   </p>
                   <Link
                     href="/"
-                    className="inline-block mt-4 font-sans font-bold uppercase tracking-[0.2em] text-[9px] text-[#8B1A1A] border-b border-[#8B1A1A] pb-0.5"
+                    className="inline-block mt-4 font-sans font-bold uppercase tracking-[0.2em] text-[9px] text-[#5B1C1C] border-b border-[#5B1C1C] pb-0.5"
                   >
                     Discover the Atelier →
                   </Link>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                   <div key={item.productId} className="group relative flex flex-col">
                     <Link href={`/product/${item.productId}`} className="block">
                       <div
-                        className="relative overflow-hidden w-full border border-black/5 bg-[#EDE8DC]"
+                        className="relative overflow-hidden w-full border border-black/5 bg-[#F8F1E5]"
                         style={{ aspectRatio: "3/4" }}
                       >
                         <Image
@@ -280,7 +280,7 @@ export default function ProfilePage() {
                         />
                         <div
                           className="absolute top-0 left-0 bottom-0"
-                          style={{ width: "3px", backgroundColor: "#8B1A1A", opacity: 0.8 }}
+                          style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.8 }}
                         />
                       </div>
                       <div className="pt-3">
@@ -291,19 +291,19 @@ export default function ProfilePage() {
                           {item.number}
                         </p>
                         <p
-                          className="font-serif font-light uppercase mb-1 group-hover:text-[#8B1A1A] transition-colors"
-                          style={{ fontSize: "1rem", color: "#111111" }}
+                          className="font-serif font-light uppercase mb-1 group-hover:text-[#5B1C1C] transition-colors"
+                          style={{ fontSize: "1rem", color: "#1A1212" }}
                         >
                           {item.name}
                         </p>
-                        <p className="font-serif font-light" style={{ fontSize: "1rem", color: "#111111", opacity: 0.7 }}>
+                        <p className="font-serif font-light" style={{ fontSize: "1rem", color: "#1A1212", opacity: 0.7 }}>
                           {item.price}
                         </p>
                       </div>
                     </Link>
                     <button
                       onClick={() => removeFromWishlist(item.productId)}
-                      className="mt-2 font-sans font-bold uppercase tracking-[0.15em] hover:text-[#8B1A1A] transition-colors self-start"
+                      className="mt-2 font-sans font-bold uppercase tracking-[0.15em] hover:text-[#5B1C1C] transition-colors self-start"
                       style={{ fontSize: "8px", color: "rgba(17,17,17,0.4)", background: "none", border: "none", cursor: "pointer" }}
                     >
                       Remove

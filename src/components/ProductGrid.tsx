@@ -195,7 +195,7 @@ export default function ProductGrid() {
                 className="font-serif font-light uppercase mb-2"
                 style={{
                   fontSize: "clamp(2rem, 4vw, 3.5rem)",
-                  color: "#FAF8F5",
+                  color: "#FFF9EF",
                   lineHeight: 1,
                   letterSpacing: "0.02em",
                 }}
@@ -204,7 +204,7 @@ export default function ProductGrid() {
               </h2>
               <p
                 className="font-sans font-bold uppercase tracking-[0.2em] mb-10"
-                style={{ fontSize: "10px", color: "#FAF8F5", opacity: 0.4 }}
+                style={{ fontSize: "10px", color: "#FFF9EF", opacity: 0.4 }}
               >
                 {expandedProduct.subtitle}
               </p>
@@ -228,13 +228,13 @@ export default function ProductGrid() {
                   >
                     <span
                       className="font-sans font-bold uppercase tracking-[0.15em]"
-                      style={{ fontSize: "9px", color: "#FAF8F5", opacity: 0.35 }}
+                      style={{ fontSize: "9px", color: "#FFF9EF", opacity: 0.35 }}
                     >
                       {label}
                     </span>
                     <span
                       className="font-sans text-right"
-                      style={{ fontSize: "11px", color: "#FAF8F5", opacity: 0.8, maxWidth: "60%" }}
+                      style={{ fontSize: "11px", color: "#FFF9EF", opacity: 0.8, maxWidth: "60%" }}
                     >
                       {value}
                     </span>
@@ -245,13 +245,13 @@ export default function ProductGrid() {
               <div className="flex items-end justify-between mb-8">
                 <span
                   className="font-serif font-light"
-                  style={{ fontSize: "2.5rem", color: "#FAF8F5" }}
+                  style={{ fontSize: "2.5rem", color: "#FFF9EF" }}
                 >
                   {expandedProduct.price}
                 </span>
                 <span
                   className="font-sans"
-                  style={{ fontSize: "10px", color: "#FAF8F5", opacity: 0.3 }}
+                  style={{ fontSize: "10px", color: "#FFF9EF", opacity: 0.3 }}
                 >
                   USD
                 </span>
@@ -289,7 +289,7 @@ export default function ProductGrid() {
             <button
               onClick={closeProduct}
               className="absolute top-8 right-8 flex items-center gap-2 font-sans font-bold uppercase tracking-[0.2em] hover:opacity-60 transition-opacity"
-              style={{ fontSize: "9px", color: "#FAF8F5" }}
+              style={{ fontSize: "9px", color: "#FFF9EF" }}
               data-cursor-text="CLOSE"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -319,21 +319,21 @@ export default function ProductGrid() {
               className="font-serif font-light uppercase"
               style={{
                 fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                color: "#FAF8F5",
+                color: "#FFF9EF",
                 lineHeight: 0.95,
                 letterSpacing: "0.02em",
               }}
             >
               Selected
               <br />
-              <span style={{ color: "#FAF8F5", opacity: 0.4, fontStyle: "italic" }}>
+              <span style={{ color: "#FFF9EF", opacity: 0.4, fontStyle: "italic" }}>
                 Pieces
               </span>
             </h2>
           </div>
           <div
             className="hidden md:block font-sans font-bold uppercase tracking-[0.25em] text-right"
-            style={{ fontSize: "9px", color: "#FAF8F5", opacity: 0.3 }}
+            style={{ fontSize: "9px", color: "#FFF9EF", opacity: 0.3 }}
           >
             3 Pieces Available
             <br />
@@ -450,7 +450,7 @@ function ProductCard({
         >
           <span
             className="font-sans font-bold uppercase tracking-[0.2em]"
-            style={{ fontSize: "9px", color: "#FAF8F5" }}
+            style={{ fontSize: "9px", color: "#FFF9EF" }}
           >
             EXPAND VIEW
           </span>
@@ -475,7 +475,7 @@ function ProductCard({
           className="font-serif font-light uppercase mb-1"
           style={{
             fontSize: "1.25rem",
-            color: "#FAF8F5",
+            color: "#FFF9EF",
             lineHeight: 1.1,
             letterSpacing: "0.03em",
           }}
@@ -485,13 +485,13 @@ function ProductCard({
         <div className="flex items-center justify-between mt-3">
           <span
             className="font-sans"
-            style={{ fontSize: "11px", color: "#FAF8F5", opacity: 0.4 }}
+            style={{ fontSize: "11px", color: "#FFF9EF", opacity: 0.4 }}
           >
             {product.subtitle}
           </span>
           <span
             className="font-serif"
-            style={{ fontSize: "1.1rem", color: "#FAF8F5" }}
+            style={{ fontSize: "1.1rem", color: "#FFF9EF" }}
           >
             {product.price}
           </span>

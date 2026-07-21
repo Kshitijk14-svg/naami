@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import gsap from "gsap";
 import Image from "next/image";
 import { useCartStore } from "@/models/cartStore";
+import { formatINR } from "@/lib/format";
 import NaamiGatewayButton from "./NaamiGatewayButton";
 import WishlistButton from "./WishlistButton";
 
@@ -20,10 +21,20 @@ export interface CarouselProduct {
   subtitle: string;
   price: string;
   priceInr: number;
+  compareAtPriceInr?: number | null;
   metafields: ProductMetafield[];
   image: string;
   thumbnailImage?: string;
-  sizes?: string[];
+  sizes?: { size: string; stock: number }[];
+  available?: boolean;
+}
+
+function getDiscount(product: CarouselProduct) {
+  if (!product.compareAtPriceInr || product.compareAtPriceInr <= product.priceInr) return null;
+  const percentOff = Math.round(
+    ((product.compareAtPriceInr - product.priceInr) / product.compareAtPriceInr) * 100
+  );
+  return { compareAtPrice: formatINR(product.compareAtPriceInr), percentOff };
 }
 
 interface ProductCarouselProps {
@@ -343,7 +354,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
             ref={bookContainerRef}
             className="absolute shadow-[0_30px_70px_rgba(17,17,17,0.25)] select-none"
             style={{
-              backgroundColor: "#F4F0E6",
+              backgroundColor: "#FFF9EF",
               transformStyle: "preserve-3d",
               perspective: "2000px",
               pointerEvents: "auto",
@@ -367,7 +378,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                 className="absolute inset-0 overflow-hidden border border-black/5"
                 style={{
                   backfaceVisibility: "hidden",
-                  backgroundColor: "#EDE8DC",
+                  backgroundColor: "#F8F1E5",
                   transform: "rotateY(0deg)",
                 }}
               >
@@ -385,7 +396,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    backgroundColor: "#8B1A1A",
+                    backgroundColor: "#5B1C1C",
                     boxShadow: "0 0 6px rgba(139,26,26,0.5)",
                   }}
                 />
@@ -393,7 +404,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                   className="absolute top-0 left-0 bottom-0"
                   style={{
                     width: "2.5px",
-                    backgroundColor: "#8B1A1A",
+                    backgroundColor: "#5B1C1C",
                     opacity: 0.75,
                   }}
                 />
@@ -404,7 +415,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                 className="absolute inset-0 overflow-y-auto scrollbar-none"
                 style={{
                   backfaceVisibility: "hidden",
-                  backgroundColor: "#F4F0E6",
+                  backgroundColor: "#FFF9EF",
                   transform: "rotateY(180deg)",
                   borderRight: isDesktop ? "1px solid rgba(17,17,17,0.08)" : "none",
                 }}
@@ -438,7 +449,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                 style={{
                   left: "50%",
                   width: "50%",
-                  backgroundColor: "#F4F0E6",
+                  backgroundColor: "#FFF9EF",
                   zIndex: 10,
                 }}
               >
@@ -468,7 +479,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
                   style={{
                     left: "calc(50% - 0.5px)",
                     width: "1px",
-                    backgroundColor: "#8B1A1A",
+                    backgroundColor: "#5B1C1C",
                     opacity: 0.3,
                   }}
                 />
@@ -483,13 +494,13 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
       {/* Carousel Section Container */}
        <section
         className="pt-12 pb-4 relative overflow-hidden"
-        style={{ backgroundColor: "#F4F0E6" }}
+        style={{ backgroundColor: "#FFF9EF" }}
       >
         <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between">
           <div>
             <span
               className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
-              style={{ fontSize: "9px", color: "#8B1A1A" }}
+              style={{ fontSize: "9px", color: "#5B1C1C" }}
             >
               {tag}
             </span>
@@ -497,7 +508,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
               className="font-serif font-light uppercase"
               style={{
                 fontSize: "clamp(2rem, 4vw, 3rem)",
-                color: "#111111",
+                color: "#1A1212",
                 lineHeight: 1.1,
                 letterSpacing: "0.02em",
               }}
@@ -602,7 +613,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
       <div className="flex items-center gap-3 mb-4">
         <span
           className="font-sans font-bold"
-          style={{ fontSize: "9px", color: "#8B1A1A", letterSpacing: "0.25em" }}
+          style={{ fontSize: "9px", color: "#5B1C1C", letterSpacing: "0.25em" }}
         >
           {product.number}
         </span>
@@ -621,7 +632,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
         className="relative overflow-hidden w-full border border-black/5"
         style={{
           aspectRatio: "3/4",
-          backgroundColor: "#EDE8DC",
+          backgroundColor: "#F8F1E5",
         }}
       >
         <div ref={imageRef} className="absolute inset-0 w-full h-full">
@@ -637,32 +648,10 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
 
         {/* No gradient overlay */}
 
-        {/* Solid Crimson corner rivet accent */}
-        <div
-          className="absolute top-4 right-4"
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            backgroundColor: "#8B1A1A",
-            boxShadow: "0 0 6px rgba(139,26,26,0.5)",
-          }}
-        />
-
         {/* Wishlist toggle button */}
         <div className="absolute bottom-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
           <WishlistButton productId={product.id} />
         </div>
-
-        {/* Red edge selvedge line */}
-        <div
-          className="absolute top-0 left-0 bottom-0"
-          style={{
-            width: "2.5px",
-            backgroundColor: "#8B1A1A",
-            opacity: 0.75,
-          }}
-        />
       </div>
 
       {/* Product metadata */}
@@ -671,7 +660,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
           className="font-serif font-light uppercase mb-1 truncate text-wrap"
           style={{
             fontSize: "1.2rem",
-            color: "#111111",
+            color: "#1A1212",
             lineHeight: 1.1,
             letterSpacing: "0.03em",
           }}
@@ -681,15 +670,33 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
         <div className="flex items-center justify-between mt-2">
           <span
             className="font-sans truncate max-w-[70%]"
-            style={{ fontSize: "11px", color: "#111111", opacity: 0.5 }}
+            style={{ fontSize: "11px", color: "#1A1212", opacity: 0.5 }}
           >
             {product.subtitle}
           </span>
-          <span
-            className="font-serif font-medium"
-            style={{ fontSize: "1.05rem", color: "#111111" }}
-          >
-            {product.price}
+          <span className="flex items-baseline gap-1.5">
+            <span
+              className="font-serif font-medium"
+              style={{ fontSize: "1.05rem", color: "#1A1212" }}
+            >
+              {product.price}
+            </span>
+            {getDiscount(product) && (
+              <>
+                <span
+                  className="font-sans"
+                  style={{ fontSize: "10px", color: "#1A1212", opacity: 0.4, textDecoration: "line-through" }}
+                >
+                  {getDiscount(product)!.compareAtPrice}
+                </span>
+                <span
+                  className="font-sans font-bold"
+                  style={{ fontSize: "9px", color: "#5B1C1C" }}
+                >
+                  −{getDiscount(product)!.percentOff}%
+                </span>
+              </>
+            )}
           </span>
         </div>
         {/* Underline decorative */}
@@ -697,7 +704,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
           style={{
             height: "1px",
             marginTop: "12px",
-            background: `linear-gradient(to right, #8B1A1A, transparent)`,
+            background: `linear-gradient(to right, #5B1C1C, transparent)`,
             opacity: 0.45,
           }}
         />
@@ -722,14 +729,14 @@ function ProductDetailContent({
       className={`relative w-full h-full flex flex-col justify-between ${
         isMobile ? "px-6 py-10" : "px-12 py-12 md:px-16 md:py-14"
       }`}
-      style={{ backgroundColor: "#F4F0E6", minHeight: "100%" }}
+      style={{ backgroundColor: "#FFF9EF", minHeight: "100%" }}
     >
       <div>
         {/* Header Metadata */}
         <div className="flex justify-between items-center mb-6">
           <span
             className="font-sans font-bold uppercase tracking-[0.3em]"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             {product.number} // NAAMI // AW26
           </span>
@@ -740,7 +747,7 @@ function ProductDetailContent({
           className="font-serif font-light uppercase mb-2"
           style={{
             fontSize: isMobile ? "1.85rem" : "clamp(2rem, 3.5vw, 3rem)",
-            color: "#111111",
+            color: "#1A1212",
             lineHeight: 1.1,
             letterSpacing: "0.02em",
           }}
@@ -751,7 +758,7 @@ function ProductDetailContent({
         {/* Subtitle */}
         <p
           className="font-sans font-bold uppercase tracking-[0.2em] mb-6 md:mb-8"
-          style={{ fontSize: "10px", color: "#111111", opacity: 0.4 }}
+          style={{ fontSize: "10px", color: "#1A1212", opacity: 0.4 }}
         >
           {product.subtitle}
         </p>
@@ -772,13 +779,13 @@ function ProductDetailContent({
             >
               <span
                 className="font-sans font-bold uppercase tracking-[0.15em]"
-                style={{ fontSize: "9px", color: "#111111", opacity: 0.35 }}
+                style={{ fontSize: "9px", color: "#1A1212", opacity: 0.35 }}
               >
                 {name}
               </span>
               <span
                 className="font-sans text-right text-wrap"
-                style={{ fontSize: "11px", color: "#111111", opacity: 0.8, maxWidth: "60%" }}
+                style={{ fontSize: "11px", color: "#1A1212", opacity: 0.8, maxWidth: "60%" }}
               >
                 {description}
               </span>
@@ -790,15 +797,33 @@ function ProductDetailContent({
       <div>
         {/* Price & Checkout */}
         <div className="flex items-end justify-between mb-6">
-          <span
-            className="font-serif font-light"
-            style={{ fontSize: isMobile ? "2rem" : "2.25rem", color: "#111111" }}
-          >
-            {product.price}
+          <span className="flex items-baseline gap-2">
+            <span
+              className="font-serif font-light"
+              style={{ fontSize: isMobile ? "2rem" : "2.25rem", color: "#1A1212" }}
+            >
+              {product.price}
+            </span>
+            {getDiscount(product) && (
+              <>
+                <span
+                  className="font-sans"
+                  style={{ fontSize: "13px", color: "#1A1212", opacity: 0.4, textDecoration: "line-through" }}
+                >
+                  {getDiscount(product)!.compareAtPrice}
+                </span>
+                <span
+                  className="font-sans font-bold"
+                  style={{ fontSize: "10px", color: "#5B1C1C" }}
+                >
+                  −{getDiscount(product)!.percentOff}%
+                </span>
+              </>
+            )}
           </span>
           <span
             className="font-sans"
-            style={{ fontSize: "10px", color: "#111111", opacity: 0.3 }}
+            style={{ fontSize: "10px", color: "#1A1212", opacity: 0.3 }}
           >
             INR
           </span>
@@ -808,35 +833,39 @@ function ProductDetailContent({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (product.available === false) return;
             addItem({
               productId: product.id,
               name: product.name,
               priceInr: product.priceInr,
               image: product.image,
-              size: product.sizes?.[0] ?? "One Size",
+              size: product.sizes?.[0]?.size ?? "One Size",
             });
             onClose();
           }}
-          className="w-full flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-90 cursor-pointer"
+          disabled={product.available === false}
+          className="w-full flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:hover:opacity-100"
           style={{
             fontSize: "10px",
-            color: "#F4F0E6",
-            backgroundColor: "#8B1A1A",
+            color: "#FFF9EF",
+            backgroundColor: product.available === false ? "rgba(17,17,17,0.3)" : "#5B1C1C",
             padding: "16px 24px",
           }}
-          data-cursor-text="ADD"
+          data-cursor-text={product.available === false ? undefined : "ADD"}
         >
-          ADD TO WARDROBE
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {product.available === false ? "OUT OF STOCK" : "ADD TO WARDROBE"}
+          {product.available !== false && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
         </button>
 
         {/* View Full Details link */}
@@ -848,7 +877,7 @@ function ProductDetailContent({
             className="font-sans font-bold uppercase tracking-[0.15em] hover:opacity-50 transition-opacity cursor-pointer text-center"
             style={{
               fontSize: "9px",
-              color: "#8B1A1A",
+              color: "#5B1C1C",
               borderBottom: "1px solid rgba(139, 26, 26, 0.4)",
               paddingBottom: "2px",
             }}
@@ -866,7 +895,7 @@ function ProductDetailContent({
           onClose();
         }}
         className="absolute top-6 right-6 font-sans font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity cursor-pointer z-50"
-        style={{ fontSize: "8px", color: "#111111" }}
+        style={{ fontSize: "8px", color: "#1A1212" }}
         data-cursor-text="CLOSE"
       >
         ✕ CLOSE

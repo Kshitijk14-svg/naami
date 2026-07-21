@@ -107,7 +107,7 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
   // Color schemes matching the NAAMI brand guidelines
   const INDIGO_DENIM_BG = "#131E33"; // deep dark indigo dye color
   const COPPER_STITCH = "#C58B3F";
-  const ECRU = "#EDE8DC";
+  const ECRU = "#F8F1E5";
 
   const hintVisible = !isDragging;
 
@@ -115,7 +115,7 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
     <section
       ref={containerRef}
       className="px-6 md:px-12 py-24 relative overflow-hidden"
-      style={{ backgroundColor: "#F4F0E6" }}
+      style={{ backgroundColor: "#FFF9EF" }}
     >
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
 
@@ -123,7 +123,7 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
         <div className="lg:col-span-5 text-left z-10">
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-            style={{ fontSize: "9px", color: "#8B1A1A" }}
+            style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
             {content.kicker}
           </span>
@@ -131,43 +131,24 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
             className="font-serif font-light uppercase mb-6"
             style={{
               fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "#111111",
+              color: "#1A1212",
               lineHeight: 1.1,
               letterSpacing: "0.02em",
             }}
           >
             {content.title}
             <br />
-            <span className="italic" style={{ color: "#8B1A1A" }}>
+            <span className="italic" style={{ color: "#5B1C1C" }}>
               {content.titleAccent}
             </span>
           </h2>
-          <p className="font-sans text-[12.5px] text-[#111111]/70 leading-relaxed mb-8 max-w-md">
+          <p className="font-sans text-[12.5px] text-[#1A1212]/70 leading-relaxed mb-8 max-w-md">
             {content.description}
           </p>
-
-          <div className="flex items-center gap-4">
-            {!isRevealed ? (
-              <div className="flex items-center gap-2">
-                <span className="animate-pulse w-2 h-2 rounded-full bg-[#8B1A1A]" />
-                <span className="font-sans font-bold text-[9px] text-[#8B1A1A] tracking-wider uppercase">
-                  Pull the leather tab upwards
-                </span>
-              </div>
-            ) : (
-              <button
-                onClick={resetReveal}
-                className="font-sans font-bold text-[9px] text-[#111111]/40 tracking-wider uppercase hover:text-[#8B1A1A] transition-colors cursor-pointer"
-                data-cursor-text="RESET"
-              >
-                ✕ Re-hide Card
-              </button>
-            )}
-          </div>
         </div>
 
         {/* Right Pocket Visualizer Column */}
-        <div className="lg:col-span-7 flex justify-center items-center py-6 w-full">
+        <div className="lg:col-span-7 flex flex-col justify-center items-center py-6 w-full gap-6">
           <div
             ref={frameRef}
             className="relative overflow-hidden w-full max-w-[420px] shadow-[0_30px_60px_rgba(17,17,17,0.22)]"
@@ -184,8 +165,8 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
               style={{
                 backgroundImage: `repeating-linear-gradient(
                   45deg,
-                  #FAF8F5,
-                  #FAF8F5 1px,
+                  #FFF9EF,
+                  #FFF9EF 1px,
                   transparent 1px,
                   transparent 4px
                 )`,
@@ -196,8 +177,8 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
               style={{
                 backgroundImage: `repeating-linear-gradient(
                   -45deg,
-                  #FAF8F5,
-                  #FAF8F5 1px,
+                  #FFF9EF,
+                  #FFF9EF 1px,
                   transparent 1px,
                   transparent 5px
                 )`,
@@ -345,14 +326,14 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
                 {/* Header branding */}
                 <div>
                   <div className="flex justify-between items-baseline mb-2">
-                    <span className="font-sans font-bold text-[10px] text-[#8B1A1A] tracking-widest">
+                    <span className="font-sans font-bold text-[10px] text-[#5B1C1C] tracking-widest">
                       NAAMI ATELIER CARD
                     </span>
-                    <span className="font-sans text-[9px] text-[#111111]/40">
+                    <span className="font-sans text-[9px] text-[#1A1212]/40">
                       {content.seasonTag}
                     </span>
                   </div>
-                  <h3 className="font-serif font-light uppercase text-base text-[#111111] tracking-wider border-b border-[#8B1A1A]/10 pb-2">
+                  <h3 className="font-serif font-light uppercase text-base text-[#1A1212] tracking-wider border-b border-[#5B1C1C]/10 pb-2">
                     Authenticity Card
                   </h3>
                 </div>
@@ -361,23 +342,23 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
                 <div className="flex flex-col gap-2.5 my-3 font-sans text-[11.5px]">
                   {content.specs.map(({ label, value }) => (
                     <div key={label} className="flex justify-between border-b border-black/5 pb-1">
-                      <span className="font-bold text-[#111111]/35">{label}</span>
-                      <span className="text-[#111111]/85">{value}</span>
+                      <span className="font-bold text-[#1A1212]/35">{label}</span>
+                      <span className="text-[#1A1212]/85">{value}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Footer seal */}
-                <div className="pt-2 border-t border-[#8B1A1A]/15 flex items-center justify-between">
+                <div className="pt-2 border-t border-[#5B1C1C]/15 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="font-sans font-bold text-[8px] text-[#111111]/45">SERIAL CODE</span>
-                    <span className="font-sans font-bold text-[11px] text-[#111111] tracking-wider">
+                    <span className="font-sans font-bold text-[8px] text-[#1A1212]/45">SERIAL CODE</span>
+                    <span className="font-sans font-bold text-[11px] text-[#1A1212] tracking-wider">
                       {content.serialCode}
                     </span>
                   </div>
                   {/* Crimson logo stamp */}
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-serif text-[12px] font-bold border border-dashed border-[#8B1A1A]/35 text-[#8B1A1A]"
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-serif text-[12px] font-bold border border-dashed border-[#5B1C1C]/35 text-[#5B1C1C]"
                     style={{ backgroundColor: "rgba(139,26,26,0.04)" }}
                   >
                     N
@@ -539,6 +520,26 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
               </div>
             </div>
 
+          </div>
+
+          {/* Pull / Reset hint, below the pocket visual */}
+          <div className="flex items-center gap-4">
+            {!isRevealed ? (
+              <div className="flex items-center gap-2">
+                <span className="animate-pulse w-2 h-2 rounded-full bg-[#5B1C1C]" />
+                <span className="font-sans font-bold text-[9px] text-[#5B1C1C] tracking-wider uppercase">
+                  Pull the leather tab upwards
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={resetReveal}
+                className="font-sans font-bold text-[9px] text-[#1A1212]/40 tracking-wider uppercase hover:text-[#5B1C1C] transition-colors cursor-pointer"
+                data-cursor-text="RESET"
+              >
+                ✕ Re-hide Card
+              </button>
+            )}
           </div>
         </div>
 

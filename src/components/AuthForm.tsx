@@ -234,12 +234,12 @@ export default function AuthForm() {
   // ── Shared styles ─────────────────────────────────────────────────────────
   const inputStyle: React.CSSProperties = {
     fontSize: "15px",
-    color: "#111111",
-    borderBottom: "1.5px solid #8B1A1A",
+    color: "#1A1212",
+    borderBottom: "1.5px solid #5B1C1C",
     borderRadius: 0,
   };
   const inputClass =
-    "w-full bg-transparent outline-none font-sans pb-3 mb-8 placeholder:text-[#111111]/25 disabled:opacity-50";
+    "w-full bg-transparent outline-none font-sans pb-3 mb-8 placeholder:text-[#1A1212]/25 disabled:opacity-50";
   const labelClass = "font-sans font-bold uppercase tracking-[0.2em] block mb-3";
   const labelStyle: React.CSSProperties = {
     fontSize: "9px",
@@ -258,13 +258,13 @@ export default function AuthForm() {
   return (
     <div
       className="min-h-screen w-full flex flex-col items-center justify-center px-6"
-      style={{ backgroundColor: "#F4F0E6" }}
+      style={{ backgroundColor: "#FFF9EF" }}
     >
       {/* Brand wordmark */}
       <Link
         href="/"
         className="absolute top-8 left-10 font-serif uppercase font-semibold hover:opacity-60 transition-opacity"
-        style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#8B1A1A" }}
+        style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
       >
         Naami
       </Link>
@@ -272,7 +272,7 @@ export default function AuthForm() {
       <div ref={containerRef} className="w-full max-w-sm" style={{ opacity: 0 }}>
         <p
           className="font-sans font-bold uppercase tracking-[0.3em] mb-4"
-          style={{ fontSize: "9px", color: "#8B1A1A" }}
+          style={{ fontSize: "9px", color: "#5B1C1C" }}
         >
           NAAMI // ATELIER ACCESS
         </p>
@@ -281,14 +281,14 @@ export default function AuthForm() {
           className="font-serif font-light uppercase mb-8"
           style={{
             fontSize: "clamp(2rem, 5vw, 2.8rem)",
-            color: "#111111",
+            color: "#1A1212",
             lineHeight: 1.1,
             letterSpacing: "0.03em",
           }}
         >
           {headline}
           <br />
-          <span style={{ color: "#8B1A1A", fontStyle: "italic" }}>{headlineAccent}</span>
+          <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>{headlineAccent}</span>
         </h1>
 
         {/* Sign in / Create account tabs (only on the entry form) */}
@@ -302,8 +302,8 @@ export default function AuthForm() {
                 className="font-sans font-bold uppercase tracking-[0.2em] pb-2 transition-colors"
                 style={{
                   fontSize: "10px",
-                  color: mode === m ? "#8B1A1A" : "rgba(17,17,17,0.35)",
-                  borderBottom: mode === m ? "2px solid #8B1A1A" : "2px solid transparent",
+                  color: mode === m ? "#5B1C1C" : "rgba(17,17,17,0.35)",
+                  borderBottom: mode === m ? "2px solid #5B1C1C" : "2px solid transparent",
                 }}
               >
                 {m === "signin" ? "Sign In" : "Create Account"}
@@ -347,7 +347,7 @@ export default function AuthForm() {
                 style={inputStyle}
               />
               {errorMsg && (
-                <p className="font-sans text-[11px] mb-5" style={{ color: "#8B1A1A" }}>
+                <p className="font-sans text-[11px] mb-5" style={{ color: "#5B1C1C" }}>
                   {errorMsg}
                 </p>
               )}
@@ -357,8 +357,8 @@ export default function AuthForm() {
                 className={`${primaryBtnClass} mb-5`}
                 style={{
                   fontSize: "10px",
-                  backgroundColor: "#8B1A1A",
-                  color: "#F4F0E6",
+                  backgroundColor: "#5B1C1C",
+                  color: "#FFF9EF",
                   cursor: isLoading ? "wait" : "pointer",
                 }}
               >
@@ -377,7 +377,7 @@ export default function AuthForm() {
                   type="button"
                   onClick={() => switchMode("reset")}
                   className="font-sans font-bold text-[10px] uppercase tracking-widest transition-opacity hover:opacity-70"
-                  style={{ color: "#8B1A1A" }}
+                  style={{ color: "#5B1C1C" }}
                 >
                   Forgot password?
                 </button>
@@ -449,7 +449,7 @@ export default function AuthForm() {
                 style={inputStyle}
               />
               {errorMsg && (
-                <p className="font-sans text-[11px] mb-5" style={{ color: "#8B1A1A" }}>
+                <p className="font-sans text-[11px] mb-5" style={{ color: "#5B1C1C" }}>
                   {errorMsg}
                 </p>
               )}
@@ -459,8 +459,8 @@ export default function AuthForm() {
                 className={`${primaryBtnClass} mb-5`}
                 style={{
                   fontSize: "10px",
-                  backgroundColor: "#8B1A1A",
-                  color: "#F4F0E6",
+                  backgroundColor: "#5B1C1C",
+                  color: "#FFF9EF",
                   cursor: isLoading ? "wait" : "pointer",
                 }}
               >
@@ -502,7 +502,7 @@ export default function AuthForm() {
                 style={inputStyle}
               />
               {errorMsg && (
-                <p className="font-sans text-[11px] mb-5" style={{ color: "#8B1A1A" }}>
+                <p className="font-sans text-[11px] mb-5" style={{ color: "#5B1C1C" }}>
                   {errorMsg}
                 </p>
               )}
@@ -512,8 +512,8 @@ export default function AuthForm() {
                 className={`${primaryBtnClass} mb-5`}
                 style={{
                   fontSize: "10px",
-                  backgroundColor: "#8B1A1A",
-                  color: "#F4F0E6",
+                  backgroundColor: "#5B1C1C",
+                  color: "#FFF9EF",
                   cursor: isLoading ? "wait" : "pointer",
                 }}
               >
@@ -540,13 +540,13 @@ export default function AuthForm() {
                 {mode === "reset" ? (
                   <>
                     If an account exists for{" "}
-                    <span style={{ color: "#111111", fontWeight: 600 }}>{email}</span>, we&rsquo;ve
+                    <span style={{ color: "#1A1212", fontWeight: 600 }}>{email}</span>, we&rsquo;ve
                     sent a reset code. Enter it and choose a new password.
                   </>
                 ) : (
                   <>
                     We sent a 6-digit verification code to{" "}
-                    <span style={{ color: "#111111", fontWeight: 600 }}>{email}</span>.
+                    <span style={{ color: "#1A1212", fontWeight: 600 }}>{email}</span>.
                   </>
                 )}
               </p>
@@ -607,7 +607,7 @@ export default function AuthForm() {
               )}
 
               {errorMsg && (
-                <p className="font-sans text-[11px] mb-5" style={{ color: "#8B1A1A" }}>
+                <p className="font-sans text-[11px] mb-5" style={{ color: "#5B1C1C" }}>
                   {errorMsg}
                 </p>
               )}
@@ -618,8 +618,8 @@ export default function AuthForm() {
                 className={`${primaryBtnClass} mb-5`}
                 style={{
                   fontSize: "10px",
-                  backgroundColor: isSuccess ? "#3a6b3a" : "#8B1A1A",
-                  color: "#F4F0E6",
+                  backgroundColor: isSuccess ? "#3a6b3a" : "#5B1C1C",
+                  color: "#FFF9EF",
                   cursor: isLoading ? "wait" : "pointer",
                   transition: "background-color 0.3s ease",
                 }}
@@ -647,7 +647,7 @@ export default function AuthForm() {
                   onClick={handleResend}
                   disabled={resendCooldown > 0}
                   className="font-sans font-bold text-[10px] uppercase tracking-widest transition-opacity disabled:opacity-30"
-                  style={{ color: "#8B1A1A" }}
+                  style={{ color: "#5B1C1C" }}
                 >
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
                 </button>
@@ -660,12 +660,12 @@ export default function AuthForm() {
             <div className="py-4">
               <div
                 className="flex items-center gap-3 px-5 py-4 mb-4"
-                style={{ backgroundColor: "#EDE8DC", borderLeft: "3px solid #3a6b3a" }}
+                style={{ backgroundColor: "#F8F1E5", borderLeft: "3px solid #3a6b3a" }}
               >
                 <span style={{ color: "#3a6b3a", fontSize: "18px" }}>✓</span>
                 <p
                   className="font-sans font-bold uppercase tracking-[0.2em]"
-                  style={{ fontSize: "11px", color: "#111111" }}
+                  style={{ fontSize: "11px", color: "#1A1212" }}
                 >
                   {successMessage}
                 </p>
@@ -685,7 +685,7 @@ export default function AuthForm() {
           className="mt-14"
           style={{
             height: "1px",
-            background: `linear-gradient(to right, #8B1A1A 2px, rgba(17,17,17,0.08) 2px, transparent)`,
+            background: `linear-gradient(to right, #5B1C1C 2px, rgba(17,17,17,0.08) 2px, transparent)`,
           }}
         />
         <p

@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import SiteHeader from "@/components/SiteHeader";
 import SelvedgeScrollbar from "@/components/SelvedgeScrollbar";
 import CustomCursor from "@/components/CustomCursor";
 import MetaPixel from "@/components/MetaPixel";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+const august = localFont({
+  src: "../fonts/August-Bold.ttf",
+  variable: "--font-august",
+  weight: "700",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+const glacialIndifference = localFont({
+  src: [
+    { path: "../fonts/glacial-indifference.regular.otf", weight: "400", style: "normal" },
+    { path: "../fonts/glacial-indifference.bold.otf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-glacial",
 });
 
 export const metadata: Metadata = {
@@ -54,15 +57,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
+      className={`${august.variable} ${glacialIndifference.variable} h-full antialiased`}
     >
       <body
         className="min-h-full flex flex-col overflow-x-hidden"
-        style={{ backgroundColor: "#F4F0E6", color: "#111111" }}
+        style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
         suppressHydrationWarning
       >
         <MetaPixel />
-        <Navbar />
+        <SiteHeader />
         {children}
         {/* Selvedge scroll indicator — fixed right-edge denim detail */}
         <SelvedgeScrollbar />
