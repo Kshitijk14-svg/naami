@@ -39,6 +39,7 @@ export function HotspotCardsSection({
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <ImageUploadField
                 type="lookcard"
+                hint="1080 × 1350 (4:5 portrait)."
                 image={card.image}
                 onUploaded={(image, thumbnailImage) => updateLookCard(idx, { image, thumbnailImage })}
               />

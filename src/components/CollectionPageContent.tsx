@@ -9,6 +9,7 @@ import { CarouselProduct } from "@/models/products";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,10 +60,11 @@ export default function CollectionPageContent() {
   const [allProducts, setAllProducts] = useState<CarouselProduct[]>([]);
   const [collectionInfo, setCollectionInfo] = useState<CollectionInfo | null>(null);
   const [expandedProduct, setExpandedProduct] = useState<CarouselProduct | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [sizeError, setSizeError] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const cartItemsCount = useCartStore((s) => s.cartItemsCount);
-  const incrementItems = useCartStore((s) => s.incrementItems);
+  const addItem = useCartStore((s) => s.addItem);
 
   useEffect(() => {
     fetch("/api/products")
@@ -117,6 +119,8 @@ export default function CollectionPageContent() {
 
   const openProduct = (product: CarouselProduct) => {
     setExpandedProduct(product);
+    setSelectedSize("");
+    setSizeError(false);
     if (overlayRef.current) {
       gsap.fromTo(
         overlayRef.current,
@@ -155,22 +159,16 @@ export default function CollectionPageContent() {
         >
           {collectionInfo ? `NAAMI // ${collectionInfo.tag}` : "NAAMI // AW26"}
         </span>
-        <h1
-          className="font-serif font-light uppercase"
-          style={{
-            fontSize: "clamp(2.5rem, 6vw, 5rem)",
-            color: "#1A1212",
-            lineHeight: 1.0,
-            letterSpacing: "0.02em",
-          }}
-        >
+        {/* Doubles as the collection name, so it keeps the uppercase treatment
+            product/collection names use rather than the plain title casing. */}
+        <h1 className={PRODUCT_NAME_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
           {collectionInfo ? (
             collectionInfo.name
           ) : (
             <>
               The
               <br />
-              <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>Collection</span>
+              <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>Collection</span>
             </>
           )}
         </h1>
@@ -237,7 +235,7 @@ export default function CollectionPageContent() {
             {/* Details */}
             <div className="pt-4">
               <h3
-                className="font-serif font-light uppercase mb-0.5 group-hover:text-[#5B1C1C] transition-colors"
+                className={`${PRODUCT_NAME_CLASS} mb-0.5 group-hover:text-[#5B1C1C] transition-colors`}
                 style={{ fontSize: "0.95rem", letterSpacing: "0.03em", lineHeight: 1.2 }}
               >
                 {product.name}
@@ -312,7 +310,7 @@ export default function CollectionPageContent() {
                   {expandedProduct.number} // NAAMI ATELIER
                 </span>
                 <h2
-                  className="font-serif font-light uppercase mb-2"
+                  className={`${PRODUCT_NAME_CLASS} mb-2`}
                   style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", letterSpacing: "0.02em", lineHeight: 1.1 }}
                 >
                   {expandedProduct.name}
@@ -331,7 +329,7 @@ export default function CollectionPageContent() {
                 </div>
 
                 <p className="flex items-baseline gap-2">
-                  <span className="font-serif" style={{ fontSize: "1.5rem", color: "#1A1212", letterSpacing: "0.02em" }}>
+                  <span className={PRICE_CLASS} style={{ fontSize: "1.5rem", color: "#1A1212", letterSpacing: "0.02em" }}>
                     {expandedProduct.price}
                   </span>
                   {getDiscount(expandedProduct) && (
@@ -350,8 +348,66 @@ export default function CollectionPageContent() {
                 </p>
               </div>
 
+              {/* Size selector */}
+              {(expandedProduct.sizes?.length ?? 0) > 0 && (
+                <div className="mb-6">
+                  <span
+                    className="font-sans font-bold uppercase tracking-[0.2em] mb-2 block"
+                    style={{ fontSize: "9px", color: sizeError ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
+                  >
+                    {sizeError ? "Please select a size" : "Select Size"}
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {expandedProduct.sizes!.map(({ size: sz, stock }) => {
+                      const outOfStock = stock === 0;
+                      return (
+                        <button
+                          key={sz}
+                          disabled={outOfStock}
+                          onClick={() => { if (outOfStock) return; setSelectedSize(sz); setSizeError(false); }}
+                          className="font-sans font-bold uppercase tracking-[0.15em] transition-all cursor-pointer disabled:cursor-not-allowed"
+                          style={{
+                            fontSize: "10px",
+                            padding: "7px 12px",
+                            border: selectedSize === sz ? "1.5px solid #5B1C1C" : "1.5px solid rgba(17,17,17,0.15)",
+                            color: outOfStock ? "rgba(17,17,17,0.3)" : selectedSize === sz ? "#5B1C1C" : "#111",
+                            backgroundColor: selectedSize === sz ? "rgba(139,26,26,0.05)" : "transparent",
+                            textDecoration: outOfStock ? "line-through" : "none",
+                          }}
+                          title={outOfStock ? "Out of stock" : undefined}
+                        >
+                          {sz}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={() => { incrementItems(); closeProduct(); }}
+                onClick={() => {
+                  const sizes = expandedProduct.sizes ?? [];
+                  if (sizes.length > 1 && !selectedSize) {
+                    setSizeError(true);
+                    setTimeout(() => setSizeError(false), 2000);
+                    return;
+                  }
+                  const size = selectedSize || sizes[0]?.size || "One Size";
+                  const sizeStock = sizes.find((s) => s.size === size)?.stock;
+                  if (sizes.length > 0 && sizeStock === 0) {
+                    setSizeError(true);
+                    setTimeout(() => setSizeError(false), 2000);
+                    return;
+                  }
+                  addItem({
+                    productId: expandedProduct.id,
+                    name: expandedProduct.name,
+                    priceInr: expandedProduct.priceInr,
+                    image: expandedProduct.thumbnailImage ?? expandedProduct.image,
+                    size,
+                  });
+                  closeProduct();
+                }}
                 className="mt-6 w-full py-4 font-sans font-bold uppercase tracking-[0.25em] hover:opacity-80 transition-opacity"
                 style={{ fontSize: "10px", backgroundColor: "#5B1C1C", color: "#FFF9EF" }}
               >

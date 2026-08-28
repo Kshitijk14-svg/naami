@@ -215,6 +215,28 @@ export const homepageLookCards = pgTable(
   ]
 );
 
+// ─── 6b2. homepage_shared_moment_videos ─────────────────────────────────────────
+// Admin-uploaded clips for the homepage "Shared Moments" carousel — replaces the
+// former Instagram Graph API feed (no more token to expire/rotate).
+
+export const homepageSharedMomentVideos = pgTable(
+  "homepage_shared_moment_videos",
+  {
+    id: serial("id").primaryKey(),
+    videoUrl: text("video_url").notNull(),
+    thumbnailImage: text("thumbnail_image").notNull().default(""),
+    caption: text("caption").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("homepage_shared_moment_videos_active_idx").on(t.id).where(sql`${t.deletedAt} IS NULL`),
+    index("homepage_shared_moment_videos_sort_idx").on(t.sortOrder),
+  ]
+);
+
 // ─── 6c. homepage_hotspots ──────────────────────────────────────────────────────
 // Shared by both the singleton lookbook banner (lookCardId IS NULL) and each
 // look card's nested hotspots (lookCardId set) — avoids duplicating identical

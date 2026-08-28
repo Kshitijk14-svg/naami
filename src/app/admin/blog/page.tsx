@@ -151,7 +151,7 @@ export default function AdminBlogPage() {
         <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.5)" }}>Loading…</p>
       ) : posts.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="font-serif font-light italic" style={{ fontSize: "1.1rem", color: "rgba(17,17,17,0.4)" }}>
+          <p className="font-serif font-light" style={{ fontSize: "1.1rem", color: "rgba(17,17,17,0.4)" }}>
             No blog posts yet. Create your first story.
           </p>
         </div>
@@ -234,6 +234,7 @@ export default function AdminBlogPage() {
                 <label style={labelStyle}>Cover Image</label>
                 <ImageUploadField
                   type="blog"
+                  hint="1920 × 1080 (16:9) — keep the subject dead-center. This one file is also cropped to 4:3 for the journal index card and used as the social share image."
                   image={form.coverImage}
                   onUploaded={(image) => setForm((p) => ({ ...p, coverImage: image }))}
                 />

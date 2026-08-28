@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { gsap } from "@/lib/gsap";
-import BrandLoader from "@/components/BrandLoader";
 import HotspotBanner from "@/components/HotspotBanner";
 import ProductCarousel from "@/components/ProductCarousel";
 import EvanliteFooter from "@/components/EvanliteFooter";
@@ -19,8 +18,10 @@ import CollectionsShowcase from "@/components/CollectionsShowcase";
 import HotspotCards from "@/components/HotspotCards";
 import LoomTimeline, { type LoomTimelineContent } from "@/components/LoomTimeline";
 import CoinPocketReveal, { type CoinPocketContent } from "@/components/CoinPocketReveal";
-import InstagramReelsSection from "@/components/InstagramReelsSection";
+import SharedMomentsCarousel from "@/components/SharedMomentsCarousel";
 import { useCartStore } from "@/models/cartStore";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 type CarouselProduct = {
   id: number;
@@ -97,11 +98,26 @@ type ShopLookHeader = {
   title: string;
 };
 
-type InstagramReels = {
+type SharedMoments = {
   enabled: boolean;
   kicker: string;
   title: string;
-  reels: { thumbnailUrl: string; authorName: string; title: string; permalink: string }[];
+  items: { id: string; caption: string; videoUrl: string; thumbnailImage: string }[];
+};
+
+type SectionBackground = { image?: string; fit?: SectionBackgroundFit };
+
+type SectionBackgrounds = {
+  hero?: SectionBackground;
+  collections?: SectionBackground;
+  loom?: SectionBackground;
+  newArrivals?: SectionBackground;
+  lookbookBanner?: SectionBackground;
+  hotspotCards?: SectionBackground;
+  bestsellers?: SectionBackground;
+  coinPocket?: SectionBackground;
+  sharedMoments?: SectionBackground;
+  manifesto?: SectionBackground;
 };
 
 interface HomeClientProps {
@@ -118,7 +134,8 @@ interface HomeClientProps {
   newArrivalsSection: ProductCarouselSection;
   bestsellersSection: ProductCarouselSection;
   shopLookHeader: ShopLookHeader;
-  instagramReels: InstagramReels;
+  sharedMoments: SharedMoments;
+  sectionBackgrounds: SectionBackgrounds;
 }
 
 export default function HomeClient({
@@ -135,7 +152,8 @@ export default function HomeClient({
   newArrivalsSection,
   bestsellersSection,
   shopLookHeader,
-  instagramReels,
+  sharedMoments,
+  sectionBackgrounds,
 }: HomeClientProps) {
   // Force scroll to top on reload/mount
   useEffect(() => {
@@ -183,7 +201,6 @@ export default function HomeClient({
           y: 0,
           duration: 1.1,
           ease: "power3.out",
-          delay: 3.2,
         }
       );
 
@@ -195,7 +212,7 @@ export default function HomeClient({
           y: 0,
           duration: 0.9,
           ease: "power3.out",
-          delay: 3.6,
+          delay: 0.3,
         }
       );
 
@@ -251,13 +268,10 @@ export default function HomeClient({
       className="relative w-full min-h-screen"
       style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
-      {/* Cinematic unzipping loader */}
-      <BrandLoader />
-
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
         className="pt-28 pb-10 px-6 md:px-12"
-        style={{ backgroundColor: "#FFF9EF" }}
+        style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.hero?.image, sectionBackgrounds.hero?.fit) }}
       >
         <div
           ref={heroTitleRef}
@@ -325,23 +339,16 @@ export default function HomeClient({
           >
             <span
               className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-              style={{ fontSize: "9px", color: "#5B1C1C" }}
+              style={{ fontSize: "9px", color: "#FFF9EF", opacity: 0.7 }}
             >
               {heroSlides[currentSlide].tag}
             </span>
-            <h2
-              className="font-serif font-light uppercase leading-none mb-3"
-              style={{
-                fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
-                color: "#FFF9EF",
-                letterSpacing: "-0.01em",
-              }}
-            >
+            <h2 className={`${TITLE_CLASS} mb-3`} style={titleStyle("clamp(2.5rem, 6vw, 5.5rem)", "#FFF9EF")}>
               {heroSlides[currentSlide].title}
             </h2>
             <p
               className="font-sans font-bold uppercase tracking-[0.2em]"
-              style={{ fontSize: "10px", color: "#FFF9EF", opacity: 0.7 }}
+              style={{ fontSize: "10px", color: "#5B1C1C" }}
             >
               {heroSlides[currentSlide].subtitle}
             </p>
@@ -377,10 +384,16 @@ export default function HomeClient({
         title={collectionsHeader.title}
         titleAccent={collectionsHeader.titleAccent}
         sideNote={collectionsHeader.sideNote}
+        backgroundImage={sectionBackgrounds.collections?.image}
+        backgroundImageFit={sectionBackgrounds.collections?.fit}
       />
 
       {/* ── Scroll-Pinned Loom Horizontal Timeline ── */}
-      <LoomTimeline content={loomContent} />
+      <LoomTimeline
+        content={loomContent}
+        backgroundImage={sectionBackgrounds.loom?.image}
+        backgroundImageFit={sectionBackgrounds.loom?.fit}
+      />
 
       {/* ── Stitch Separator ── */}
       <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#FFF9EF" }}>
@@ -396,6 +409,8 @@ export default function HomeClient({
           tag={newArrivalsSection.tag}
           products={newArrivals}
           gatewayLabel={newArrivalsSection.gatewayLabel}
+          backgroundImage={sectionBackgrounds.newArrivals?.image}
+          backgroundImageFit={sectionBackgrounds.newArrivals?.fit}
         />
       </div>
 
@@ -405,6 +420,8 @@ export default function HomeClient({
           image={lookbookBanner.image}
           label={lookbookBanner.label}
           hotspots={lookbookBanner.hotspots}
+          backgroundImage={sectionBackgrounds.lookbookBanner?.image}
+          backgroundImageFit={sectionBackgrounds.lookbookBanner?.fit}
         />
       </div>
 
@@ -413,6 +430,8 @@ export default function HomeClient({
         lookCards={lookCards}
         kicker={shopLookHeader.kicker}
         title={shopLookHeader.title}
+        backgroundImage={sectionBackgrounds.hotspotCards?.image}
+        backgroundImageFit={sectionBackgrounds.hotspotCards?.fit}
       />
 
       {/* ── Stitch Separator ── */}
@@ -429,12 +448,18 @@ export default function HomeClient({
           tag={bestsellersSection.tag}
           products={bestsellers}
           gatewayLabel={bestsellersSection.gatewayLabel}
+          backgroundImage={sectionBackgrounds.bestsellers?.image}
+          backgroundImageFit={sectionBackgrounds.bestsellers?.fit}
         />
       </div>
 
       {/* ── Coin Pocket Pull-Drag Reveal ── */}
       <div className="reveal-fade-up">
-        <CoinPocketReveal content={coinPocketContent} />
+        <CoinPocketReveal
+          content={coinPocketContent}
+          backgroundImage={sectionBackgrounds.coinPocket?.image}
+          backgroundImageFit={sectionBackgrounds.coinPocket?.fit}
+        />
       </div>
 
       {/* ── Stitch Separator ── */}
@@ -444,13 +469,15 @@ export default function HomeClient({
         </svg>
       </div>
 
-      {/* ── Instagram Reels (admin-curated) ─────────────────────── */}
-      {instagramReels.enabled && instagramReels.reels.length > 0 && (
+      {/* ── Shared Moments (admin-uploaded video clips) ──────────── */}
+      {sharedMoments.enabled && (
         <>
-          <InstagramReelsSection
-            kicker={instagramReels.kicker}
-            title={instagramReels.title}
-            reels={instagramReels.reels}
+          <SharedMomentsCarousel
+            kicker={sharedMoments.kicker}
+            title={sharedMoments.title}
+            items={sharedMoments.items}
+            backgroundImage={sectionBackgrounds.sharedMoments?.image}
+            backgroundImageFit={sectionBackgrounds.sharedMoments?.fit}
           />
           <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F8F1E5" }}>
             <svg width="100%" height="8" className="w-full opacity-40">
@@ -463,7 +490,7 @@ export default function HomeClient({
       {/* ── Asymmetric Manifesto Split ─────────────────────────── */}
       <section
         className="px-6 md:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
-        style={{ backgroundColor: "#FFF9EF" }}
+        style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.manifesto?.image, sectionBackgrounds.manifesto?.fit) }}
       >
         {/* Left: Editorial lookbook block */}
         <div className="md:col-span-6 reveal-stagger-item">
@@ -539,7 +566,7 @@ export default function HomeClient({
             {manifesto.kicker}
           </div>
           <p
-            className="font-serif font-light italic leading-relaxed mb-8"
+            className="font-serif font-light leading-relaxed mb-8"
             style={{
               fontSize: "clamp(1.35rem, 2.5vw, 2rem)",
               color: "rgba(17,17,17,0.88)",

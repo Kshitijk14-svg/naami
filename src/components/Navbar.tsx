@@ -78,11 +78,11 @@ export default function Navbar() {
       {/* Brand wordmark */}
       <Link
         href="/"
-        className="font-serif uppercase font-semibold hover:opacity-75 transition-opacity flex-shrink-0"
-        style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
+        className="font-wordmark lowercase font-bold hover:opacity-75 transition-opacity flex-shrink-0"
+        style={{ fontSize: "1.6rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
         data-cursor-text={pathname.startsWith("/product/") ? "BACK" : "HOME"}
       >
-        Naami
+        naami
       </Link>
 
       {/* Search bar — grows to fill middle space */}

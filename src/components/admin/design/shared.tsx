@@ -18,6 +18,14 @@ export interface LookCard {
   hotspots: HotspotRow[];
 }
 
+export interface SharedMomentVideo {
+  id?: number;
+  videoUrl: string;
+  thumbnailImage: string;
+  caption: string;
+  sortOrder: number;
+}
+
 export function toHotspotRows(resolved: ResolvedHotspot[]): HotspotRow[] {
   return resolved.map((h) => ({
     productId: h.product?.id ?? null,

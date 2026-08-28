@@ -5,6 +5,8 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 import Image from "next/image";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { PRICE_CLASS } from "@/lib/typography";
 
 interface ResolvedProduct {
   id: number;
@@ -33,9 +35,11 @@ interface HotspotBannerProps {
   image?: string;
   label?: string;
   hotspots?: HotspotData[];
+  backgroundImage?: string;
+  backgroundImageFit?: SectionBackgroundFit;
 }
 
-export default function HotspotBanner({ image, label, hotspots }: HotspotBannerProps) {
+export default function HotspotBanner({ image, label, hotspots, backgroundImage, backgroundImageFit }: HotspotBannerProps) {
   const bannerImage = image || FALLBACK_IMAGE;
   const bannerLabel = label || FALLBACK_LABEL;
   const bannerHotspots = hotspots && hotspots.length > 0 ? hotspots : FALLBACK_HOTSPOTS;
@@ -63,7 +67,7 @@ export default function HotspotBanner({ image, label, hotspots }: HotspotBannerP
     <section
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ height: "90vh", backgroundColor: "#F8F1E5" }}
+      style={{ height: "90vh", backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Parallax Image Container */}
       <div
@@ -234,7 +238,7 @@ function HotspotNode({
               {product.name}
             </h4>
             <p
-              className="font-serif mb-5"
+              className={`${PRICE_CLASS} mb-5`}
               style={{ fontSize: "15px", color: "#1A1212" }}
             >
               {formatINR(product.priceInr)}

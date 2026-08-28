@@ -19,6 +19,7 @@ export function ManifestoSection({ settings, update, manifestoError, manifestoSa
       <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <ImageUploadField
           type="banner"
+          hint="1440 × 1920 (3:4 portrait)."
           image={settings.manifesto_image ?? ""}
           onUploaded={(image) => update("manifesto_image", image)}
         />

@@ -36,7 +36,7 @@ export default function CustomCursor() {
     // ── Mouse position ─────────────────────────────────────────
     const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-    // ── Button physics state — parked off-screen during loader ──
+    // ── Button physics state — parked off-screen until first reveal ──
     const pos = { x: -500, y: -500 };
     const vel = { x: 0, y: 0 };
     let visible = false;
@@ -99,15 +99,11 @@ export default function CustomCursor() {
       raf = requestAnimationFrame(tick);
     };
 
-    // ── Reveal after loader (~3.2s) + first mouse move ─────────
-    let loaderDone = false;
-    const loaderTimer = setTimeout(() => { loaderDone = true; }, 3200);
-
     const onMouseMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
 
-      if (!visible && loaderDone) {
+      if (!visible) {
         // Snap to cursor on first reveal so no flying-in effect
         pos.x = e.clientX;
         pos.y = e.clientY + 70;
@@ -148,7 +144,6 @@ export default function CustomCursor() {
     raf = requestAnimationFrame(tick);
 
     return () => {
-      clearTimeout(loaderTimer);
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(raf);
     };
@@ -162,7 +157,7 @@ export default function CustomCursor() {
       <svg
         ref={svgRef}
         className="hidden md:block fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: 999998, opacity: 0, transition: "opacity 0.4s ease" }}
+        style={{ zIndex: 2147483645, opacity: 0, transition: "opacity 0.4s ease" }}
         aria-hidden="true"
       >
         <path
@@ -183,7 +178,7 @@ export default function CustomCursor() {
         style={{
           width: 12,
           height: 12,
-          zIndex: 1000000,
+          zIndex: 2147483647,
           willChange: "transform",
           opacity: 0,
           transition: "opacity 0.4s ease",
@@ -209,7 +204,7 @@ export default function CustomCursor() {
         style={{
           width: 48,
           height: 48,
-          zIndex: 999999,
+          zIndex: 2147483646,
           willChange: "transform",
           opacity: 0,
           transition: "opacity 0.4s ease",

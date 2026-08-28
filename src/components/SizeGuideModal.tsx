@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 interface Props {
   onClose: () => void;
@@ -44,7 +45,7 @@ export default function SizeGuideModal({ onClose }: Props) {
             <p className="font-sans font-bold uppercase tracking-[0.28em] mb-1" style={{ fontSize: "9px", color: "#5B1C1C" }}>
               NAAMI // FIT GUIDE
             </p>
-            <h2 className="font-serif font-light uppercase" style={{ fontSize: "1.5rem", color: "#111", letterSpacing: "0.03em" }}>
+            <h2 className={TITLE_CLASS} style={titleStyle("1.75rem")}>
               Size Chart
             </h2>
           </div>

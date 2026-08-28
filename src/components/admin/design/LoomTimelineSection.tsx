@@ -25,6 +25,7 @@ export function LoomTimelineSection({ settings, update, loomError, loomSaving, l
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <ImageUploadField
                 type="banner"
+                hint="1600 × 1600 (square) — keep the subject inside the centered 1120 × 1200 area."
                 image={settings[`loom_panel${n}_image`] ?? ""}
                 onUploaded={(image) => update(`loom_panel${n}_image`, image)}
               />

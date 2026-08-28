@@ -10,6 +10,7 @@ interface DoodleSvgProps {
 // Fixed ids are safe: only the footer renders a faded doodle, once per page.
 const VIGNETTE_GRADIENT_ID = "doodle-vignette-gradient";
 const VIGNETTE_MASK_ID = "doodle-vignette-mask";
+const SPRAY_FILTER_ID = "doodle-spray-filter";
 
 export default function DoodleSvg({ strokes, className, faded = false }: DoodleSvgProps) {
   return (
@@ -34,11 +35,23 @@ export default function DoodleSvg({ strokes, className, faded = false }: DoodleS
               fill={`url(#${VIGNETTE_GRADIENT_ID})`}
             />
           </mask>
+          {/* Fixed seed keeps this deterministic across server/client render. */}
+          <filter id={SPRAY_FILTER_ID} x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.9"
+              numOctaves="2"
+              seed="7"
+              result="noise"
+            />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" />
+          </filter>
         </defs>
       )}
       <g
-        opacity={faded ? 0.4 : undefined}
+        opacity={faded ? 0.65 : undefined}
         mask={faded ? `url(#${VIGNETTE_MASK_ID})` : undefined}
+        filter={faded ? `url(#${SPRAY_FILTER_ID})` : undefined}
       >
         {strokes.map((s, i) => (
           <path

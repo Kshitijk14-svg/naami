@@ -53,8 +53,9 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 ## 2. Install the stack (as user `naami`)
 
 ```bash
-# Node 20 LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node 22 LTS (Next.js only requires >=20.9, but Node 20 is past its support
+# window — Node 22 stays in Maintenance LTS for longer)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 sudo npm install -g pm2
 
@@ -93,17 +94,22 @@ for local connections, then `sudo systemctl restart postgresql`.
 git clone <REPO_URL> /home/naami/naami && cd /home/naami/naami
 npm ci
 
-# Production env
+# Production env — fill in every value in .env.production before continuing.
+# At minimum: DATABASE_URL/DATABASE_SSL, SUPER_ADMIN_EMAIL, JWT_SECRET,
+# UPSTASH_*, RESEND_API_KEY/RESEND_FROM/ADMIN_EMAIL, GMAIL_USER/GMAIL_PASS,
+# RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET/NEXT_PUBLIC_RAZORPAY_KEY_ID,
+# NEXT_PUBLIC_SITE_URL, JOBS_WORKER_SECRET. Generate random secrets with
+# `openssl rand -base64 32` (JWT_SECRET, ENCRYPTION_KEY, JOBS_WORKER_SECRET).
 cp .env.example .env.production
-#   DATABASE_URL=postgres://naami:STRONG_PASSWORD_HERE@localhost:5432/naami
-#   DATABASE_SSL=false
-#   SUPER_ADMIN_EMAIL + UPSTASH_* filled in
+nano .env.production   # DATABASE_URL=postgres://naami:STRONG_PASSWORD_HERE@localhost:5432/naami, DATABASE_SSL=false, etc.
 
 set -a; . ./.env.production; set +a    # export for the CLI steps below
 npm run db:migrate
-npm run db:seed
+# npm run db:seed   # optional: 4 sample categories/14 products/2 collections —
+                     # useful to smoke-test the pipeline, skip it once you're
+                     # loading real catalog data
 
-npm run build      # build script caps heap at 2048MB; swap covers spikes
+NODE_OPTIONS=--max-old-space-size=3072 npm run build   # cap heap for a 4GB box; swap covers spikes
 pm2 start ecosystem.config.js
 pm2 save
 pm2 startup        # run the command it prints (enables boot autostart)
@@ -144,12 +150,18 @@ Add:
 ```
 (Optional: `rclone`/`scp` the dump offsite so a VPS loss isn't total.)
 
+> Uploaded media (`public/images/`, `public/videos/`) lives on the VPS's local
+> disk, not a cloud bucket — the DB dump alone won't recover it. Add a line to
+> the same crontab to sync it offsite too, e.g.:
+> `30 3 * * * rsync -a /home/naami/naami/public/images /home/naami/naami/public/videos /backups/media/`
+> (extend with `rclone` to push `/backups/media` off-box, same as the DB dump).
+
 ---
 
 ## 7. Verify
 
-- `pm2 status` → **2 workers online**.
-- `curl -s localhost:3000/api/products` → seeded JSON; log timing shows DB <5 ms.
+- `pm2 status` → **2 `naami` workers + 1 `naami-worker` online**.
+- `curl -s localhost:3000/api/products` → JSON response (empty array if you skipped seeding/haven't loaded a catalog yet); log timing shows DB <5 ms.
 - `https://your-domain` loads with a valid Let's Encrypt cert.
 - Lighthouse on `/` → LCP < 2.5 s; hero image served as AVIF/WebP.
 - `sudo reboot` → after boot, `pm2 status` shows the app back automatically.

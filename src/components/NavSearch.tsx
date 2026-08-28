@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { PRICE_CLASS } from "@/lib/typography";
 
 interface SearchResult {
   id: number;
@@ -158,7 +159,7 @@ export default function NavSearch() {
                   >
                     {r.subtitle}
                   </p>
-                  <p className="font-serif mt-0.5" style={{ fontSize: "13px", color: "#1A1212" }}>
+                  <p className={`${PRICE_CLASS} mt-0.5`} style={{ fontSize: "13px", color: "#1A1212" }}>
                     {r.price}
                   </p>
                 </div>

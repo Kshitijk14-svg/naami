@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getPublishedPosts } from "@/db/queries/blog";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import { PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 export const metadata: Metadata = {
   title: "Journal — NAAMI Atelier",
@@ -29,15 +30,7 @@ export default async function JournalPage() {
         <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
           NAAMI // THE JOURNAL
         </p>
-        <h1
-          className="font-serif font-light uppercase"
-          style={{
-            fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
-            color: "#111",
-            letterSpacing: "0.03em",
-            lineHeight: 1.05,
-          }}
-        >
+        <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4.5rem)")}>
           Stories from<br />the Atelier
         </h1>
 
@@ -53,7 +46,7 @@ export default async function JournalPage() {
         {posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-50 mx-auto mb-8" />
-            <p className="font-serif font-light italic" style={{ fontSize: "1.3rem", color: "rgba(17,17,17,0.4)" }}>
+            <p className="font-serif font-light" style={{ fontSize: "1.3rem", color: "rgba(17,17,17,0.4)" }}>
               New stories coming soon.
             </p>
           </div>
@@ -84,7 +77,7 @@ export default async function JournalPage() {
                       className="absolute inset-0 flex items-center justify-center"
                       style={{ backgroundColor: "#F8F1E5" }}
                     >
-                      <span className="font-serif font-light italic opacity-30" style={{ fontSize: "1.2rem" }}>
+                      <span className="font-serif font-light opacity-30" style={{ fontSize: "1.2rem" }}>
                         NAAMI
                       </span>
                     </div>
@@ -101,7 +94,7 @@ export default async function JournalPage() {
                 )}
 
                 <h2
-                  className="font-serif font-light uppercase group-hover:text-[#5B1C1C] transition-colors mb-3"
+                  className={`${PRODUCT_NAME_CLASS} group-hover:text-[#5B1C1C] transition-colors mb-3`}
                   style={{ fontSize: "1.15rem", color: "#111", letterSpacing: "0.03em", lineHeight: 1.25 }}
                 >
                   {post.title}

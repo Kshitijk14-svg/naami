@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (.env.example is a placeholder-only template and stays tracked —
+# needed on a fresh `git clone` for the deploy runbook's `cp .env.example ...` step)
 .env*
+!.env.example
 
 # vercel
 .vercel

@@ -61,7 +61,7 @@ export default function AdminPage() {
           }}
         >
           Welcome,{" "}
-          <span style={{ color: "#8B1A1A", fontStyle: "italic" }}>
+          <span style={{ color: "#8B1A1A" }}>
             {role ? ROLE_LABELS[role] : "…"}
           </span>
         </h1>

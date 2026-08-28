@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import FeedbackForm from "@/components/FeedbackForm";
+import { PRICE_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 function formatPrice(inr: number): string {
   return `₹${inr.toLocaleString("en-IN")}`;
@@ -111,10 +112,10 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-3" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // ORDER CONFIRMED
           </p>
-          <h1 className="font-serif font-light uppercase mb-4" style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)", color: "#111", letterSpacing: "0.03em", lineHeight: 1.1 }}>
+          <h1 className={`${TITLE_CLASS} mb-4`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             Thank you{order.shippingName ? `, ${order.shippingName.split(" ")[0]}` : ""}
           </h1>
-          <p className="font-serif italic mb-4" style={{ fontSize: "1.1rem", color: "#5B1C1C" }}>
+          <p className="font-serif mb-4" style={{ fontSize: "1.1rem", color: "#5B1C1C" }}>
             If found Wear again
           </p>
           <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.55)", lineHeight: 1.7 }}>
@@ -202,7 +203,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           {items.map((item) => (
             <div key={item.id} className="flex justify-between py-4" style={{ borderBottom: "1px solid rgba(139,26,26,0.06)" }}>
               <div>
-                <p className="font-serif font-light" style={{ fontSize: "14px", color: "#111" }}>{item.productName}</p>
+                <p className="font-sans font-light" style={{ fontSize: "14px", color: "#111" }}>{item.productName}</p>
                 {item.size && (
                   <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)" }}>
                     Size: {item.size} · Qty: {item.quantity}
@@ -216,7 +217,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           ))}
           <div className="flex justify-between pt-4">
             <span className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "10px" }}>Total</span>
-            <span className="font-serif font-light" style={{ fontSize: "20px" }}>{formatPrice(order.totalInr)}</span>
+            <span className={PRICE_CLASS} style={{ fontSize: "20px" }}>{formatPrice(order.totalInr)}</span>
           </div>
         </div>
 

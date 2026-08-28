@@ -30,7 +30,7 @@ export function CoinPocketSection({ settings, update, coinPocketError, coinPocke
             <input value={settings.coinpocket_title ?? ""} onChange={(e) => update("coinpocket_title", e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title Accent (italic line)</label>
+            <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>Title Accent</label>
             <input value={settings.coinpocket_title_accent ?? ""} onChange={(e) => update("coinpocket_title_accent", e.target.value)} style={inputStyle} />
           </div>
         </div>

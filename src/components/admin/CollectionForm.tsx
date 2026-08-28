@@ -121,6 +121,7 @@ export function CollectionForm({ collectionId }: { collectionId?: number }) {
         {field("Description", <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} value={form.description} onChange={set("description")} />)}
         <ImageUploadField
           type="collection"
+          hint="1536 × 1920 (4:5 portrait). Collections in homepage position 3+ render as 16:10 landscape instead — use 1440 × 1200 (6:5) if the homepage order may change."
           image={form.image}
           onUploaded={(image, thumbnailImage) => setForm((f) => ({ ...f, image, thumbnailImage }))}
         />

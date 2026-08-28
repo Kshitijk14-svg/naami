@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/models/cartStore";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 function formatPrice(inr: number): string {
   return `₹${inr.toLocaleString("en-IN")}`;
@@ -118,10 +119,10 @@ export default function CartPage() {
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // YOUR WARDROBE
           </p>
-          <h1 className="font-serif font-light uppercase mb-4" style={{ fontSize: "2.2rem", color: "#111", letterSpacing: "0.03em" }}>
+          <h1 className={`${TITLE_CLASS} mb-4`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             Your cart is empty
           </h1>
-          <p className="font-serif italic mb-6" style={{ fontSize: "1.05rem", color: "#5B1C1C" }}>
+          <p className="font-serif mb-6" style={{ fontSize: "1.05rem", color: "#5B1C1C" }}>
             If found Wear again
           </p>
           <p className="font-sans mb-10" style={{ fontSize: "13px", color: "rgba(17,17,17,0.5)", lineHeight: 1.7 }}>
@@ -150,10 +151,10 @@ export default function CartPage() {
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // YOUR WARDROBE
           </p>
-          <h1 className="font-serif font-light uppercase mb-2" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#111", letterSpacing: "0.03em" }}>
+          <h1 className={`${TITLE_CLASS} mb-2`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             Shopping Cart
           </h1>
-          <p className="font-serif italic" style={{ fontSize: "1rem", color: "#5B1C1C" }}>
+          <p className="font-serif" style={{ fontSize: "1rem", color: "#5B1C1C" }}>
             If found Wear again
           </p>
         </div>
@@ -183,7 +184,7 @@ export default function CartPage() {
 
                   {/* Name + size */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-serif font-light uppercase mb-1" style={{ fontSize: "13px", color: "#111", letterSpacing: "0.03em", lineHeight: 1.2 }}>
+                    <p className={`${PRODUCT_NAME_CLASS} mb-1`} style={{ fontSize: "13px", color: "#111", letterSpacing: "0.03em", lineHeight: 1.2 }}>
                       {item.name}
                     </p>
                     <p className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "9px", color: "#5B1C1C" }}>
@@ -231,7 +232,7 @@ export default function CartPage() {
 
                   {/* Line total */}
                   <div className="w-28 text-right">
-                    <span className="font-serif font-light" style={{ fontSize: "16px", color: "#111" }}>
+                    <span className={PRICE_CLASS} style={{ fontSize: "16px", color: "#111" }}>
                       {formatPrice(item.priceInr * item.quantity)}
                     </span>
                   </div>
@@ -306,7 +307,7 @@ export default function CartPage() {
                 style={{ borderTop: "1px solid rgba(139,26,26,0.15)" }}
               >
                 <span className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "10px" }}>Total</span>
-                <span className="font-serif font-light" style={{ fontSize: "20px", color: "#111" }}>{formatPrice(total)}</span>
+                <span className={PRICE_CLASS} style={{ fontSize: "20px", color: "#111" }}>{formatPrice(total)}</span>
               </div>
 
               {hasUnavailableLine ? (

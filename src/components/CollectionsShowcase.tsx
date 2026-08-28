@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 type CollectionItem = {
   id?: number;
@@ -44,6 +46,8 @@ interface Props {
   title?: string;
   titleAccent?: string;
   sideNote?: string;
+  backgroundImage?: string;
+  backgroundImageFit?: SectionBackgroundFit;
 }
 
 const DEFAULT_KICKER = "NAAMI // THE ARCHIVAL SERIES";
@@ -57,6 +61,8 @@ export default function CollectionsShowcase({
   title,
   titleAccent,
   sideNote,
+  backgroundImage,
+  backgroundImageFit,
 }: Props) {
   const items = collections && collections.length > 0 ? collections : FALLBACK_COLLECTIONS;
   const portraitItems = items.slice(0, 2);
@@ -70,7 +76,7 @@ export default function CollectionsShowcase({
   return (
     <section
       className="px-6 md:px-12 py-28 relative"
-      style={{ backgroundColor: "#FFF9EF" }}
+      style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Section Header */}
       <div className="mb-20 pb-8 border-b border-black/5 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
@@ -81,18 +87,10 @@ export default function CollectionsShowcase({
           >
             {headerKicker}
           </span>
-          <h2
-            className="font-serif font-light uppercase"
-            style={{
-              fontSize: "clamp(2.5rem, 5vw, 4rem)",
-              color: "#1A1212",
-              lineHeight: 1.05,
-              letterSpacing: "0.02em",
-            }}
-          >
+          <h2 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             {headerTitle}
             <br />
-            <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>
+            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>
               {headerTitleAccent}
             </span>
           </h2>
@@ -232,7 +230,7 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
             <div className="h-px flex-1 bg-black/5" />
           </div>
           <h3
-            className="font-serif font-light uppercase mb-3 transition-colors group-hover:text-[#5B1C1C]"
+            className={`${PRODUCT_NAME_CLASS} mb-3 transition-colors group-hover:text-[#5B1C1C]`}
             style={{
               fontSize: "1.6rem",
               color: "#1A1212",
@@ -364,7 +362,7 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
             COLLECTION {number} // {tag}
           </span>
           <h3
-            className="font-serif font-light uppercase mb-4 transition-colors group-hover:text-[#5B1C1C]"
+            className={`${PRODUCT_NAME_CLASS} mb-4 transition-colors group-hover:text-[#5B1C1C]`}
             style={{
               fontSize: "1.85rem",
               color: "#1A1212",

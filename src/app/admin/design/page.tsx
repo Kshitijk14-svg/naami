@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { type HotspotRow } from "@/components/admin/HotspotListEditor";
-import { toHotspotRows, sectionLabelStyle, type ResolvedHotspot, type LookCard } from "@/components/admin/design/shared";
+import { toHotspotRows, sectionLabelStyle, type ResolvedHotspot, type LookCard, type SharedMomentVideo } from "@/components/admin/design/shared";
 import { HeroBannerSection } from "@/components/admin/design/HeroBannerSection";
 import { LookbookBannerSection } from "@/components/admin/design/LookbookBannerSection";
 import { HotspotCardsSection } from "@/components/admin/design/HotspotCardsSection";
@@ -12,7 +12,8 @@ import { ManifestoSection } from "@/components/admin/design/ManifestoSection";
 import { SectionHeadersSection } from "@/components/admin/design/SectionHeadersSection";
 import { FooterDoodleSection } from "@/components/admin/design/FooterDoodleSection";
 import { AnnouncementBarSection } from "@/components/admin/design/AnnouncementBarSection";
-import { ReelsSection } from "@/components/admin/design/ReelsSection";
+import { SharedMomentsSection } from "@/components/admin/design/SharedMomentsSection";
+import { SectionBackgroundsSection, SECTION_BACKGROUND_KEYS } from "@/components/admin/design/SectionBackgroundsSection";
 
 const TABS = [
   { id: "hero", label: "Hero Banner" },
@@ -22,9 +23,10 @@ const TABS = [
   { id: "coinpocket", label: "Coin Pocket Card" },
   { id: "manifesto", label: "Manifesto" },
   { id: "headers", label: "Section Headers" },
+  { id: "backgrounds", label: "Section Backgrounds" },
   { id: "doodle", label: "Footer Doodle" },
   { id: "announcements", label: "Announcements" },
-  { id: "reels", label: "Instagram Reels" },
+  { id: "shared-moments", label: "Shared Moments" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -72,6 +74,11 @@ export default function AdminDesignPage() {
   const [sectionHeadersSaved, setSectionHeadersSaved] = useState(false);
   const [sectionHeadersError, setSectionHeadersError] = useState<string | null>(null);
 
+  // ── Section Backgrounds ─────────────────────────────────────────────────────
+  const [backgroundsSaving, setBackgroundsSaving] = useState(false);
+  const [backgroundsSaved, setBackgroundsSaved] = useState(false);
+  const [backgroundsError, setBackgroundsError] = useState<string | null>(null);
+
   // ── Footer Doodle ──────────────────────────────────────────────────────────
   const [doodleSaving, setDoodleSaving] = useState(false);
   const [doodleSaved, setDoodleSaved] = useState(false);
@@ -82,10 +89,15 @@ export default function AdminDesignPage() {
   const [announcementsSaved, setAnnouncementsSaved] = useState(false);
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
 
-  // ── Instagram Reels ────────────────────────────────────────────────────────
-  const [reelsSaving, setReelsSaving] = useState(false);
-  const [reelsSaved, setReelsSaved] = useState(false);
-  const [reelsError, setReelsError] = useState<string | null>(null);
+  // ── Shared Moments ─────────────────────────────────────────────────────────
+  const [sharedMomentsSaving, setSharedMomentsSaving] = useState(false);
+  const [sharedMomentsSaved, setSharedMomentsSaved] = useState(false);
+  const [sharedMomentsError, setSharedMomentsError] = useState<string | null>(null);
+  const [sharedMomentVideos, setSharedMomentVideos] = useState<SharedMomentVideo[]>([]);
+  const [deletedVideoIds, setDeletedVideoIds] = useState<number[]>([]);
+  const [videosSaving, setVideosSaving] = useState(false);
+  const [videosSaved, setVideosSaved] = useState(false);
+  const [videosError, setVideosError] = useState<string | null>(null);
 
   const loadAll = () => {
     setLoading(true);
@@ -93,24 +105,42 @@ export default function AdminDesignPage() {
       fetch("/api/admin/design").then((r) => r.json()),
       fetch("/api/admin/homepage-banner-hotspots").then((r) => r.json()),
       fetch("/api/admin/homepage-look-cards").then((r) => r.json()),
+      fetch("/api/admin/homepage-shared-moments").then((r) => r.json()),
     ])
-      .then(([designSettings, banner, cards]: [Record<string, string>, ResolvedHotspot[], (LookCard & { hotspots: ResolvedHotspot[] })[]]) => {
-        setSettings(designSettings);
-        setBannerHotspots(toHotspotRows(banner));
-        setLookCards(
-          cards.map((c) => ({
-            id: c.id,
-            title: c.title,
-            subtitle: c.subtitle,
-            image: c.image,
-            thumbnailImage: c.thumbnailImage ?? "",
-            sortOrder: c.sortOrder,
-            isPublished: c.isPublished,
-            hotspots: toHotspotRows(c.hotspots),
-          }))
-        );
-        setDeletedCardIds([]);
-      })
+      .then(
+        ([designSettings, banner, cards, videos]: [
+          Record<string, string>,
+          ResolvedHotspot[],
+          (LookCard & { hotspots: ResolvedHotspot[] })[],
+          SharedMomentVideo[],
+        ]) => {
+          setSettings(designSettings);
+          setBannerHotspots(toHotspotRows(banner));
+          setLookCards(
+            cards.map((c) => ({
+              id: c.id,
+              title: c.title,
+              subtitle: c.subtitle,
+              image: c.image,
+              thumbnailImage: c.thumbnailImage ?? "",
+              sortOrder: c.sortOrder,
+              isPublished: c.isPublished,
+              hotspots: toHotspotRows(c.hotspots),
+            }))
+          );
+          setDeletedCardIds([]);
+          setSharedMomentVideos(
+            videos.map((v) => ({
+              id: v.id,
+              videoUrl: v.videoUrl,
+              thumbnailImage: v.thumbnailImage ?? "",
+              caption: v.caption ?? "",
+              sortOrder: v.sortOrder,
+            }))
+          );
+          setDeletedVideoIds([]);
+        }
+      )
       .catch(() => {})
       .finally(() => setLoading(false));
   };
@@ -272,6 +302,21 @@ export default function AdminDesignPage() {
     }
   };
 
+  const saveBackgrounds = async () => {
+    setBackgroundsSaving(true);
+    setBackgroundsError(null);
+    setBackgroundsSaved(false);
+    try {
+      await saveSettingsSubset(SECTION_BACKGROUND_KEYS);
+      setBackgroundsSaved(true);
+      setTimeout(() => setBackgroundsSaved(false), 3000);
+    } catch (err) {
+      setBackgroundsError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setBackgroundsSaving(false);
+    }
+  };
+
   const saveDoodle = async () => {
     setDoodleSaving(true);
     setDoodleError(null);
@@ -305,22 +350,78 @@ export default function AdminDesignPage() {
     }
   };
 
-  const saveReels = async () => {
-    setReelsSaving(true);
-    setReelsError(null);
-    setReelsSaved(false);
+  const saveSharedMoments = async () => {
+    setSharedMomentsSaving(true);
+    setSharedMomentsError(null);
+    setSharedMomentsSaved(false);
     try {
-      await saveSettingsSubset([
-        "instagram_reels_enabled", "instagram_reels_kicker", "instagram_reels_title",
-        "instagram_reels_url_1", "instagram_reels_url_2", "instagram_reels_url_3",
-        "instagram_reels_url_4", "instagram_reels_url_5", "instagram_reels_url_6",
-      ]);
-      setReelsSaved(true);
-      setTimeout(() => setReelsSaved(false), 3000);
+      await saveSettingsSubset(["shared_moments_enabled", "shared_moments_kicker", "shared_moments_title"]);
+      setSharedMomentsSaved(true);
+      setTimeout(() => setSharedMomentsSaved(false), 3000);
     } catch (err) {
-      setReelsError(err instanceof Error ? err.message : "An error occurred.");
+      setSharedMomentsError(err instanceof Error ? err.message : "An error occurred.");
     } finally {
-      setReelsSaving(false);
+      setSharedMomentsSaving(false);
+    }
+  };
+
+  const addSharedMomentVideo = () => {
+    setSharedMomentVideos((prev) => [
+      ...prev,
+      { videoUrl: "", thumbnailImage: "", caption: "", sortOrder: prev.length },
+    ]);
+  };
+
+  const updateSharedMomentVideo = (idx: number, patch: Partial<SharedMomentVideo>) => {
+    setSharedMomentVideos((prev) => prev.map((v, i) => (i === idx ? { ...v, ...patch } : v)));
+  };
+
+  const removeSharedMomentVideo = (idx: number) => {
+    setSharedMomentVideos((prev) => {
+      const video = prev[idx];
+      if (video.id !== undefined) {
+        setDeletedVideoIds((ids) => [...ids, video.id!]);
+      }
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const saveSharedMomentVideos = async () => {
+    setVideosSaving(true);
+    setVideosError(null);
+    setVideosSaved(false);
+    try {
+      for (const videoId of deletedVideoIds) {
+        await fetch(`/api/admin/homepage-shared-moments/${videoId}`, { method: "DELETE" });
+      }
+      for (const video of sharedMomentVideos) {
+        if (!video.videoUrl) continue;
+        const body = {
+          videoUrl: video.videoUrl,
+          thumbnailImage: video.thumbnailImage || undefined,
+          caption: video.caption,
+          sortOrder: video.sortOrder,
+        };
+        const url = video.id ? `/api/admin/homepage-shared-moments/${video.id}` : "/api/admin/homepage-shared-moments";
+        const method = video.id ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          setVideosError(data.error ?? "Failed to save videos.");
+          return;
+        }
+      }
+      loadAll();
+      setVideosSaved(true);
+      setTimeout(() => setVideosSaved(false), 3000);
+    } catch {
+      setVideosError("An error occurred.");
+    } finally {
+      setVideosSaving(false);
     }
   };
 
@@ -474,6 +575,16 @@ export default function AdminDesignPage() {
               onSave={saveSectionHeaders}
             />
           )}
+          {activeTab === "backgrounds" && (
+            <SectionBackgroundsSection
+              settings={settings}
+              update={update}
+              backgroundsError={backgroundsError}
+              backgroundsSaving={backgroundsSaving}
+              backgroundsSaved={backgroundsSaved}
+              onSave={saveBackgrounds}
+            />
+          )}
           {activeTab === "doodle" && (
             <FooterDoodleSection settings={settings} update={update} doodleError={doodleError} doodleSaving={doodleSaving} doodleSaved={doodleSaved} onSave={saveDoodle} />
           )}
@@ -487,14 +598,22 @@ export default function AdminDesignPage() {
               onSave={saveAnnouncements}
             />
           )}
-          {activeTab === "reels" && (
-            <ReelsSection
+          {activeTab === "shared-moments" && (
+            <SharedMomentsSection
               settings={settings}
               update={update}
-              reelsError={reelsError}
-              reelsSaving={reelsSaving}
-              reelsSaved={reelsSaved}
-              onSave={saveReels}
+              sharedMomentsError={sharedMomentsError}
+              sharedMomentsSaving={sharedMomentsSaving}
+              sharedMomentsSaved={sharedMomentsSaved}
+              onSave={saveSharedMoments}
+              videos={sharedMomentVideos}
+              addVideo={addSharedMomentVideo}
+              updateVideo={updateSharedMomentVideo}
+              removeVideo={removeSharedMomentVideo}
+              videosError={videosError}
+              videosSaving={videosSaving}
+              videosSaved={videosSaved}
+              onSaveVideos={saveSharedMomentVideos}
             />
           )}
         </>

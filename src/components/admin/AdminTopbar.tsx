@@ -35,10 +35,10 @@ export function AdminTopbar({ email, name, role }: Props) {
       {/* Brand */}
       <Link
         href="/"
-        className="font-serif uppercase font-semibold hover:opacity-60 transition-opacity"
+        className="font-wordmark lowercase font-bold hover:opacity-60 transition-opacity"
         style={{ fontSize: "1.05rem", letterSpacing: "0.18em", color: "#8B1A1A" }}
       >
-        Naami
+        naami
       </Link>
 
       {/* Right side: role + email + sign out */}

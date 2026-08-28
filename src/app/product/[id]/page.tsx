@@ -9,6 +9,7 @@ import { trackEvent } from "@/components/MetaPixel";
 import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import WishlistButton from "@/components/WishlistButton";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, titleStyle } from "@/lib/typography";
 
 type ProductImage = { url: string; thumbnailUrl: string | null };
 type ProductMetafield = { name: string; description: string };
@@ -220,15 +221,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </Link>
             </div>
 
-            <h1
-              className="font-serif font-light uppercase mb-3"
-              style={{
-                fontSize: "clamp(2.5rem, 5vw, 3.75rem)",
-                color: "#1A1212",
-                lineHeight: 1.05,
-                letterSpacing: "0.02em",
-              }}
-            >
+            <h1 className={`${PRODUCT_NAME_CLASS} mb-3`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
               {product.name}
             </h1>
 
@@ -269,10 +262,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           <div>
             <div className="flex items-end justify-between mb-6">
               <span className="flex items-baseline gap-2">
-                <span
-                  className="font-serif font-light"
-                  style={{ fontSize: "2.75rem", color: "#1A1212" }}
-                >
+                <span className={PRICE_CLASS} style={{ fontSize: "2.75rem", color: "#1A1212" }}>
                   {product.price}
                 </span>
                 {getDiscount(product) && (

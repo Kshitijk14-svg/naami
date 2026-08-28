@@ -261,7 +261,7 @@ export default function EvanliteFooter() {
           <div
             className="order-2 md:order-1 min-w-0 text-center md:text-left select-none pointer-events-none text-[16vw] md:text-[11vw]"
             style={{
-              fontFamily: "var(--font-serif), serif",
+              fontFamily: "var(--font-august), sans-serif",
               fontWeight: "700",
               letterSpacing: "0.25em",
               lineHeight: "0.8",
@@ -272,7 +272,7 @@ export default function EvanliteFooter() {
               whiteSpace: "nowrap",
             }}
           >
-            NAAMI
+            naami
           </div>
           <div className="order-1 md:order-2 w-[70%] mx-auto md:mx-0 md:w-[30%] md:max-w-[420px] md:shrink-0 md:pb-[1%] pointer-events-none select-none">
             <DoodleSvg strokes={doodle} className="w-full h-auto" faded />
@@ -282,7 +282,7 @@ export default function EvanliteFooter() {
         <div
           className="w-full text-center select-none pointer-events-none mt-8 z-0"
           style={{
-            fontFamily: "var(--font-serif), serif",
+            fontFamily: "var(--font-august), sans-serif",
             fontSize: "16vw",
             fontWeight: "700",
             letterSpacing: "0.25em",
@@ -293,7 +293,7 @@ export default function EvanliteFooter() {
             willChange: "transform",
           }}
         >
-          NAAMI
+          naami
         </div>
       )}
     </footer>

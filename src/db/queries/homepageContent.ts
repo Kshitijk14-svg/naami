@@ -1,10 +1,11 @@
 import { db, dbRead } from "@/lib/db";
-import { homepageLookCards, homepageHotspots, products } from "@/db/schema";
+import { homepageLookCards, homepageHotspots, homepageSharedMomentVideos, products } from "@/db/schema";
 import { eq, and, isNull, inArray, asc } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
 
 export type LookCardRow = typeof homepageLookCards.$inferSelect;
+export type SharedMomentVideoRow = typeof homepageSharedMomentVideos.$inferSelect;
 
 interface HotspotInput {
   productId: number | null;
@@ -237,6 +238,76 @@ export async function getBannerHotspots() {
 export async function replaceBannerHotspots(hotspots: HotspotInput[]) {
   await replaceHotspots(null, hotspots);
   await redisDel(CACHE_KEYS.HOMEPAGE_BANNER_HOTSPOTS);
+}
+
+// ─── Shared Moments videos ──────────────────────────────────────────────────
+// Admin-uploaded clips for the homepage carousel — same soft-delete + sort
+// pattern as look cards above, just without hotspots.
+
+export async function getSharedMomentVideos() {
+  return dbRead
+    .select()
+    .from(homepageSharedMomentVideos)
+    .where(isNull(homepageSharedMomentVideos.deletedAt))
+    .orderBy(asc(homepageSharedMomentVideos.sortOrder));
+}
+
+export async function getPublishedSharedMomentVideos() {
+  return getCached(CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS_PUBLISHED, CACHE_TTL.HOME, () =>
+    dbRead
+      .select()
+      .from(homepageSharedMomentVideos)
+      .where(isNull(homepageSharedMomentVideos.deletedAt))
+      .orderBy(asc(homepageSharedMomentVideos.sortOrder))
+  );
+}
+
+export async function createSharedMomentVideo(data: {
+  videoUrl: string;
+  thumbnailImage?: string;
+  caption?: string;
+  sortOrder?: number;
+}) {
+  const [video] = await db
+    .insert(homepageSharedMomentVideos)
+    .values({
+      videoUrl: data.videoUrl,
+      thumbnailImage: data.thumbnailImage ?? "",
+      caption: data.caption ?? "",
+      sortOrder: data.sortOrder ?? 0,
+    })
+    .returning();
+
+  await redisDel(CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS, CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS_PUBLISHED);
+  return video;
+}
+
+export async function updateSharedMomentVideo(
+  id: number,
+  data: Partial<{ videoUrl: string; thumbnailImage: string; caption: string; sortOrder: number }>
+) {
+  const [updated] = await db
+    .update(homepageSharedMomentVideos)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(homepageSharedMomentVideos.id, id))
+    .returning();
+
+  if (updated) {
+    await redisDel(CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS, CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS_PUBLISHED);
+  }
+  return updated ?? null;
+}
+
+export async function deleteSharedMomentVideo(id: number) {
+  const [deleted] = await db
+    .update(homepageSharedMomentVideos)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(homepageSharedMomentVideos.id, id), isNull(homepageSharedMomentVideos.deletedAt)))
+    .returning();
+  if (deleted) {
+    await redisDel(CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS, CACHE_KEYS.HOMEPAGE_SHARED_MOMENTS_PUBLISHED);
+  }
+  return !!deleted;
 }
 
 export async function getHomepageExtras() {

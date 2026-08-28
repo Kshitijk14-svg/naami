@@ -1,202 +1,243 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 
-export default function NaamiGatewayButton({ label = "Discover Collection" }: { label?: string }) {
+/**
+ * Geometry measured off brand.png (1080x1350) by pixel scanline analysis, then
+ * translated by (-366, -306) into a 350x470 viewBox.
+ *
+ * The mark's strokes are *modulated*, not uniform — the arch is 11 units thick
+ * at the apex and 26 at the legs. That falls out of drawing it as the region
+ * between an outer circle (r=140) and an inner ellipse (114.5 x 130) sharing a
+ * centre, which reproduces every measured section to within ~3 units. The same
+ * two-curve construction gives the inner vaults their 6 -> 11 taper. Hence
+ * filled paths rather than stroked ones.
+ *
+ *   source            -> local
+ *   centre x 541      -> 175
+ *   springing y 452   -> 146
+ *   baseline y 770    -> 464
+ *   legs 401/681 (outer), 426.5/655.5 (inner) -> 35/315, 60.5/289.5
+ */
+const VB = { w: 350, h: 470 };
+const CX = 175;
+
+const MAROON = '#5B1C1C';
+
+const PATH = {
+  // Left half: up the outer leg, quarter of the outer circle to the apex, then
+  // the inner ellipse back down. Halves meet flush on the axis at x = CX.
+  archLeft:
+    'M 35,464 L 35,146 A 140,140 0 0 1 175,6 L 175,16 A 114.5,130 0 0 0 60.5,146 L 60.5,464 Z',
+  archRight:
+    'M 315,464 L 315,146 A 140,140 0 0 0 175,6 L 175,16 A 114.5,130 0 0 1 289.5,146 L 289.5,464 Z',
+
+  // Flared serif feet: 26 units wide at the leg, splaying to 85 at the base
+  // over the last 14 units.
+  footLeft: 'M 4.5,465 Q 32,464 35,451 L 60.5,451 Q 63.5,464 89.5,465 Z',
+  footRight: 'M 260.5,465 Q 287,464 289.5,451 L 315,451 Q 317.5,464 345.5,465 Z',
+
+  // Inner twin vaults, same annulus construction (outer 55.75x38, inner
+  // 46.5x32). Their outer limbs run into the legs; their inner limbs land on
+  // the shared stem.
+  vaultLeft: 'M 54,250 A 55.75,38 0 0 1 165.5,250 L 156.25,250 A 46.5,32 0 0 0 63.25,250 Z',
+  vaultRight: 'M 184.5,250 A 55.75,38 0 0 1 296,250 L 286.75,250 A 46.5,32 0 0 0 193.75,250 Z',
+  stem: 'M 165,244 L 185,244 L 185,464 L 165,464 Z',
+};
+
+const MARK_W = 40;
+const MARK_H = Math.round((MARK_W * VB.h) / VB.w);
+
+/**
+ * Lockup proportions, also measured: the wordmark spans 365 units against the
+ * arch's 280 (1.30x) and sits 46 units below the feet (0.10 arch-heights).
+ * August renders "naami" at ~1.45x its font-size in width.
+ */
+const WORDMARK_FS = Math.round((MARK_W * 1.3) / 1.45);
+const WORDMARK_GAP = Math.round(MARK_H * 0.1);
+
+export default function NaamiGatewayButton({
+  label = 'Discover Collection',
+  href = '/collection',
+}: {
+  label?: string;
+  href?: string;
+}) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const textRef = useRef<SVGGElement>(null);
-  const leftArchRef = useRef<SVGPathElement>(null);
-  const rightArchRef = useRef<SVGPathElement>(null);
-  const innerMRef = useRef<SVGPathElement>(null);
+  const wordmarkRef = useRef<HTMLSpanElement>(null);
+  const leftHalfRef = useRef<SVGGElement>(null);
+  const rightHalfRef = useRef<SVGGElement>(null);
+  const innerRef = useRef<SVGGElement>(null);
+  const wipeRef = useRef<SVGRectElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  const hoverTl = useRef<gsap.core.Timeline | null>(null);
+  const exitTl = useRef<gsap.core.Timeline | null>(null);
+
   const [mounted, setMounted] = useState(false);
+
+  // Two of these render per page, so the clipPath id has to be unique.
+  const clipId = `gw-${useId().replace(/:/g, '')}`;
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleMouseEnter = () => {
-    // 1. Gently expand text tracking & scale the mark on hover
-    gsap.to(svgRef.current, {
-      scale: 1.08,
-      duration: 0.5,
-      ease: 'power2.out'
-    });
+  useEffect(
+    () => () => {
+      hoverTl.current?.kill();
+      exitTl.current?.kill();
+    },
+    []
+  );
 
-    // 2. Subtle shine/glow effect on the polished crimson components
-    gsap.to([leftArchRef.current, rightArchRef.current, innerMRef.current], {
-      stroke: '#5B1C1C', // Turn to crimson accent
-      duration: 0.4,
-      ease: 'power2.out'
+  const prefersReducedMotion = useCallback(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    []
+  );
+
+  // Filled paths can't be drawn on with stroke-dashoffset, so the gateway
+  // reveals itself under a clip rect that rises from the ground instead.
+  const handleMouseEnter = () => {
+    if (prefersReducedMotion() || !wipeRef.current) return;
+    hoverTl.current?.kill();
+    gsap.set(wipeRef.current, { attr: { y: VB.h, height: 0 } });
+    hoverTl.current = gsap.timeline().to(wipeRef.current, {
+      attr: { y: -20, height: VB.h + 20 },
+      duration: 0.7,
+      ease: 'power2.out',
     });
   };
 
   const handleMouseLeave = () => {
-    // Reset back to premium charcoal theme state
-    gsap.to(svgRef.current, { scale: 1, duration: 0.5, ease: 'power2.out' });
-    gsap.to([leftArchRef.current, rightArchRef.current, innerMRef.current], {
-      stroke: '#1A1212',
-      duration: 0.4,
-      ease: 'power2.out'
-    });
+    hoverTl.current?.kill();
+    // Always settle fully revealed, whatever the wipe was mid-way through.
+    if (wipeRef.current) gsap.set(wipeRef.current, { attr: { y: -20, height: VB.h + 20 } });
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Let modified clicks (new tab, new window) behave natively.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+
+    if (prefersReducedMotion()) {
+      router.push(href);
+      return;
+    }
+
     const rect = containerRef.current?.getBoundingClientRect();
     const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
     const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        // Securely push route change once animation completes
-        router.push('/collection');
-      }
-    });
+    exitTl.current?.kill();
+    const tl = gsap.timeline({ onComplete: () => router.push(href) });
+    exitTl.current = tl;
 
-    // Step 1: Drop the "naami" text off-screen downwards with gravity fade
-    tl.to(textRef.current, {
-      y: 360,
-      opacity: 0,
-      duration: 0.4,
-      ease: 'power2.in'
-    }, 0);
+    // 1. Wordmark drops away (HTML node, so px).
+    tl.to(wordmarkRef.current, { y: 40, opacity: 0, duration: 0.4, ease: 'power2.in' }, 0);
 
-    // Step 2: Split the arches apart horizontally (Left half goes left, right half goes right)
-    tl.to(leftArchRef.current, { x: -450, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
-    tl.to(rightArchRef.current, { x: 450, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
-    tl.to(innerMRef.current, { scaleY: 0, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0.1);
+    // 2. Arch halves split, each carrying its own foot. One viewBox width
+    //    always clears the frame.
+    tl.to(leftHalfRef.current, { x: -VB.w, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
+    tl.to(rightHalfRef.current, { x: VB.w, opacity: 0, duration: 0.8, ease: 'power3.inOut' }, 0.1);
+    tl.to(innerRef.current, { scaleY: 0, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0.1);
 
-    // Step 3: Align circle start point and expand it globally
-    gsap.set(overlayRef.current, {
-      display: 'block',
-      clipPath: `circle(0% at ${x}px ${y}px)`
-    });
-
-    tl.to(overlayRef.current, {
-      clipPath: `circle(150% at ${x}px ${y}px)`,
-      duration: 1.2,
-      ease: 'power4.inOut'
-    }, 0.2);
+    // 3. Cream wipe expands from the button's centre.
+    gsap.set(overlayRef.current, { display: 'block', clipPath: `circle(0% at ${x}px ${y}px)` });
+    tl.to(
+      overlayRef.current,
+      { clipPath: `circle(150% at ${x}px ${y}px)`, duration: 1.2, ease: 'power4.inOut' },
+      0.2
+    );
   };
 
   return (
-    <div 
-      ref={containerRef} 
-      className="flex flex-col items-center justify-center py-1 cursor-pointer relative w-full overflow-hidden"
+    <div
+      ref={containerRef}
+      className="flex flex-col items-center justify-center py-1 relative w-full overflow-hidden"
     >
       <span className="text-[10px] tracking-[0.4em] text-[#1A1212]/45 uppercase mb-3 block font-light">
         {label}
       </span>
 
-      <button
+      <a
+        href={href}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        className="focus:outline-none z-10 transition-transform"
+        data-cursor-text="ENTER"
+        className="focus:outline-none z-10 flex flex-col items-center cursor-pointer"
         aria-label="Enter Naami Collection"
       >
-        {/* Traced from brand.png via pixel-scanline measurement (1080x1350 source) */}
         <svg
-          ref={svgRef}
-          width="90"
-          height="112"
-          viewBox="0 0 1080 1350"
+          width={MARK_W}
+          height={MARK_H}
+          viewBox={`0 0 ${VB.w} ${VB.h}`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="will-change-transform"
+          aria-hidden="true"
         >
-          {/* LEFT HALF OF OUTER ARCH — foot spur + leg + arc to apex */}
-          <path
-            ref={leftArchRef}
-            d="M380,772 L448,772 M414,760 V425 C414,350 460,310 540,310"
-            stroke="#1A1212"
-            strokeWidth="26"
-            strokeLinecap="round"
-            className="will-change-transform"
-          />
+          <defs>
+            <clipPath id={clipId}>
+              {/* Wider than the viewBox so the split-apart halves aren't
+                  clipped horizontally by the reveal. */}
+              <rect ref={wipeRef} x={-400} y={-20} width={1150} height={VB.h + 20} />
+            </clipPath>
+          </defs>
 
-          {/* RIGHT HALF OF OUTER ARCH — mirrored */}
-          <path
-            ref={rightArchRef}
-            d="M634,772 L702,772 M668,760 V425 C668,350 620,310 540,310"
-            stroke="#1A1212"
-            strokeWidth="26"
-            strokeLinecap="round"
-            className="will-change-transform"
-          />
+          <g clipPath={`url(#${clipId})`}>
+            <g ref={leftHalfRef} className="will-change-transform">
+              <path d={PATH.archLeft} fill={MAROON} />
+              <path d={PATH.footLeft} fill={MAROON} />
+            </g>
 
-          {/* INNER TWIN 'M' VAULTS — humps merging into a shared center bar */}
-          <path
-            ref={innerMRef}
-            d="M426,535 Q450,495 476,505 Q502,515 531,555 V772 M656,535 Q632,495 606,505 Q580,515 551,555 V772"
-            stroke="#1A1212"
-            strokeWidth="13"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="will-change-transform"
-          />
+            <g ref={rightHalfRef} className="will-change-transform">
+              <path d={PATH.archRight} fill={MAROON} />
+              <path d={PATH.footRight} fill={MAROON} />
+            </g>
 
-          {/* TRACED WORDMARK: naami */}
-          <g ref={textRef} className="will-change-transform">
-            {/* n */}
-            <path
-              d="M368,1035 V885 C368,860 380,852 386,852 C392,852 404,860 404,885 V1035"
-              stroke="#1A1212"
-              strokeWidth="22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* a */}
-            <path
-              d="M444,1030 V885 C444,860 456,852 462,852 C468,852 481,860 481,885 V1030 L462,1050 Z"
-              stroke="#1A1212"
-              strokeWidth="22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* a */}
-            <path
-              d="M521,1030 V885 C521,860 533,852 539,852 C545,852 557,860 557,885 V1030 L539,1050 Z"
-              stroke="#1A1212"
-              strokeWidth="22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* m */}
-            <path
-              d="M598,1035 V885 C598,860 610,852 616,852 C622,852 635,860 635,885 C635,860 647,852 653,852 C659,852 671,860 671,885 V1035"
-              stroke="#1A1212"
-              strokeWidth="22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* i (stem + dot) */}
-            <path
-              d="M711,1035 V885 M712,826 L712,827"
-              stroke="#1A1212"
-              strokeWidth="22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <g
+              ref={innerRef}
+              className="will-change-transform"
+              style={{ transformOrigin: `${CX}px 464px` }}
+            >
+              <path d={PATH.vaultLeft} fill={MAROON} />
+              <path d={PATH.vaultRight} fill={MAROON} />
+              <path d={PATH.stem} fill={MAROON} />
+            </g>
           </g>
         </svg>
-      </button>
 
-      {/* Portal Overlay mounted directly under document.body */}
-      {mounted && createPortal(
-        <div
-          ref={overlayRef}
-          className="fixed inset-0 bg-[#F8F1E5] z-[100000] hidden"
-          style={{ pointerEvents: 'none' }}
-        />,
-        document.body
-      )}
+        <span
+          ref={wordmarkRef}
+          className="font-wordmark lowercase block will-change-transform"
+          style={{
+            color: MAROON,
+            fontSize: `${WORDMARK_FS}px`,
+            lineHeight: 1.1,
+            letterSpacing: '0.01em',
+            marginTop: `${WORDMARK_GAP}px`,
+          }}
+        >
+          naami
+        </span>
+      </a>
+
+      {mounted &&
+        createPortal(
+          <div
+            ref={overlayRef}
+            className="fixed inset-0 bg-[#F8F1E5] z-[100000] hidden"
+            style={{ pointerEvents: 'none' }}
+          />,
+          document.body
+        )}
     </div>
   );
 }

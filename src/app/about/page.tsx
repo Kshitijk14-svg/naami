@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { useCartStore } from "@/models/cartStore";
+import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -97,18 +98,10 @@ export default function AboutPage() {
         <span className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block" style={{ fontSize: "9px", color: "#5B1C1C" }}>
           NAAMI // THE STORY
         </span>
-        <h1
-          className="font-serif font-light uppercase"
-          style={{
-            fontSize: "clamp(3rem, 7vw, 6rem)",
-            color: "#1A1212",
-            lineHeight: 1.0,
-            letterSpacing: "0.02em",
-          }}
-        >
+        <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
           Shirts Built
           <br />
-          <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>For the Long Game</span>
+          <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>For the Long Game</span>
         </h1>
         <p className="font-sans mt-6 max-w-lg" style={{ fontSize: "13px", color: "rgba(17,17,17,0.55)", lineHeight: 1.7 }}>
           Founded 2019 · Lisbon, Portugal
@@ -149,13 +142,10 @@ export default function AboutPage() {
           <span className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // THE METHOD
           </span>
-          <h2
-            className="font-serif font-light uppercase"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1A1212", lineHeight: 1.1, letterSpacing: "0.02em" }}
-          >
+          <h2 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
             Three
             <br />
-            <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>Absolutes</span>
+            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>Absolutes</span>
           </h2>
         </div>
 
@@ -169,7 +159,7 @@ export default function AboutPage() {
                 {p.number} // {p.title.toUpperCase()}
               </div>
               <h3
-                className="font-serif font-light uppercase mb-4"
+                className={`${PRODUCT_NAME_CLASS} mb-4`}
                 style={{ fontSize: "1.4rem", color: "#1A1212", letterSpacing: "0.03em" }}
               >
                 {p.title}
@@ -200,7 +190,7 @@ export default function AboutPage() {
                 </span>
               </div>
               <div>
-                <h4 className="font-serif font-light uppercase mb-2" style={{ fontSize: "1.05rem", color: "#1A1212", letterSpacing: "0.03em" }}>
+                <h4 className={`${PRODUCT_NAME_CLASS} mb-2`} style={{ fontSize: "1.05rem", color: "#1A1212", letterSpacing: "0.03em" }}>
                   {t.event}
                 </h4>
                 <p className="font-sans" style={{ fontSize: "12px", color: "rgba(17,17,17,0.5)", lineHeight: 1.6 }}>
@@ -231,7 +221,7 @@ export default function AboutPage() {
                   {member.name.split(" ").map((n) => n[0]).join("")}
                 </div>
               </div>
-              <h4 className="font-serif font-light uppercase mb-1" style={{ fontSize: "1rem", color: "#1A1212", letterSpacing: "0.03em" }}>
+              <h4 className={`${PRODUCT_NAME_CLASS} mb-1`} style={{ fontSize: "1rem", color: "#1A1212", letterSpacing: "0.03em" }}>
                 {member.name}
               </h4>
               <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)", letterSpacing: "0.1em" }}>
@@ -245,7 +235,7 @@ export default function AboutPage() {
       {/* Closing manifesto */}
       <section className="px-8 md:px-12 py-20 text-center about-reveal" style={{ opacity: 0 }}>
         <p
-          className="font-serif font-light italic mx-auto"
+          className="font-serif font-light mx-auto"
           style={{
             fontSize: "clamp(1.4rem, 3vw, 2.2rem)",
             color: "rgba(17,17,17,0.85)",

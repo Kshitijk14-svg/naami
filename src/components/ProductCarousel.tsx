@@ -8,6 +8,8 @@ import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import NaamiGatewayButton from "./NaamiGatewayButton";
 import WishlistButton from "./WishlistButton";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 export interface ProductMetafield {
   name: string;
@@ -42,6 +44,8 @@ interface ProductCarouselProps {
   tag: string;
   products: CarouselProduct[];
   gatewayLabel?: string;
+  backgroundImage?: string;
+  backgroundImageFit?: SectionBackgroundFit;
 }
 
 interface ExpandedState {
@@ -49,7 +53,7 @@ interface ExpandedState {
   originRect: DOMRect | null;
 }
 
-export default function ProductCarousel({ title, tag, products, gatewayLabel }: ProductCarouselProps) {
+export default function ProductCarousel({ title, tag, products, gatewayLabel, backgroundImage, backgroundImageFit }: ProductCarouselProps) {
   const addItem = useCartStore((state) => state.addItem);
   const trackRef = useRef<HTMLDivElement>(null);
   const autoScrollRaf = useRef<number | null>(null);
@@ -494,7 +498,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
       {/* Carousel Section Container */}
        <section
         className="pt-12 pb-4 relative overflow-hidden"
-        style={{ backgroundColor: "#FFF9EF" }}
+        style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
       >
         <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between">
           <div>
@@ -504,15 +508,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
             >
               {tag}
             </span>
-            <h2
-              className="font-serif font-light uppercase"
-              style={{
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                color: "#1A1212",
-                lineHeight: 1.1,
-                letterSpacing: "0.02em",
-              }}
-            >
+            <h2 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
               {title}
             </h2>
           </div>
@@ -556,7 +552,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel }: 
         </div>
 
         {gatewayLabel && (
-          <div className="flex justify-center mt-2 pb-4">
+          <div className="flex justify-center mt-6 pb-6">
             <NaamiGatewayButton label={gatewayLabel} />
           </div>
         )}
@@ -657,7 +653,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
       {/* Product metadata */}
       <div className="mt-5 text-left">
         <h3
-          className="font-serif font-light uppercase mb-1 truncate text-wrap"
+          className={`${PRODUCT_NAME_CLASS} mb-1 truncate text-wrap`}
           style={{
             fontSize: "1.2rem",
             color: "#1A1212",
@@ -675,10 +671,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
             {product.subtitle}
           </span>
           <span className="flex items-baseline gap-1.5">
-            <span
-              className="font-serif font-medium"
-              style={{ fontSize: "1.05rem", color: "#1A1212" }}
-            >
+            <span className={PRICE_CLASS} style={{ fontSize: "1.05rem", color: "#1A1212" }}>
               {product.price}
             </span>
             {getDiscount(product) && (
@@ -744,13 +737,8 @@ function ProductDetailContent({
 
         {/* Title */}
         <h2
-          className="font-serif font-light uppercase mb-2"
-          style={{
-            fontSize: isMobile ? "1.85rem" : "clamp(2rem, 3.5vw, 3rem)",
-            color: "#1A1212",
-            lineHeight: 1.1,
-            letterSpacing: "0.02em",
-          }}
+          className={`${PRODUCT_NAME_CLASS} mb-2`}
+          style={titleStyle(isMobile ? "1.85rem" : "clamp(2rem, 3.5vw, 3rem)")}
         >
           {product.name}
         </h2>
@@ -799,7 +787,7 @@ function ProductDetailContent({
         <div className="flex items-end justify-between mb-6">
           <span className="flex items-baseline gap-2">
             <span
-              className="font-serif font-light"
+              className={PRICE_CLASS}
               style={{ fontSize: isMobile ? "2rem" : "2.25rem", color: "#1A1212" }}
             >
               {product.price}

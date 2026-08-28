@@ -88,7 +88,8 @@ export function ProductImagesField({ images, onChange }: ProductImagesFieldProps
         Images ({images.length}/{MAX_PRODUCT_IMAGES})
       </label>
       <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)", marginBottom: 10 }}>
-        First image is the main image. Drag cards to reorder. Select multiple files at once to upload in order.
+        Deliver 1440 × 1920 (3:4 portrait). First image is the main image. Drag cards to reorder.
+        Select multiple files at once to upload in order. Max 15MB each; auto-converted to WebP at up to 1920px.
       </p>
 
       {images.length > 0 && (

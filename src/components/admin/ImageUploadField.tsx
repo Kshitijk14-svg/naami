@@ -14,12 +14,18 @@ const inputStyle: React.CSSProperties = {
 };
 
 interface ImageUploadFieldProps {
-  type: "product" | "collection" | "lookcard" | "banner" | "blog";
+  type: "product" | "collection" | "lookcard" | "banner" | "blog" | "section";
   image: string;
   onUploaded: (image: string, thumbnailImage: string) => void;
+  label?: string;
+  /** Recommended dimensions for this slot. See docs/IMAGE-SPECS.md. */
+  hint?: string;
+  /** Shows a "Remove image" control next to the preview, calling onClear. */
+  allowClear?: boolean;
+  onClear?: () => void;
 }
 
-export function ImageUploadField({ type, image, onUploaded }: ImageUploadFieldProps) {
+export function ImageUploadField({ type, image, onUploaded, label = "Image", hint, allowClear, onClear }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [sizeInfo, setSizeInfo] = useState("");
@@ -53,16 +59,33 @@ export function ImageUploadField({ type, image, onUploaded }: ImageUploadFieldPr
   return (
     <div style={{ marginBottom: 14 }}>
       <label className="block font-sans font-bold uppercase" style={{ fontSize: "8.5px", letterSpacing: "0.18em", color: "rgba(17,17,17,0.55)", marginBottom: 5 }}>
-        Image
+        {label}
       </label>
+      {hint && (
+        <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.55)", marginBottom: 6, lineHeight: 1.5 }}>
+          {hint}
+        </p>
+      )}
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
         {image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image}
-            alt="preview"
-            style={{ width: 56, height: 56, objectFit: "cover", border: "1px solid rgba(17,17,17,0.12)" }}
-          />
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image}
+              alt="preview"
+              style={{ width: 56, height: 56, objectFit: "cover", border: "1px solid rgba(17,17,17,0.12)" }}
+            />
+            {allowClear && (
+              <button
+                type="button"
+                onClick={onClear}
+                className="font-sans"
+                style={{ fontSize: "9.5px", color: "#8B1A1A", marginTop: 4, background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline" }}
+              >
+                Remove image
+              </button>
+            )}
+          </div>
         )}
         <div style={{ flex: 1 }}>
           <input
@@ -72,6 +95,9 @@ export function ImageUploadField({ type, image, onUploaded }: ImageUploadFieldPr
             disabled={uploading}
             style={{ fontSize: "11px" }}
           />
+          <p className="font-sans" style={{ fontSize: "9.5px", color: "rgba(17,17,17,0.4)", marginTop: 4 }}>
+            Max 15MB in; auto-converted to WebP at up to 1920px.
+          </p>
           {uploading && (
             <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.55)", marginTop: 4 }}>
               Compressing & uploading...

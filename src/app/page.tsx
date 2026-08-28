@@ -1,8 +1,22 @@
 import { getHomeContent } from "@/db/queries/home";
 import { getAllDesignSettings } from "@/db/queries/designSettings";
 import { getHomepageExtras } from "@/db/queries/homepageContent";
-import { getInstagramReelsContent } from "@/db/queries/instagramReels";
+import { getSharedMomentsContent } from "@/db/queries/sharedMoments";
 import HomeClient from "@/components/HomeClient";
+import type { SectionBackgroundFit } from "@/lib/sectionBackground";
+
+const BACKGROUNDABLE_SECTIONS = {
+  hero: "hero",
+  collections: "collections",
+  loom: "loom",
+  newArrivals: "new_arrivals",
+  lookbookBanner: "lookbook_banner",
+  hotspotCards: "hotspot_cards",
+  bestsellers: "bestsellers",
+  coinPocket: "coin_pocket",
+  sharedMoments: "shared_moments",
+  manifesto: "manifesto",
+} as const;
 
 const DEFAULT_HERO_SLIDES = [
   {
@@ -26,11 +40,11 @@ const DEFAULT_HERO_SLIDES = [
 ];
 
 export default async function Home() {
-  const [content, designSettings, extras, instagramReels] = await Promise.all([
+  const [content, designSettings, extras, sharedMoments] = await Promise.all([
     getHomeContent(),
     getAllDesignSettings(),
     getHomepageExtras(),
-    getInstagramReelsContent(),
+    getSharedMomentsContent(),
   ]);
 
   const heroSlides = [1, 2, 3].map((n, i) => ({
@@ -106,6 +120,16 @@ export default async function Home() {
     title: designSettings.shoplook_title,
   };
 
+  const sectionBackgrounds = Object.fromEntries(
+    Object.entries(BACKGROUNDABLE_SECTIONS).map(([propKey, settingsPrefix]) => [
+      propKey,
+      {
+        image: designSettings[`${settingsPrefix}_bg_image`] || undefined,
+        fit: (designSettings[`${settingsPrefix}_bg_fit`] || "cover") as SectionBackgroundFit,
+      },
+    ])
+  ) as Record<keyof typeof BACKGROUNDABLE_SECTIONS, { image?: string; fit: SectionBackgroundFit }>;
+
   return (
     <HomeClient
       heroSlides={heroSlides}
@@ -125,7 +149,8 @@ export default async function Home() {
       newArrivalsSection={newArrivalsSection}
       bestsellersSection={bestsellersSection}
       shopLookHeader={shopLookHeader}
-      instagramReels={instagramReels}
+      sharedMoments={sharedMoments}
+      sectionBackgrounds={sectionBackgrounds}
     />
   );
 }

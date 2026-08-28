@@ -24,6 +24,7 @@ export function LookbookBannerSection({
       <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <ImageUploadField
           type="banner"
+          hint="1600 × 1600 (square) — keep hotspot targets inside the centered 816 × 816 area."
           image={settings.lookbook_banner_image ?? ""}
           onUploaded={(image) => update("lookbook_banner_image", image)}
         />
@@ -41,12 +42,18 @@ export function LookbookBannerSection({
           <p className="font-sans font-bold uppercase tracking-[0.18em] block mb-2" style={fieldLabelStyle}>
             Hotspots
           </p>
-          {/* Public banner is a full-width 90vh section (~2:1 on desktop) with object-cover */}
+          {/*
+            The public banner is a full-width 90vh section with object-cover, so its
+            crop swings from ~2:1 on desktop to ~0.5:1 on mobile. Previewing at either
+            extreme puts placements off-target on the other. We preview at 1:1 to match
+            the square source spec (docs/IMAGE-SPECS.md §A) — the midpoint of both crops,
+            and the region guaranteed visible on every viewport.
+          */}
           <HotspotListEditor
             hotspots={bannerHotspots}
             onChange={setBannerHotspots}
             image={settings.lookbook_banner_image ?? ""}
-            aspectRatio="2 / 1"
+            aspectRatio="1 / 1"
           />
         </div>
         <SaveControl saving={bannerSaving} saved={bannerSaved} error={bannerError} onSave={onSave} label="Save Lookbook Banner" />

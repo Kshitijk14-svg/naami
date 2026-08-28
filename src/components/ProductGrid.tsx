@@ -4,6 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import Image from "next/image";
 import { useCartStore } from "@/models/cartStore";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 interface Product {
   id: number;
@@ -192,13 +193,8 @@ export default function ProductGrid() {
                 {expandedProduct.number} // NAAMI DENIM
               </div>
               <h2
-                className="font-serif font-light uppercase mb-2"
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 3.5rem)",
-                  color: "#FFF9EF",
-                  lineHeight: 1,
-                  letterSpacing: "0.02em",
-                }}
+                className={`${PRODUCT_NAME_CLASS} mb-2`}
+                style={titleStyle("clamp(2rem, 4vw, 3.5rem)", "#FFF9EF")}
               >
                 {expandedProduct.name}
               </h2>
@@ -244,7 +240,7 @@ export default function ProductGrid() {
 
               <div className="flex items-end justify-between mb-8">
                 <span
-                  className="font-serif font-light"
+                  className={PRICE_CLASS}
                   style={{ fontSize: "2.5rem", color: "#FFF9EF" }}
                 >
                   {expandedProduct.price}
@@ -315,18 +311,13 @@ export default function ProductGrid() {
             >
               AW26 // THE COLLECTION
             </div>
-            <h2
-              className="font-serif font-light uppercase"
-              style={{
-                fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                color: "#FFF9EF",
-                lineHeight: 0.95,
-                letterSpacing: "0.02em",
-              }}
-            >
+            <h2 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)", "#FFF9EF")}>
               Selected
               <br />
-              <span style={{ color: "#FFF9EF", opacity: 0.4, fontStyle: "italic" }}>
+              <span
+                className={TITLE_ACCENT_CLASS}
+                style={{ ...TITLE_ACCENT_STYLE, color: "#FFF9EF", opacity: 0.4 }}
+              >
                 Pieces
               </span>
             </h2>
@@ -472,7 +463,7 @@ function ProductCard({
       {/* Card info */}
       <div className="mt-5">
         <h3
-          className="font-serif font-light uppercase mb-1"
+          className={`${PRODUCT_NAME_CLASS} mb-1`}
           style={{
             fontSize: "1.25rem",
             color: "#FFF9EF",
@@ -490,7 +481,7 @@ function ProductCard({
             {product.subtitle}
           </span>
           <span
-            className="font-serif"
+            className={PRICE_CLASS}
             style={{ fontSize: "1.1rem", color: "#FFF9EF" }}
           >
             {product.price}

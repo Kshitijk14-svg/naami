@@ -26,6 +26,7 @@ export function HeroBannerSection({ settings, update, heroError, heroSaving, her
             </p>
             <ImageUploadField
               type="banner"
+              hint="1920 × 1440 (4:3) — keep the subject inside the centered 900 × 850 area; avoid the bottom-left corner (text overlay)."
               image={settings[`hero_image_${n}`] ?? ""}
               onUploaded={(image) => update(`hero_image_${n}`, image)}
             />

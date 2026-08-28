@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Role, ROLE_LABELS } from "@/models/roles";
 import { formatINR } from "@/lib/format";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 type Tab = "profile" | "orders" | "wishlist";
 
@@ -91,12 +92,15 @@ export default function ProfilePage() {
     { id: "wishlist", label: "Wishlist" },
   ];
 
+  // Brand-palette status treatment (matches orders/[id]'s STATUS_LABELS
+  // styling) — cancelled reads in brand maroon, everything else in ecru,
+  // rather than the arbitrary web-safe colors this used to use.
   const STATUS_COLORS: Record<string, string> = {
-    pending: "#D97706",
-    confirmed: "#2563EB",
-    shipped: "#7C3AED",
-    delivered: "#16A34A",
-    cancelled: "#DC2626",
+    pending: "#1A1212",
+    confirmed: "#1A1212",
+    shipped: "#1A1212",
+    delivered: "#1A1212",
+    cancelled: "#5B1C1C",
   };
 
   return (
@@ -116,10 +120,7 @@ export default function ProfilePage() {
           >
             NAAMI // MY ACCOUNT
           </span>
-          <h1
-            className="font-serif font-light uppercase mb-2"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1A1212", lineHeight: 1.05 }}
-          >
+          <h1 className={`${TITLE_CLASS} mb-2`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             {session.name ?? session.email?.split("@")[0]}
           </h1>
           <p className="font-sans" style={{ fontSize: "11px", color: "rgba(17,17,17,0.5)" }}>
@@ -232,7 +233,7 @@ export default function ProfilePage() {
                     >
                       {order.status}
                     </span>
-                    <span className="font-serif font-light" style={{ fontSize: "1.1rem", color: "#1A1212" }}>
+                    <span className={PRICE_CLASS} style={{ fontSize: "1.1rem", color: "#1A1212" }}>
                       {formatINR(order.totalInr)}
                     </span>
                   </div>
@@ -291,12 +292,12 @@ export default function ProfilePage() {
                           {item.number}
                         </p>
                         <p
-                          className="font-serif font-light uppercase mb-1 group-hover:text-[#5B1C1C] transition-colors"
+                          className={`${PRODUCT_NAME_CLASS} mb-1 group-hover:text-[#5B1C1C] transition-colors`}
                           style={{ fontSize: "1rem", color: "#1A1212" }}
                         >
                           {item.name}
                         </p>
-                        <p className="font-serif font-light" style={{ fontSize: "1rem", color: "#1A1212", opacity: 0.7 }}>
+                        <p className={PRICE_CLASS} style={{ fontSize: "1rem", color: "#1A1212", opacity: 0.7 }}>
                           {item.price}
                         </p>
                       </div>

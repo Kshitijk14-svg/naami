@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getPublishedPosts } from "@/db/queries/blog";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -83,20 +84,12 @@ export default async function JournalPostPage({ params }: Props) {
             </p>
           )}
 
-          <h1
-            className="font-serif font-light uppercase"
-            style={{
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              color: "#111",
-              letterSpacing: "0.03em",
-              lineHeight: 1.08,
-            }}
-          >
+          <h1 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 5vw, 3.5rem)")}>
             {post.title}
           </h1>
 
           {post.excerpt && (
-            <p className="font-serif font-light italic mt-5" style={{ fontSize: "1.1rem", color: "rgba(17,17,17,0.55)", lineHeight: 1.65 }}>
+            <p className="font-serif font-light mt-5" style={{ fontSize: "1.1rem", color: "rgba(17,17,17,0.55)", lineHeight: 1.65 }}>
               {post.excerpt}
             </p>
           )}

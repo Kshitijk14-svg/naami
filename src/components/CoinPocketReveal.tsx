@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 export interface CoinPocketContent {
   kicker: string;
@@ -15,9 +17,11 @@ export interface CoinPocketContent {
 
 interface CoinPocketRevealProps {
   content: CoinPocketContent;
+  backgroundImage?: string;
+  backgroundImageFit?: SectionBackgroundFit;
 }
 
-export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
+export default function CoinPocketReveal({ content, backgroundImage, backgroundImageFit }: CoinPocketRevealProps) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -115,7 +119,7 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
     <section
       ref={containerRef}
       className="px-6 md:px-12 py-24 relative overflow-hidden"
-      style={{ backgroundColor: "#FFF9EF" }}
+      style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
 
@@ -127,18 +131,10 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
           >
             {content.kicker}
           </span>
-          <h2
-            className="font-serif font-light uppercase mb-6"
-            style={{
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "#1A1212",
-              lineHeight: 1.1,
-              letterSpacing: "0.02em",
-            }}
-          >
+          <h2 className={`${TITLE_CLASS} mb-6`} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
             {content.title}
             <br />
-            <span className="italic" style={{ color: "#5B1C1C" }}>
+            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>
               {content.titleAccent}
             </span>
           </h2>
@@ -333,7 +329,7 @@ export default function CoinPocketReveal({ content }: CoinPocketRevealProps) {
                       {content.seasonTag}
                     </span>
                   </div>
-                  <h3 className="font-serif font-light uppercase text-base text-[#1A1212] tracking-wider border-b border-[#5B1C1C]/10 pb-2">
+                  <h3 className={`${PRODUCT_NAME_CLASS} text-base text-[#1A1212] tracking-wider border-b border-[#5B1C1C]/10 pb-2`}>
                     Authenticity Card
                   </h3>
                 </div>

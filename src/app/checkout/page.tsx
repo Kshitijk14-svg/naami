@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCartStore } from "@/models/cartStore";
 import { trackEvent } from "@/components/MetaPixel";
 import EvanliteFooter from "@/components/EvanliteFooter";
+import { PRICE_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 declare global {
   interface Window {
@@ -211,7 +212,7 @@ export default function CheckoutPage() {
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             NAAMI // CHECKOUT
           </p>
-          <h1 className="font-serif font-light uppercase" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "#111", letterSpacing: "0.03em" }}>
+          <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             Complete Order
           </h1>
         </div>
@@ -267,7 +268,8 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <div key={`${item.productId}-${item.size}`} className="flex justify-between mb-4">
                   <div className="flex-1 pr-3">
-                    <p className="font-serif font-light" style={{ fontSize: "13px", color: "#111", lineHeight: 1.3 }}>
+                    {/* Summary list keeps sentence case — the cart's uppercase reads too heavy at 13px here. */}
+                    <p className="font-sans font-light" style={{ fontSize: "13px", color: "#111", lineHeight: 1.3 }}>
                       {item.name}
                     </p>
                     <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)" }}>
@@ -291,7 +293,7 @@ export default function CheckoutPage() {
               )}
               <div className="flex justify-between pt-4 mt-2" style={{ borderTop: "1px solid rgba(139,26,26,0.15)" }}>
                 <span className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "10px" }}>Total</span>
-                <span className="font-serif font-light" style={{ fontSize: "20px" }}>{formatPrice(payable)}</span>
+                <span className={PRICE_CLASS} style={{ fontSize: "20px" }}>{formatPrice(payable)}</span>
               </div>
               <Link
                 href="/cart"

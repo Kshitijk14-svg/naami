@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import { ROLE_REDIRECT, Role } from "@/models/roles";
+import { TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 
 type AuthMode = "signin" | "signup" | "reset";
 type AuthStep = "form" | "otp" | "success";
@@ -263,10 +264,10 @@ export default function AuthForm() {
       {/* Brand wordmark */}
       <Link
         href="/"
-        className="absolute top-8 left-10 font-serif uppercase font-semibold hover:opacity-60 transition-opacity"
+        className="absolute top-8 left-10 font-wordmark lowercase font-bold hover:opacity-60 transition-opacity"
         style={{ fontSize: "1.15rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
       >
-        Naami
+        naami
       </Link>
 
       <div ref={containerRef} className="w-full max-w-sm" style={{ opacity: 0 }}>
@@ -277,18 +278,10 @@ export default function AuthForm() {
           NAAMI // ATELIER ACCESS
         </p>
 
-        <h1
-          className="font-serif font-light uppercase mb-8"
-          style={{
-            fontSize: "clamp(2rem, 5vw, 2.8rem)",
-            color: "#1A1212",
-            lineHeight: 1.1,
-            letterSpacing: "0.03em",
-          }}
-        >
+        <h1 className={`${TITLE_CLASS} mb-8`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
           {headline}
           <br />
-          <span style={{ color: "#5B1C1C", fontStyle: "italic" }}>{headlineAccent}</span>
+          <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{headlineAccent}</span>
         </h1>
 
         {/* Sign in / Create account tabs (only on the entry form) */}

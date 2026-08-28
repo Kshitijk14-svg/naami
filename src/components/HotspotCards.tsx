@@ -5,6 +5,8 @@ import Image from "next/image";
 import gsap from "gsap";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
+import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 
 interface ResolvedProduct {
   id: number;
@@ -66,12 +68,14 @@ interface HotspotCardsProps {
   lookCards?: LookCardData[];
   kicker?: string;
   title?: string;
+  backgroundImage?: string;
+  backgroundImageFit?: SectionBackgroundFit;
 }
 
 const DEFAULT_KICKER = "NAAMI // INTERACTIVE CO-ORDINATES";
 const DEFAULT_TITLE = "Shop The Look";
 
-export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsProps) {
+export default function HotspotCards({ lookCards, kicker, title, backgroundImage, backgroundImageFit }: HotspotCardsProps) {
   const cards = lookCards && lookCards.length > 0 ? lookCards : FALLBACK_LOOK_CARDS;
   const headerKicker = kicker || DEFAULT_KICKER;
   const headerTitle = title || DEFAULT_TITLE;
@@ -101,7 +105,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
   return (
     <section
       className="px-6 md:px-12 py-24 relative overflow-hidden"
-      style={{ backgroundColor: "#F8F1E5" }}
+      style={{ backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Header and Controls */}
       <div className="mb-14 flex flex-row items-end justify-between reveal-fade-up">
@@ -112,15 +116,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
           >
             {headerKicker}
           </span>
-          <h2
-            className="font-serif font-light uppercase"
-            style={{
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "#1A1212",
-              lineHeight: 1.1,
-              letterSpacing: "0.02em",
-            }}
-          >
+          <h2 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
             {headerTitle}
           </h2>
         </div>
@@ -182,7 +178,7 @@ export default function HotspotCards({ lookCards, kicker, title }: HotspotCardsP
               {/* Card Meta Info */}
               <div className="mb-4">
                 <h3
-                  className="font-serif font-light uppercase"
+                  className={PRODUCT_NAME_CLASS}
                   style={{ fontSize: "1.25rem", color: "#1A1212" }}
                 >
                   {look.title}
@@ -356,7 +352,7 @@ function HotspotCardNode({
               {product.name}
             </h4>
             <p
-              className="font-serif mb-4"
+              className={`${PRICE_CLASS} mb-4`}
               style={{ fontSize: "14px", color: "#1A1212" }}
             >
               {formatINR(product.priceInr)}

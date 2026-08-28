@@ -42,7 +42,8 @@ export const CACHE_KEYS = {
   HOMEPAGE_LOOK_CARDS: "homepage:look-cards",
   HOMEPAGE_LOOK_CARDS_PUBLISHED: "homepage:look-cards:published",
   HOMEPAGE_BANNER_HOTSPOTS: "homepage:banner-hotspots",
-  INSTAGRAM_OEMBED: (url: string) => `instagram:oembed:${url}`,
+  HOMEPAGE_SHARED_MOMENTS: "homepage:shared-moments",
+  HOMEPAGE_SHARED_MOMENTS_PUBLISHED: "homepage:shared-moments:published",
 } as const;
 
 // ─── Cache TTLs (seconds) ──────────────────────────────────────────────────────
@@ -55,5 +56,4 @@ export const CACHE_TTL = {
   BLOG: 300,
   DESIGN: 3600,
   HOME: 300,
-  INSTAGRAM: 3600,
 } as const;

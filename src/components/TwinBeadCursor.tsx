@@ -337,7 +337,7 @@ export default function TwinBeadCursor() {
         dominantBaseline="middle"
         fill="#FFF9EF"
         fontSize="7"
-        fontFamily="var(--font-inter), sans-serif"
+        fontFamily="var(--font-glacial), sans-serif"
         fontWeight="700"
         letterSpacing="0.12em"
         opacity="0"
