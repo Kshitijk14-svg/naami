@@ -19,13 +19,17 @@ import path from "path";
  * rather than Next's own (sandboxed) static-serving code.
  */
 
+// No .svg: the upload pipeline (src/lib/imageProcessing.ts) re-encodes every
+// upload to webp via sharp regardless of input format, so this route never
+// needs to serve one in practice -- and serving an SVG inline on the app's
+// own origin is a self-XSS vector (a <script>/event-handler inside it would
+// execute with this origin's privileges if the URL is opened directly).
 const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".gif": "image/gif",
-  ".svg": "image/svg+xml",
 };
 
 export async function GET(
@@ -56,6 +60,10 @@ export async function GET(
         // bytes never change once it exists -- safe to cache hard, unlike the
         // framework's own `Cache-Control: public, max-age=0` default for public/.
         "Cache-Control": "public, max-age=31536000, immutable",
+        // Belt-and-braces against MIME-sniffing (nginx already sets this
+        // server-wide -- see deploy/nginx.conf -- but don't rely solely on
+        // that config staying correct).
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch {

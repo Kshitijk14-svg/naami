@@ -48,8 +48,16 @@ export default function ProductsPage() {
   }, []);
 
   const handleDelete = async (p: Product) => {
-    await fetch(`/api/admin/products/${p.id}`, { method: "DELETE" });
-    load();
+    // Optimistic: drop the row immediately (CrudTable already confirmed with
+    // the admin before calling this) instead of waiting on the round trip
+    // and then re-fetching the whole list for a single removed row. Roll
+    // back and surface an error if the request actually fails.
+    setProducts((prev) => prev.filter((row) => row.id !== p.id));
+    const res = await fetch(`/api/admin/products/${p.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setError("Failed to delete product");
+      load();
+    }
   };
 
   return (

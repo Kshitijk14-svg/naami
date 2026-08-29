@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { gsap } from "@/lib/gsap";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import { trackEvent } from "@/components/MetaPixel";
@@ -52,6 +53,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const galleryTrackRef = useRef<HTMLDivElement>(null);
+
+  // Slides to the given gallery index with the same motion ProductCarousel's
+  // click-nav uses (src/components/ProductCarousel.tsx) -- GSAP tweening
+  // scrollLeft directly, so switching images reads as a carousel scroll
+  // instead of a flat src swap. overflow-hidden on the track (below) means
+  // this is the only thing that ever moves it -- no native scroll/swipe to
+  // fight the tween.
+  const goToImage = (index: number) => {
+    setSelectedImageIndex(index);
+    const track = galleryTrackRef.current;
+    if (!track) return;
+    gsap.to(track, {
+      scrollLeft: index * track.clientWidth,
+      duration: 0.6,
+      ease: "power3.out",
+    });
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -161,15 +180,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             className="relative overflow-hidden w-full border border-black/5"
             style={{ aspectRatio: "3/4", backgroundColor: "#F8F1E5" }}
           >
-            <Image
-              src={gallery[selectedImageIndex].url}
-              alt={product.name}
-              fill
-              className="object-cover"
-              style={{ filter: "brightness(0.94)" }}
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+            {/* All gallery images are rendered up front (not just the
+                selected one), so they're already fetching/decoding by the
+                time a thumbnail is clicked instead of starting fresh on
+                each never-yet-seen index. */}
+            <div ref={galleryTrackRef} className="flex h-full w-full overflow-hidden select-none">
+              {gallery.map((img, index) => (
+                <div key={img.url + index} className="relative h-full w-full shrink-0">
+                  <Image
+                    src={img.url}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    style={{ filter: "brightness(0.94)" }}
+                    priority={index === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              ))}
+            </div>
             {/* Wishlist button */}
             <div className="absolute top-4 right-4 z-10">
               <WishlistButton productId={product.id} />
@@ -180,7 +209,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               {gallery.map((img, index) => (
                 <button
                   key={img.url + index}
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => goToImage(index)}
                   className="relative overflow-hidden cursor-pointer"
                   style={{
                     width: 56,

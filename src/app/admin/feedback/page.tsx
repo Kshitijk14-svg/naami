@@ -37,12 +37,21 @@ export default function FeedbackPage() {
   useEffect(() => { load(); }, []);
 
   const toggleApproval = async (row: Feedback) => {
+    // Optimistic: flip this one row locally instead of waiting on the round
+    // trip and then re-fetching the entire feedback list for a single
+    // boolean change. Revert just this row if the request actually fails.
+    const nextApproved = !row.isApproved;
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, isApproved: nextApproved } : r)));
+
     const res = await fetch(`/api/admin/feedback/${row.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isApproved: !row.isApproved }),
+      body: JSON.stringify({ isApproved: nextApproved }),
     });
-    if (res.ok) load();
+    if (!res.ok) {
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, isApproved: row.isApproved } : r)));
+      setError("Failed to update approval");
+    }
   };
 
   return (

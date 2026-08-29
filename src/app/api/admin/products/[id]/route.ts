@@ -137,16 +137,28 @@ export async function PUT(
   const updated = await updateProduct(Number(id), updateData);
   if (!updated) return Response.json({ error: "Not found" }, { status: 404 });
 
-  if (body.sizes !== undefined && Array.isArray(body.sizes)) {
-    await setProductSizes(Number(id), body.sizes);
-  }
-  if (body.metafields !== undefined) {
-    await setProductMetafields(Number(id), body.metafields);
-  }
-  if (body.images !== undefined) {
-    const removed = await setProductImages(Number(id), body.images);
+  // sizes/metafields/images touch three independent tables and only depend
+  // on the updateProduct() above having already completed -- issuing them
+  // together lets connection checkout and network round-trip overlap instead
+  // of paying that cost three times in series. They each still take a
+  // `SELECT ... FOR UPDATE` lock on this same product row internally (see
+  // setProductSizes/setProductMetafields/setProductImages), so Postgres
+  // still executes their critical sections one at a time -- this isn't true
+  // DB-side parallelism, just removing the JS-side serialization on top of it.
+  const [, , removedImages] = await Promise.all([
+    body.sizes !== undefined && Array.isArray(body.sizes)
+      ? setProductSizes(Number(id), body.sizes)
+      : Promise.resolve(undefined),
+    body.metafields !== undefined
+      ? setProductMetafields(Number(id), body.metafields)
+      : Promise.resolve(undefined),
+    body.images !== undefined
+      ? setProductImages(Number(id), body.images)
+      : Promise.resolve(undefined),
+  ]);
+  if (removedImages) {
     await Promise.all(
-      removed.flatMap((img) => [unlinkProductImage(img.url), unlinkProductImage(img.thumbnailUrl)])
+      removedImages.flatMap((img) => [unlinkProductImage(img.url), unlinkProductImage(img.thumbnailUrl)])
     );
   }
 
