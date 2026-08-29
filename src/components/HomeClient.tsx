@@ -7,6 +7,7 @@ import HotspotBanner from "@/components/HotspotBanner";
 import ProductCarousel from "@/components/ProductCarousel";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
+import BrandLoader from "@/components/BrandLoader";
 // LoomTimeline, HotspotCards, and CoinPocketReveal all stay as regular
 // top-level imports rather than next/dynamic: this file's global scroll-reveal
 // effect (below) scans the whole document for .reveal-fade-up/.reveal-stagger-*
@@ -268,6 +269,9 @@ export default function HomeClient({
       className="relative w-full min-h-screen"
       style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
+      {/* Cinematic unzipping loader */}
+      <BrandLoader />
+
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
         className="pt-28 pb-10 px-6 md:px-12"
