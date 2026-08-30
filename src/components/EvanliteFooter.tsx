@@ -111,7 +111,7 @@ export default function EvanliteFooter() {
               {/* Trigger - Mobile Collapsible Trigger / Desktop Heading */}
               <div
                 onClick={() => toggleAccordion(col.title)}
-                className="flex items-center justify-between md:cursor-default cursor-pointer py-2 md:py-0"
+                className="flex items-center justify-between md:cursor-default cursor-pointer py-3 md:py-0"
                 role="button"
                 tabIndex={0}
                 aria-expanded={isOpen}
@@ -122,24 +122,24 @@ export default function EvanliteFooter() {
                 >
                   {col.title}
                 </h4>
-                {/* Arrow Icon visible only on mobile */}
+                {/* Expand icon visible only on mobile */}
                 <div
-                  className="md:hidden w-4 h-4 flex items-center justify-center transition-transform duration-300"
+                  className="md:hidden w-5 h-5 flex items-center justify-center transition-transform duration-300"
                   style={{
                     transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                    color: "#1A1212",
-                    opacity: 0.5,
+                    color: "#5B1C1C",
+                    opacity: 0.6,
                   }}
                 >
                   <svg
-                    width="10"
-                    height="6"
-                    viewBox="0 0 10 6"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.5"
+                    strokeWidth="2"
                   >
-                    <path d="M1 1l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </div>
@@ -185,7 +185,7 @@ export default function EvanliteFooter() {
 
       {/* Bottom area with payment badges, copyright, and brand monogram indicator */}
       <div
-        className="w-full flex flex-col md:flex-row items-center justify-between gap-8 pt-8 z-10"
+        className="w-full flex flex-col md:flex-row items-center md:justify-between gap-6 md:gap-8 pt-6 md:pt-8 z-10"
         style={{ borderTop: "1px solid rgba(139, 26, 26, 0.08)" }}
       >
         <div className="flex flex-col gap-2 text-center md:text-left">
@@ -204,7 +204,7 @@ export default function EvanliteFooter() {
         </div>
 
         {/* Payment Methods (Sleek minimalist SVGs) */}
-        <div className="flex items-center gap-4 opacity-40 hover:opacity-75 transition-opacity duration-300">
+        <div className="flex items-center gap-4 opacity-50 hover:opacity-75 transition-opacity duration-300">
           {/* Visa SVG */}
           <svg className="w-8 h-5" viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="38" height="24" rx="2" fill="black" fillOpacity="0.04" />
@@ -230,8 +230,8 @@ export default function EvanliteFooter() {
           </svg>
         </div>
 
-        {/* Monogram branding indicator */}
-        <div className="flex items-center gap-1">
+        {/* Monogram branding indicator — desktop flourish only */}
+        <div className="hidden md:flex items-center gap-1">
           <div
             style={{
               width: 8,
