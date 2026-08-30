@@ -8,6 +8,7 @@ import { useCartStore } from "@/models/cartStore";
 import { Role } from "@/models/roles";
 import NavSearch from "@/components/NavSearch";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import MobileMenu from "@/components/MobileMenu";
 
 interface SessionData {
   authenticated: boolean;
@@ -22,6 +23,7 @@ export default function Navbar() {
   const navbarRef = useRef<HTMLElement>(null);
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
   const [session, setSession] = useState<SessionData | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Fetch auth state once on mount. We skip re-fetching on every pathname
   // change — the signout handler already updates state directly, and signing
@@ -65,6 +67,7 @@ export default function Navbar() {
   };
 
   return (
+    <>
     <header
       ref={navbarRef}
       className="w-full h-20 flex items-center gap-6 px-6 md:px-12"
@@ -156,7 +159,30 @@ export default function Navbar() {
             </span>
           )}
         </Link>
+
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          className="md:hidden flex items-center justify-center hover:opacity-60 transition-opacity"
+          style={{ color: "#1A1212", width: 24, height: 24 }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
       </nav>
     </header>
+
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        session={session}
+        onSignOut={handleSignOut}
+        cartItemsCount={cartItemsCount}
+      />
+    </>
   );
 }

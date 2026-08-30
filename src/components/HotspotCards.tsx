@@ -104,7 +104,7 @@ export default function HotspotCards({ lookCards, kicker, title, backgroundImage
 
   return (
     <section
-      className="px-6 md:px-12 py-24 relative overflow-hidden"
+      className="px-6 md:px-12 py-10 md:py-16 relative overflow-hidden"
       style={{ backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Header and Controls */}

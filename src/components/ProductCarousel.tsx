@@ -76,6 +76,8 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
   const overlayRef = useRef<HTMLDivElement>(null);
   const bookContainerRef = useRef<HTMLDivElement>(null);
   const coverRef = useRef<HTMLDivElement>(null);
+  // Mobile quick-view is a slide-up sheet, not the 3D book flip.
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   // Keep track of desktop mode responsively
   useEffect(() => {
@@ -133,13 +135,11 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     setExpanded({ productId: product.id, originRect: rect });
   }, [isAnimating]);
 
-  // Close booklet
+  // Close booklet / sheet
   const closeProduct = useCallback(() => {
     if (expanded.productId === null || !expanded.originRect || isAnimating) return;
 
     setIsAnimating(true);
-    const rect = expanded.originRect;
-    const { closed } = getLayoutCoords(rect);
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -157,58 +157,50 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     // Fade out backdrop blur overlay
     tl.to(overlayRef.current, {
       opacity: 0,
-      duration: 0.45,
+      duration: 0.35,
       ease: "power2.in",
     }, 0);
 
-    // Fold the cover Y axis back to 0deg (closed)
-    tl.to(coverRef.current, {
-      rotateY: 0,
-      duration: 0.8,
-      ease: "power2.inOut",
-    }, 0);
+    if (window.innerWidth >= 768) {
+      const { closed } = getLayoutCoords(expanded.originRect);
 
-    // Shrink book container back to product card size & position
-    tl.to(bookContainerRef.current, {
-      left: closed.left,
-      top: closed.top,
-      width: closed.width,
-      height: closed.height,
-      duration: 0.8,
-      ease: "power2.inOut",
-    }, 0);
-  }, [expanded.productId, expanded.originRect, isAnimating, getLayoutCoords]);
+      // Fold the cover Y axis back to 0deg (closed)
+      tl.to(coverRef.current, {
+        rotateY: 0,
+        duration: 0.8,
+        ease: "power2.inOut",
+      }, 0);
 
-  // Handle Booklet Entrance Animation (Triggered when expanded state changes)
-  useEffect(() => {
-    if (expanded.productId === null || !expanded.originRect) return;
-
-    setIsAnimating(true);
-    const rect = expanded.originRect;
-    const { closed, open } = getLayoutCoords(rect);
-
-    // Disable background scroll when booklet is open
-    document.body.style.overflow = "hidden";
-
-    // Prepare overlay and components
-    if (overlayRef.current) {
-      gsap.set(overlayRef.current, { display: "block", opacity: 0 });
-    }
-
-    if (bookContainerRef.current) {
-      gsap.set(bookContainerRef.current, {
+      // Shrink book container back to product card size & position
+      tl.to(bookContainerRef.current, {
         left: closed.left,
         top: closed.top,
         width: closed.width,
         height: closed.height,
-        transform: "rotateY(0deg)",
-      });
+        duration: 0.8,
+        ease: "power2.inOut",
+      }, 0);
+    } else {
+      // Mobile: drop the sheet back down
+      tl.to(sheetRef.current, {
+        yPercent: 100,
+        duration: 0.35,
+        ease: "power3.in",
+      }, 0);
     }
+  }, [expanded.productId, expanded.originRect, isAnimating, getLayoutCoords]);
 
-    if (coverRef.current) {
-      gsap.set(coverRef.current, {
-        rotateY: 0,
-      });
+  // Entrance animation (triggered when expanded state changes)
+  useEffect(() => {
+    if (expanded.productId === null || !expanded.originRect) return;
+
+    setIsAnimating(true);
+
+    // Disable background scroll while the quick-view is open
+    document.body.style.overflow = "hidden";
+
+    if (overlayRef.current) {
+      gsap.set(overlayRef.current, { display: "block", opacity: 0 });
     }
 
     const tl = gsap.timeline({
@@ -217,30 +209,55 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
       },
     });
 
-    // 1. Fade in the backdrop overlay
+    // Fade in the backdrop overlay
     tl.to(overlayRef.current, {
       opacity: 1,
       duration: 0.4,
       ease: "power2.out",
     }, 0);
 
-    // 2. Animate cover flip open to -180deg
-    tl.to(coverRef.current, {
-      rotateY: -180,
-      duration: 0.9,
-      ease: "power2.inOut",
-    }, 0);
+    if (window.innerWidth >= 768) {
+      // Desktop: 3D book flip
+      const { closed, open } = getLayoutCoords(expanded.originRect);
 
-    // 3. Move/Scale booklet container to center screen
-    tl.to(bookContainerRef.current, {
-      left: open.left,
-      top: open.top,
-      width: open.width,
-      height: open.height,
-      duration: 0.9,
-      ease: "power2.inOut",
-    }, 0);
+      if (bookContainerRef.current) {
+        gsap.set(bookContainerRef.current, {
+          left: closed.left,
+          top: closed.top,
+          width: closed.width,
+          height: closed.height,
+          transform: "rotateY(0deg)",
+        });
+      }
+      if (coverRef.current) {
+        gsap.set(coverRef.current, { rotateY: 0 });
+      }
 
+      tl.to(coverRef.current, {
+        rotateY: -180,
+        duration: 0.9,
+        ease: "power2.inOut",
+      }, 0);
+
+      tl.to(bookContainerRef.current, {
+        left: open.left,
+        top: open.top,
+        width: open.width,
+        height: open.height,
+        duration: 0.9,
+        ease: "power2.inOut",
+      }, 0);
+    } else {
+      // Mobile: slide the detail sheet up from the bottom
+      if (sheetRef.current) {
+        gsap.set(sheetRef.current, { yPercent: 100 });
+        tl.to(sheetRef.current, {
+          yPercent: 0,
+          duration: 0.5,
+          ease: "power3.out",
+        }, 0);
+      }
+    }
   }, [expanded.productId, expanded.originRect, getLayoutCoords]);
 
   // Cleanup body scroll override on unmount
@@ -313,7 +330,11 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     // Kill any active tweens on the track to avoid conflict
     gsap.killTweensOf(track);
 
-    const scrollAmount = 320; // width of a card plus gap
+    // One card plus its gap — read from the DOM so it tracks the responsive
+    // card width instead of assuming the desktop 320px.
+    const firstCard = track.firstElementChild as HTMLElement | null;
+    const gap = parseFloat(getComputedStyle(track).columnGap || "0") || 0;
+    const scrollAmount = firstCard ? firstCard.offsetWidth + gap : 320;
     const target =
       direction === "prev"
         ? track.scrollLeft - scrollAmount
@@ -353,7 +374,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
           }}
           onClick={closeProduct}
         >
-        {expandedProduct && (
+        {expandedProduct && (isDesktop ? (
           <div
             ref={bookContainerRef}
             className="absolute shadow-[0_30px_70px_rgba(17,17,17,0.25)] select-none"
@@ -490,14 +511,34 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
               </>
             )}
           </div>
-        )}
+        ) : (
+          <div
+            ref={sheetRef}
+            className="absolute left-0 right-0 bottom-0 flex flex-col select-none"
+            style={{
+              maxHeight: "88vh",
+              backgroundColor: "#FFF9EF",
+              boxShadow: "0 -20px 60px rgba(17,17,17,0.28)",
+              pointerEvents: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Grabber */}
+            <div className="flex-shrink-0 flex justify-center pt-3 pb-1">
+              <div style={{ width: 36, height: 4, borderRadius: 999, backgroundColor: "rgba(17,17,17,0.2)" }} />
+            </div>
+            <div className="overflow-y-auto scrollbar-none" style={{ flex: 1, minHeight: 0 }}>
+              <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
+            </div>
+          </div>
+        ))}
       </div>,
       document.body
       )}
 
       {/* Carousel Section Container */}
        <section
-        className="pt-12 pb-4 relative overflow-hidden"
+        className="pt-8 pb-4 md:pt-12 relative overflow-hidden"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
       >
         <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between">
@@ -602,7 +643,7 @@ function ProductCard({ product, onOpenProduct }: ProductCardProps) {
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="inline-block relative w-[280px] md:w-[320px] flex-shrink-0 cursor-pointer select-none z-30"
+      className="inline-block relative w-[74vw] max-w-[280px] md:w-[320px] md:max-w-none flex-shrink-0 cursor-pointer select-none z-30"
       data-cursor-text="VIEW"
     >
       {/* Symmetrical number tag */}

@@ -14,7 +14,14 @@ interface SearchResult {
   thumbnailImage?: string;
 }
 
-export default function NavSearch() {
+interface NavSearchProps {
+  /** "bar" (default) is the desktop header field, hidden below md.
+   *  "drawer" renders full-width and always visible, for the mobile menu. */
+  variant?: "bar" | "drawer";
+}
+
+export default function NavSearch({ variant = "bar" }: NavSearchProps) {
+  const isDrawer = variant === "drawer";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +70,11 @@ export default function NavSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative hidden md:block" style={{ flex: "1 1 0", maxWidth: "280px" }}>
+    <div
+      ref={containerRef}
+      className={isDrawer ? "relative w-full" : "relative hidden md:block"}
+      style={isDrawer ? undefined : { flex: "1 1 0", maxWidth: "280px" }}
+    >
       {/* Input row */}
       <div
         className="flex items-center gap-2"

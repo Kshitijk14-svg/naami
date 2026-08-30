@@ -132,7 +132,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
 
   return (
     <section
-      className="relative px-6 md:px-12 py-24 reveal-fade-up"
+      className="relative px-6 md:px-12 py-10 md:py-16 reveal-fade-up"
       style={{ backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Corkboard texture: fine crossed grain + sparse cork flecks */}

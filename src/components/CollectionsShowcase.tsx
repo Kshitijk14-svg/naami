@@ -75,11 +75,11 @@ export default function CollectionsShowcase({
 
   return (
     <section
-      className="px-6 md:px-12 py-28 relative"
+      className="px-6 md:px-12 py-12 md:py-16 relative"
       style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Section Header */}
-      <div className="mb-20 pb-8 border-b border-black/5 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
+      <div className="mb-8 md:mb-12 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
@@ -127,7 +127,7 @@ export default function CollectionsShowcase({
 
         {/* ROW 2: Landscape Cards */}
         {landscapeItems.map((item) => (
-          <div key={item.number} className="md:col-span-12 mt-4 md:mt-8 reveal-stagger-item">
+          <div key={item.number} className="md:col-span-12 mt-3 md:mt-6 reveal-stagger-item">
             <LandscapeCollectionCard
               id={item.id}
               number={item.number}

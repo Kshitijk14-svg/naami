@@ -8,6 +8,7 @@ import ProductCarousel from "@/components/ProductCarousel";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
 import BrandLoader from "@/components/BrandLoader";
+import HeroSwipeHint from "@/components/HeroSwipeHint";
 // LoomTimeline, HotspotCards, and CoinPocketReveal all stay as regular
 // top-level imports rather than next/dynamic: this file's global scroll-reveal
 // effect (below) scans the whole document for .reveal-fade-up/.reveal-stagger-*
@@ -274,7 +275,7 @@ export default function HomeClient({
 
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
-        className="pt-28 pb-10 px-6 md:px-12"
+        className="pt-20 pb-6 md:pt-24 md:pb-10 px-6 md:px-12"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.hero?.image, sectionBackgrounds.hero?.fit) }}
       >
         <div
@@ -323,6 +324,9 @@ export default function HomeClient({
               {/* No gradient overlay */}
             </div>
           ))}
+
+          {/* Mobile-only "tap sides to explore" affordance */}
+          <HeroSwipeHint />
 
           {/* ODD RITUAL GOLF Hover Zones for Custom Cursor Navigation */}
           <div
@@ -399,13 +403,6 @@ export default function HomeClient({
         backgroundImageFit={sectionBackgrounds.loom?.fit}
       />
 
-      {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#FFF9EF" }}>
-        <svg width="100%" height="8" className="w-full opacity-50">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
-        </svg>
-      </div>
-
       {/* ── New Arrivals Section ────────────────────────────────── */}
       <div className="reveal-fade-up">
         <ProductCarousel
@@ -438,13 +435,6 @@ export default function HomeClient({
         backgroundImageFit={sectionBackgrounds.hotspotCards?.fit}
       />
 
-      {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F8F1E5" }}>
-        <svg width="100%" height="8" className="w-full opacity-40">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
-        </svg>
-      </div>
-
       {/* ── Bestsellers Section ─────────────────────────────────── */}
       <div className="reveal-fade-up">
         <ProductCarousel
@@ -466,34 +456,20 @@ export default function HomeClient({
         />
       </div>
 
-      {/* ── Stitch Separator ── */}
-      <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#FFF9EF" }}>
-        <svg width="100%" height="8" className="w-full opacity-50">
-          <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
-        </svg>
-      </div>
-
       {/* ── Shared Moments (admin-uploaded video clips) ──────────── */}
       {sharedMoments.enabled && (
-        <>
-          <SharedMomentsCarousel
-            kicker={sharedMoments.kicker}
-            title={sharedMoments.title}
-            items={sharedMoments.items}
-            backgroundImage={sectionBackgrounds.sharedMoments?.image}
-            backgroundImageFit={sectionBackgrounds.sharedMoments?.fit}
-          />
-          <div className="w-full h-8 flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#F8F1E5" }}>
-            <svg width="100%" height="8" className="w-full opacity-40">
-              <line x1="0" y1="4" x2="100%" y2="4" stroke="#5B1C1C" strokeWidth="1.2" className="reveal-stitch-line" />
-            </svg>
-          </div>
-        </>
+        <SharedMomentsCarousel
+          kicker={sharedMoments.kicker}
+          title={sharedMoments.title}
+          items={sharedMoments.items}
+          backgroundImage={sectionBackgrounds.sharedMoments?.image}
+          backgroundImageFit={sectionBackgrounds.sharedMoments?.fit}
+        />
       )}
 
       {/* ── Asymmetric Manifesto Split ─────────────────────────── */}
       <section
-        className="px-6 md:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
+        className="px-6 md:px-12 py-10 md:py-14 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.manifesto?.image, sectionBackgrounds.manifesto?.fit) }}
       >
         {/* Left: Editorial lookbook block */}
