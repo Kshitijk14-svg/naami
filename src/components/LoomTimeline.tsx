@@ -247,11 +247,11 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
         >
           {/* PANEL 1: Weave & The Count */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-24 py-10 md:py-20 relative"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative"
             style={{ backgroundColor: "#F4F0E6" }}
           >
             {/* Left Description */}
-            <div className="w-full md:w-5/12 text-left z-10">
+            <div className="w-full md:w-5/12 text-left z-10 px-4 md:px-0">
               <span
                 className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
                 style={{ fontSize: "9px", color: "#8B1A1A" }}
@@ -295,11 +295,11 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
 
           {/* PANEL 2: The Cutting Table — editorial image */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-24 py-10 md:py-20 relative"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative"
             style={{ backgroundColor: "#EDE8DC" }}
           >
             {/* Left Description */}
-            <div className="w-full md:w-5/12 text-left z-10">
+            <div className="w-full md:w-5/12 text-left z-10 px-4 md:px-0">
               <span
                 className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"
                 style={{ fontSize: "9px", color: "#8B1A1A" }}
@@ -342,7 +342,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
 
           {/* PANEL 3: The Finishing Hand — brand crimson finale */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-24 py-10 md:py-20 relative overflow-hidden"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative overflow-hidden"
             style={{ backgroundColor: "#F4F0E6" }}
           >
             {/* Crimson brand reveal */}
@@ -365,7 +365,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
             {/* Left Description */}
             <div
               ref={slide3TextRef}
-              className="w-full md:w-5/12 text-left z-10"
+              className="w-full md:w-5/12 text-left z-10 px-4 md:px-0"
             >
               <span
                 className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block"

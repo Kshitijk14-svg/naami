@@ -275,7 +275,7 @@ export default function HomeClient({
 
       {/* ── Hero Section ───────────────────────────────────────── */}
       <section
-        className="pt-20 pb-6 md:pt-24 md:pb-10 px-6 md:px-12"
+        className="pt-20 pb-6 md:pt-24 md:pb-10 px-0 md:px-12"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.hero?.image, sectionBackgrounds.hero?.fit) }}
       >
         <div
@@ -366,7 +366,7 @@ export default function HomeClient({
         {/* ── Slide Counter & Progress Bar ────────────────────────── */}
         <div
           ref={heroSubRef}
-          className="flex flex-col gap-2 mt-4 w-full"
+          className="flex flex-col gap-2 mt-4 w-full px-4 md:px-0"
           style={{ opacity: 0 }}
         >
           <div className="flex items-center justify-between font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#1A1212" }}>
@@ -469,13 +469,13 @@ export default function HomeClient({
 
       {/* ── Asymmetric Manifesto Split ─────────────────────────── */}
       <section
-        className="px-6 md:px-12 py-10 md:py-14 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
+        className="px-0 md:px-12 py-10 md:py-14 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.manifesto?.image, sectionBackgrounds.manifesto?.fit) }}
       >
         {/* Left: Editorial lookbook block */}
         <div className="md:col-span-6 reveal-stagger-item">
           <div
-            className="relative overflow-hidden hw-accelerate border border-black/5"
+            className="relative overflow-hidden hw-accelerate border-y border-x-0 md:border-x border-black/5"
             style={{
               aspectRatio: "3/4",
               backgroundColor: "#F8F1E5",
@@ -537,7 +537,7 @@ export default function HomeClient({
 
         {/* Right: Brand manifesto quote */}
         <div
-          className="md:col-span-5 md:col-start-8 reveal-stagger-item"
+          className="px-4 md:px-0 md:col-span-5 md:col-start-8 reveal-stagger-item"
         >
           <div
             className="font-sans font-bold uppercase tracking-[0.25em] mb-6"

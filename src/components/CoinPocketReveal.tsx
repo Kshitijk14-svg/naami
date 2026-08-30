@@ -118,10 +118,10 @@ export default function CoinPocketReveal({ content, backgroundImage, backgroundI
   return (
     <section
       ref={containerRef}
-      className="px-6 md:px-12 py-10 md:py-16 relative overflow-hidden"
+      className="px-0 md:px-12 py-10 md:py-16 relative overflow-hidden"
       style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
+      <div className="px-4 md:px-0 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
 
         {/* Left Editorial Copy Column */}
         <div className="lg:col-span-5 text-left z-10">

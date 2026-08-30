@@ -104,11 +104,11 @@ export default function HotspotCards({ lookCards, kicker, title, backgroundImage
 
   return (
     <section
-      className="px-6 md:px-12 py-10 md:py-16 relative overflow-hidden"
+      className="px-0 md:px-12 py-10 md:py-16 relative overflow-hidden"
       style={{ backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Header and Controls */}
-      <div className="mb-14 flex flex-row items-end justify-between reveal-fade-up">
+      <div className="px-4 md:px-0 mb-14 flex flex-row items-end justify-between reveal-fade-up">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
@@ -164,7 +164,7 @@ export default function HotspotCards({ lookCards, kicker, title, backgroundImage
         {/* Horizontal Scroll Track */}
         <div
           ref={trackRef}
-          className="flex gap-6 md:gap-8 overflow-x-auto whitespace-nowrap scrollbar-none pb-6"
+          className="flex gap-6 md:gap-8 overflow-x-auto whitespace-nowrap scrollbar-none px-4 md:px-0 pb-6"
           style={{
             scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",

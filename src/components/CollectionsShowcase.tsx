@@ -75,11 +75,11 @@ export default function CollectionsShowcase({
 
   return (
     <section
-      className="px-6 md:px-12 py-12 md:py-16 relative"
+      className="px-0 md:px-12 py-12 md:py-16 relative"
       style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Section Header */}
-      <div className="mb-8 md:mb-12 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
+      <div className="px-4 md:px-0 mb-8 md:mb-12 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
@@ -108,8 +108,24 @@ export default function CollectionsShowcase({
         </div>
       </div>
 
-      {/* Asymmetric Editorial Layout Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-stretch reveal-stagger-container">
+      {/* Mobile: horizontal swipe carousel — uniform portrait cards */}
+      <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-none px-4 pb-4 reveal-stagger-container">
+        {items.map((item) => (
+          <div key={item.number} className="w-[82vw] flex-shrink-0 flex flex-col reveal-stagger-item">
+            <PortraitCollectionCard
+              id={item.id}
+              number={item.number}
+              name={item.name}
+              tag={item.tag}
+              description={item.description}
+              image={item.image}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: asymmetric editorial grid */}
+      <div className="hidden md:grid md:grid-cols-12 gap-12 items-stretch reveal-stagger-container">
 
         {/* ROW 1: Portrait Cards */}
         {portraitItems.map((item) => (

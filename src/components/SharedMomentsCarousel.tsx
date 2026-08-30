@@ -132,7 +132,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
 
   return (
     <section
-      className="relative px-6 md:px-12 py-10 md:py-16 reveal-fade-up"
+      className="relative px-0 md:px-12 py-10 md:py-16 reveal-fade-up"
       style={{ backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Corkboard texture: fine crossed grain + sparse cork flecks */}
@@ -147,7 +147,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
         style={{ backgroundImage: "radial-gradient(rgba(26,18,18,0.5) 1px, transparent 1.5px)", backgroundSize: "14px 14px" }}
       />
 
-      <div className="relative z-10 mb-14 flex flex-row items-end justify-between">
+      <div className="relative z-10 px-4 md:px-0 mb-14 flex flex-row items-end justify-between">
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
@@ -186,7 +186,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
 
       <div
         ref={trackRef}
-        className="relative z-10 flex items-start gap-8 md:gap-10 overflow-x-auto scrollbar-none py-6"
+        className="relative z-10 flex items-start gap-8 md:gap-10 overflow-x-auto scrollbar-none px-4 md:px-0 py-6"
         style={{ scrollBehavior: "auto", WebkitOverflowScrolling: "touch" }}
         data-cursor-text="DRAG"
         onPointerDown={handlePointerDown}

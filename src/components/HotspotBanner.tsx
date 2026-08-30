@@ -88,7 +88,7 @@ export default function HotspotBanner({ image, label, hotspots, backgroundImage,
 
       {/* Section label */}
       <div
-        className="absolute top-8 left-12 font-sans font-bold uppercase tracking-[0.25em]"
+        className="absolute top-8 left-4 md:left-12 font-sans font-bold uppercase tracking-[0.25em]"
         style={{ fontSize: "10px", color: "#1A1212", opacity: 0.6, zIndex: 10 }}
       >
         {bannerLabel}

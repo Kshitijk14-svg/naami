@@ -541,7 +541,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
         className="pt-8 pb-4 md:pt-12 relative overflow-hidden"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
       >
-        <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between">
+        <div className="px-4 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between">
           <div>
             <span
               className="font-sans font-bold uppercase tracking-[0.3em] mb-2 block"
@@ -576,7 +576,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
           {/* Scrolling Horizontal Track */}
           <div
             ref={trackRef}
-            className="flex gap-6 md:gap-8 overflow-x-auto whitespace-nowrap scrollbar-none px-6 md:px-12 pb-6"
+            className="flex gap-6 md:gap-8 overflow-x-auto whitespace-nowrap scrollbar-none px-4 md:px-12 pb-6"
             style={{
               scrollBehavior: "auto",
               WebkitOverflowScrolling: "touch",
