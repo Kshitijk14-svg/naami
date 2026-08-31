@@ -51,6 +51,9 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
     startScrollLeft: 0,
   });
   const [playingId, setPlayingId] = useState<string | null>(null);
+  // Session-wide mute preference. Starts unmuted: a visitor taps play expecting
+  // sound; the per-card speaker toggle lets them silence it without pausing.
+  const [muted, setMuted] = useState(false);
 
   // Distance (px) the mouse must travel before a press becomes a drag. Below
   // this, the press stays a plain click and reaches the card's play button.
@@ -97,8 +100,18 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
     track.querySelectorAll("video").forEach((other) => {
       if (other !== video) other.pause();
     });
+    // The click is a user gesture, so browsers allow un-muted playback here.
+    video.muted = muted;
     video.play().catch(() => {});
     setPlayingId(itemId);
+  };
+
+  const handleToggleMute = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const video = e.currentTarget.parentElement?.querySelector("video");
+    const next = !muted;
+    setMuted(next);
+    if (video) video.muted = next;
   };
 
   const handleNavClick = (direction: "prev" | "next") => {
@@ -106,7 +119,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
     if (!track) return;
 
     gsap.killTweensOf(track);
-    const scrollAmount = window.innerWidth >= 768 ? 320 : 260;
+    const scrollAmount = window.innerWidth >= 768 ? 380 : 300;
     const target = direction === "prev" ? track.scrollLeft - scrollAmount : track.scrollLeft + scrollAmount;
 
     gsap.to(track, { scrollLeft: target, duration: 0.6, ease: "power3.out" });
@@ -251,8 +264,8 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
           return (
             <div
               key={item.id}
-              className="reveal-stagger-item flex-shrink-0"
-              style={{ width: 220, marginTop: offsetPx }}
+              className="reveal-stagger-item flex-shrink-0 w-[264px] md:w-[320px]"
+              style={{ marginTop: offsetPx }}
             >
               <div
                 className={`tape-frame tape-frame--${fastener} block w-full group`}
@@ -297,6 +310,25 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
                           </svg>
                         </span>
                       </button>
+                      {playingId === item.id && (
+                        <button
+                          type="button"
+                          onClick={handleToggleMute}
+                          aria-label={muted ? "Unmute" : "Mute"}
+                          className="absolute bottom-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center bg-black/45 backdrop-blur-sm cursor-pointer"
+                          data-cursor-text={muted ? "UNMUTE" : "MUTE"}
+                        >
+                          {muted ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFF9EF">
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3l2.5-2.5-1-1L15.5 11 13 8.5l-1 1L14.5 12 12 14.5l1 1L15.5 13l2.5 2.5 1-1L16.5 12z" />
+                            </svg>
+                          ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFF9EF">
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13 3a4 4 0 00-2-3.46v6.92A4 4 0 0016 12zm-2-7.5v2.06a7 7 0 010 10.88v2.06a9 9 0 000-15z" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
                     </>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element -- variable admin-uploaded paths, unsuitable for next/image
