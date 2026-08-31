@@ -147,7 +147,11 @@ export default function CustomCursor() {
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(raf);
     };
-  }, []);
+    // Re-run on every route change: when this component returns null (e.g. on
+    // /admin) and later re-mounts its nodes, the listener below must re-acquire
+    // the fresh refs — otherwise it keeps driving detached nodes and the visible
+    // ones stay at opacity 0.
+  }, [pathname]);
 
   if (pathname.startsWith("/admin")) return null;
 

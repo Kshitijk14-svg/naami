@@ -143,6 +143,9 @@ export default function MobileMenu({ open, onClose, session, onSignOut, cartItem
           <NavSearch variant="drawer" />
 
           <nav className="mt-4 flex flex-col">
+            <Link href="/" onClick={onClose} className={LINK_CLASS} style={{ color: "#1A1212", borderBottom: "1px solid rgba(17,17,17,0.08)" }}>
+              Home
+            </Link>
             <Link href="/collection" onClick={onClose} className={LINK_CLASS} style={{ color: "#1A1212", borderBottom: "1px solid rgba(17,17,17,0.08)" }}>
               Collections
             </Link>

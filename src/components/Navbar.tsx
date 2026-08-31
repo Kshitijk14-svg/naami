@@ -94,6 +94,14 @@ export default function Navbar() {
       {/* Navigation links — right side */}
       <nav className="flex items-center gap-6 ml-auto flex-shrink-0">
         <Link
+          href="/"
+          className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
+          style={{ color: "#1A1212" }}
+          data-cursor-text="HOME"
+        >
+          Home
+        </Link>
+        <Link
           href="/collection"
           className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
           style={{ color: "#1A1212" }}
@@ -139,7 +147,7 @@ export default function Navbar() {
         {/* Cart */}
         <Link
           href="/cart"
-          className="flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
+          className="hidden md:flex items-center gap-2 hover:opacity-55 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
           style={{ color: "#1A1212" }}
           data-cursor-text="CART"
         >

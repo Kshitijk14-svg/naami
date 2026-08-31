@@ -13,19 +13,6 @@ import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE
 
 gsap.registerPlugin(ScrollTrigger);
 
-type FilterKey = "ALL" | "SHIRTS" | "ACCESSORIES" | "LIMITED";
-
-const FILTER_KEYWORDS: Record<FilterKey, string[]> = {
-  ALL: [],
-  SHIRTS: ["shirt", "camp", "overshirt", "kurta", "henley", "poplin", "chambray", "tuxedo", "haori"],
-  ACCESSORIES: ["button", "stay", "set"],
-  LIMITED: ["sashiko", "haori", "kurta", "gurkha"],
-};
-
-function isFilterKey(value: string | null): value is FilterKey {
-  return value === "ALL" || value === "SHIRTS" || value === "ACCESSORIES" || value === "LIMITED";
-}
-
 function getDiscount(product: CarouselProduct) {
   if (!product.compareAtPriceInr || product.compareAtPriceInr <= product.priceInr) return null;
   const percentOff = Math.round(
@@ -34,31 +21,24 @@ function getDiscount(product: CarouselProduct) {
   return { compareAtPrice: formatINR(product.compareAtPriceInr), percentOff };
 }
 
-function matchesFilter(product: CarouselProduct, filter: FilterKey): boolean {
-  if (filter === "ALL") return true;
-  const keywords = FILTER_KEYWORDS[filter];
-  const searchText = (product.name + " " + product.subtitle).toLowerCase();
-  return keywords.some((kw) => searchText.includes(kw));
-}
-
-type CollectionInfo = {
+// Filter tabs are driven by the published collections from the admin dashboard.
+type CollectionTab = {
   id: number;
   name: string;
   tag: string;
-  description: string;
+  number: string;
   productIds: number[];
 };
 
 export default function CollectionPageContent() {
   const searchParams = useSearchParams();
-  const filterParam = searchParams.get("filter");
   const collectionParam = searchParams.get("collection");
 
-  const [activeFilter, setActiveFilter] = useState<FilterKey>(
-    isFilterKey(filterParam) ? filterParam : "ALL"
+  const [collections, setCollections] = useState<CollectionTab[]>([]);
+  const [activeCollectionId, setActiveCollectionId] = useState<number | null>(
+    collectionParam && /^\d+$/.test(collectionParam) ? Number(collectionParam) : null
   );
   const [allProducts, setAllProducts] = useState<CarouselProduct[]>([]);
-  const [collectionInfo, setCollectionInfo] = useState<CollectionInfo | null>(null);
   const [expandedProduct, setExpandedProduct] = useState<CarouselProduct | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [sizeError, setSizeError] = useState(false);
@@ -74,22 +54,18 @@ export default function CollectionPageContent() {
   }, []);
 
   useEffect(() => {
-    if (!collectionParam) {
-      setCollectionInfo(null);
-      return;
-    }
-    fetch(`/api/collections/${collectionParam}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Collection not found");
-        return r.json();
-      })
-      .then((data: CollectionInfo) => setCollectionInfo(data))
-      .catch(() => setCollectionInfo(null));
-  }, [collectionParam]);
+    fetch("/api/collections")
+      .then((r) => r.json())
+      .then((data: CollectionTab[]) => setCollections(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
-  const filtered = allProducts
-    .filter((p) => matchesFilter(p, activeFilter))
-    .filter((p) => !collectionInfo || collectionInfo.productIds.includes(p.id));
+  const activeCollection =
+    collections.find((c) => c.id === activeCollectionId) ?? null;
+
+  const filtered = allProducts.filter(
+    (p) => !activeCollection || activeCollection.productIds.includes(p.id)
+  );
 
   // Card stagger animations
   useEffect(() => {
@@ -115,7 +91,7 @@ export default function CollectionPageContent() {
       });
     }, gridRef);
     return () => ctx.revert();
-  }, [filtered]);
+  }, [filtered.length, activeCollectionId]);
 
   const openProduct = (product: CarouselProduct) => {
     setExpandedProduct(product);
@@ -157,13 +133,15 @@ export default function CollectionPageContent() {
           className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
           style={{ fontSize: "9px", color: "#5B1C1C" }}
         >
-          {collectionInfo ? `NAAMI // ${collectionInfo.tag}` : "NAAMI // AW26"}
+          {activeCollection && activeCollection.tag
+            ? `NAAMI // ${activeCollection.tag}`
+            : "NAAMI // AW26"}
         </span>
         {/* Doubles as the collection name, so it keeps the uppercase treatment
             product/collection names use rather than the plain title casing. */}
         <h1 className={PRODUCT_NAME_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-          {collectionInfo ? (
-            collectionInfo.name
+          {activeCollection ? (
+            activeCollection.name
           ) : (
             <>
               The
@@ -176,21 +154,24 @@ export default function CollectionPageContent() {
 
       {/* Filters */}
       <section className="px-8 md:px-12 py-6 flex items-center gap-6 overflow-x-auto" style={{ borderBottom: "1px solid rgba(17,17,17,0.06)" }}>
-        {(["ALL", "SHIRTS", "ACCESSORIES", "LIMITED"] as FilterKey[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className="font-sans font-bold uppercase tracking-[0.2em] transition-colors whitespace-nowrap"
-            style={{
-              fontSize: "9px",
-              color: activeFilter === f ? "#5B1C1C" : "rgba(17,17,17,0.35)",
-              borderBottom: activeFilter === f ? "1.5px solid #5B1C1C" : "1.5px solid transparent",
-              paddingBottom: "4px",
-            }}
-          >
-            {f}
-          </button>
-        ))}
+        {[{ id: null as number | null, name: "ALL" }, ...collections].map((tab) => {
+          const active = activeCollectionId === tab.id;
+          return (
+            <button
+              key={tab.id ?? "ALL"}
+              onClick={() => setActiveCollectionId(tab.id)}
+              className="font-sans font-bold uppercase tracking-[0.2em] transition-colors whitespace-nowrap"
+              style={{
+                fontSize: "9px",
+                color: active ? "#5B1C1C" : "rgba(17,17,17,0.35)",
+                borderBottom: active ? "1.5px solid #5B1C1C" : "1.5px solid transparent",
+                paddingBottom: "4px",
+              }}
+            >
+              {tab.name}
+            </button>
+          );
+        })}
         <span
           className="ml-auto font-sans"
           style={{ fontSize: "10px", color: "rgba(17,17,17,0.35)", whiteSpace: "nowrap" }}
@@ -213,8 +194,6 @@ export default function CollectionPageContent() {
               className="relative overflow-hidden w-full border border-black/5 bg-[#F8F1E5]"
               style={{ aspectRatio: "3/4" }}
             >
-              {/* Selvedge edge */}
-              <div className="absolute top-0 left-0 bottom-0 z-10" style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.7 }} />
               <Image
                 src={product.thumbnailImage ?? product.image}
                 alt={product.name}
@@ -288,9 +267,6 @@ export default function CollectionPageContent() {
             >
               ✕ Close
             </button>
-
-            {/* Selvedge edge */}
-            <div className="absolute top-0 left-0 bottom-0" style={{ width: "3.5px", backgroundColor: "#5B1C1C", opacity: 0.8 }} />
 
             {/* Image */}
             <div className="relative w-full md:w-5/12 bg-[#F8F1E5]" style={{ minHeight: "260px" }}>

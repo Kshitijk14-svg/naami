@@ -237,7 +237,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
         // h-screen is the 100vh fallback: if a browser does not support svh the
         // inline height below is dropped and the pinned section would lose its
         // height entirely.
-        className="relative w-full h-screen [height:80svh] md:[height:100svh] overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-none md:overflow-hidden md:snap-none"
+        className="relative w-full h-screen [height:62svh] md:[height:100svh] overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-none md:overflow-hidden md:snap-none"
         style={{ backgroundColor: "#F4F0E6", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
       >
         {/* Horizontal Track */}
@@ -247,7 +247,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
         >
           {/* PANEL 1: Weave & The Count */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-6 md:py-20 relative"
             style={{ backgroundColor: "#F4F0E6" }}
           >
             {/* Left Description */}
@@ -267,7 +267,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
             </div>
 
             {/* Right editorial image */}
-            <div className="w-full md:w-6/12 h-[36vh] md:h-[60vh] flex items-center justify-center relative">
+            <div className="w-full md:w-6/12 h-[26vh] md:h-[60vh] flex items-center justify-center relative">
               <div
                 ref={slide1ImageRef}
                 className="relative w-full h-full overflow-hidden border border-black/5"
@@ -295,7 +295,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
 
           {/* PANEL 2: The Cutting Table — editorial image */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-6 md:py-20 relative"
             style={{ backgroundColor: "#EDE8DC" }}
           >
             {/* Left Description */}
@@ -315,7 +315,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
             </div>
 
             {/* Right editorial image */}
-            <div className="w-full md:w-6/12 h-[36vh] md:h-[60vh] flex items-center justify-center relative">
+            <div className="w-full md:w-6/12 h-[26vh] md:h-[60vh] flex items-center justify-center relative">
               <div
                 ref={slide2ImageRef}
                 className="relative w-full h-full overflow-hidden border border-black/5"
@@ -342,7 +342,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
 
           {/* PANEL 3: The Finishing Hand — brand crimson finale */}
           <section
-            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-10 md:py-20 relative overflow-hidden"
+            className="w-[90vw] md:w-screen shrink-0 snap-center h-full flex flex-col md:flex-row items-center justify-between px-0 md:px-24 py-6 md:py-20 relative overflow-hidden"
             style={{ backgroundColor: "#F4F0E6" }}
           >
             {/* Crimson brand reveal */}
@@ -391,7 +391,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
             </div>
 
             {/* Right: brand logo medallion */}
-            <div className="w-full md:w-6/12 h-[36vh] md:h-[60vh] flex items-center justify-center relative z-10">
+            <div className="w-full md:w-6/12 h-[26vh] md:h-[60vh] flex items-center justify-center relative z-10">
               <div
                 ref={slide3LogoRef}
                 className="relative flex items-center justify-center"

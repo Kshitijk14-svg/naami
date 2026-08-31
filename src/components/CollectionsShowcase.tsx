@@ -172,7 +172,7 @@ interface PortraitCardProps {
   image: string;
 }
 
-function PortraitCollectionCard({ id, number, name, tag, description, image }: PortraitCardProps) {
+function PortraitCollectionCard({ id, name, tag, description, image }: PortraitCardProps) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
@@ -217,19 +217,6 @@ function PortraitCollectionCard({ id, number, name, tag, description, image }: P
             style={{ filter: "brightness(0.94)" }}
             sizes="(max-width: 768px) 100vw, 50vw"
           />
-        </div>
-
-        {/* Floating Category Number Tag */}
-        <div
-          className="absolute bottom-6 left-6 font-sans font-bold uppercase tracking-[0.25em]"
-          style={{
-            fontSize: "9px",
-            color: "#FFF9EF",
-            backgroundColor: "#5B1C1C",
-            padding: "4px 8px",
-          }}
-        >
-          COLLECTION {number}
         </div>
       </div>
 
@@ -308,7 +295,7 @@ interface LandscapeCardProps {
   image: string;
 }
 
-function LandscapeCollectionCard({ id, number, name, tag, description, image }: LandscapeCardProps) {
+function LandscapeCollectionCard({ id, name, tag, description, image }: LandscapeCardProps) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
@@ -358,24 +345,12 @@ function LandscapeCollectionCard({ id, number, name, tag, description, image }: 
 
       {/* Details Block (Right/Bottom) */}
       <div className="w-full md:w-5/12 p-8 md:p-12 flex flex-col justify-between relative">
-        {/* Massive Background Accent Number */}
-        <div
-          className="absolute top-4 right-8 font-serif font-bold pointer-events-none select-none"
-          style={{
-            fontSize: "8rem",
-            color: "rgba(139, 26, 26, 0.05)",
-            lineHeight: 1,
-          }}
-        >
-          {number}
-        </div>
-
         <div>
           <span
             className="font-sans font-bold uppercase tracking-[0.25em] mb-4 block"
             style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
-            COLLECTION {number} // {tag}
+            {tag}
           </span>
           <h3
             className={`${PRODUCT_NAME_CLASS} mb-4 transition-colors group-hover:text-[#5B1C1C]`}

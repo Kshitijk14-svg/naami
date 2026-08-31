@@ -35,10 +35,11 @@ export default function CoinPocketReveal({ content, backgroundImage, backgroundI
 
   // Geometry is derived from the frame height so the pocket slot stays
   // aligned when the responsive frame shrinks below its 420px max width.
-  const HEM_TOP = Math.round(frameHeight * 0.71); // pocket panel top edge
+  const HEM_TOP = Math.round(frameHeight * 0.74); // pocket panel top edge
   const CARD_REST_TOP = HEM_TOP + 12; // card fully tucked behind the panel
-  // Maximum pull distance: fully revealed card top lands at ~52px
-  const MAX_DRAG = Math.max(120, CARD_REST_TOP - 52);
+  // Maximum pull distance: fully revealed card top lands at ~24px, so the whole
+  // certificate clears the pocket panel instead of its footer tucking under it.
+  const MAX_DRAG = Math.max(120, CARD_REST_TOP - 24);
   // Pull distance past which release snaps fully open
   const SNAP_THRESHOLD = Math.round(MAX_DRAG * 0.4);
   // Shrink the card on small frames so the full certificate clears the slot
@@ -242,7 +243,7 @@ export default function CoinPocketReveal({ content, backgroundImage, backgroundI
                 top: `${CARD_REST_TOP}px`, // Hidden state: fully behind the pocket panel
                 width: "280px",
                 height: "320px",
-                paddingBottom: "44px", // keeps the footer clear of the pocket slot at full reveal
+                paddingBottom: "56px", // keeps the footer clear of the pocket slot at full reveal
                 backgroundColor: "#EDE6D5", // vintage thick paper color
                 transform: `translateY(${-dragY}px) scale(${cardScale})`,
                 transformOrigin: "top center",

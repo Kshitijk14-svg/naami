@@ -415,24 +415,6 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
                   style={{ filter: "brightness(0.94)" }}
                 />
                 {/* No gradient overlay */}
-                <div
-                  className="absolute top-4 right-4"
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    backgroundColor: "#5B1C1C",
-                    boxShadow: "0 0 6px rgba(139,26,26,0.5)",
-                  }}
-                />
-                <div
-                  className="absolute top-0 left-0 bottom-0"
-                  style={{
-                    width: "2.5px",
-                    backgroundColor: "#5B1C1C",
-                    opacity: 0.75,
-                  }}
-                />
               </div>
 
               {/* BACK FACE */}
@@ -593,7 +575,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
         </div>
 
         {gatewayLabel && (
-          <div className="flex justify-center mt-6 pb-6">
+          <div className="flex justify-center mt-6 pb-6 scale-[0.8] md:scale-100 origin-top">
             <NaamiGatewayButton label={gatewayLabel} />
           </div>
         )}
@@ -760,10 +742,12 @@ function ProductDetailContent({
 }) {
   return (
     <div
-      className={`relative w-full h-full flex flex-col justify-between ${
-        isMobile ? "px-6 py-10" : "px-12 py-12 md:px-16 md:py-14"
+      className={`relative w-full flex flex-col ${
+        isMobile
+          ? "px-6 py-6 gap-7"
+          : "h-full justify-between px-12 py-12 md:px-16 md:py-14"
       }`}
-      style={{ backgroundColor: "#FFF9EF", minHeight: "100%" }}
+      style={{ backgroundColor: "#FFF9EF", minHeight: isMobile ? undefined : "100%" }}
     >
       <div>
         {/* Header Metadata */}
