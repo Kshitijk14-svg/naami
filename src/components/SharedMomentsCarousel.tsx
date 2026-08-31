@@ -42,8 +42,19 @@ function hashBucket(seed: string, buckets: number): number {
 
 export default function SharedMomentsCarousel({ items, kicker, title, backgroundImage, backgroundImageFit }: SharedMomentsCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const dragState = useRef({ dragging: false, startX: 0, startScrollLeft: 0 });
+  const dragState = useRef({
+    pressed: false,
+    dragging: false,
+    suppressClick: false,
+    pointerId: -1,
+    startX: 0,
+    startScrollLeft: 0,
+  });
   const [playingId, setPlayingId] = useState<string | null>(null);
+
+  // Distance (px) the mouse must travel before a press becomes a drag. Below
+  // this, the press stays a plain click and reaches the card's play button.
+  const DRAG_THRESHOLD = 5;
 
   // Playback is tap-gated (see handleToggleVideo) so clips never fetch/decode
   // until a visitor asks for them. This observer only pauses a playing clip
@@ -103,31 +114,67 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
 
   // Mouse-only drag-to-scroll; touch/pen keep the native overflow-x scroll
   // path untouched so they never fight the IntersectionObserver above.
+  //
+  // Pointer capture is deferred until the mouse actually moves past
+  // DRAG_THRESHOLD: capturing on pointerdown would retarget the subsequent
+  // `click` to the track, so a plain click on a card's play button never
+  // reached its handler.
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
     const track = trackRef.current;
     if (!track) return;
 
-    gsap.killTweensOf(track);
-    dragState.current = { dragging: true, startX: e.clientX, startScrollLeft: track.scrollLeft };
-    track.setPointerCapture(e.pointerId);
-    track.setAttribute("data-cursor-text", "DRAGGING");
+    dragState.current = {
+      pressed: true,
+      dragging: false,
+      suppressClick: false,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startScrollLeft: track.scrollLeft,
+    };
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const state = dragState.current;
-    if (!state.dragging) return;
+    if (!state.pressed) return;
     const track = trackRef.current;
     if (!track) return;
 
     const delta = e.clientX - state.startX;
+
+    if (!state.dragging) {
+      if (Math.abs(delta) < DRAG_THRESHOLD) return;
+      state.dragging = true;
+      gsap.killTweensOf(track);
+      track.setPointerCapture(state.pointerId);
+      track.setAttribute("data-cursor-text", "DRAGGING");
+    }
+
     track.scrollLeft = state.startScrollLeft - delta;
   };
 
   const endDrag = () => {
-    if (!dragState.current.dragging) return;
-    dragState.current.dragging = false;
-    trackRef.current?.setAttribute("data-cursor-text", "DRAG");
+    const state = dragState.current;
+    if (!state.pressed) return;
+
+    const track = trackRef.current;
+    if (state.dragging && track?.hasPointerCapture(state.pointerId)) {
+      track.releasePointerCapture(state.pointerId);
+    }
+    track?.setAttribute("data-cursor-text", "DRAG");
+
+    // A real drag ends with a `click` we don't want (it would toggle whatever
+    // card the mouse happens to be over); swallow just that one.
+    state.suppressClick = state.dragging;
+    state.pressed = false;
+    state.dragging = false;
+  };
+
+  const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!dragState.current.suppressClick) return;
+    dragState.current.suppressClick = false;
+    e.stopPropagation();
+    e.preventDefault();
   };
 
   return (
@@ -194,6 +241,7 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
         onPointerUp={endDrag}
         onPointerLeave={endDrag}
         onPointerCancel={endDrag}
+        onClickCapture={handleClickCapture}
       >
         {items.map((item, index) => {
           const fastener = FASTENERS[hashBucket(item.id + "-fastener", FASTENERS.length)];
