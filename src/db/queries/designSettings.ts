@@ -92,6 +92,17 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   shared_moments_kicker: "NAAMI // FROM THE COMMUNITY",
   shared_moments_title: "Shared Moments",
 
+  // Per-section visibility toggles (home page). "true"/"false"; default on.
+  // Hero is always shown; Shared Moments has its own toggle (shared_moments_enabled).
+  section_collections_enabled: "true",
+  section_loom_enabled: "true",
+  section_new_arrivals_enabled: "true",
+  section_lookbook_banner_enabled: "true",
+  section_hotspot_cards_enabled: "true",
+  section_bestsellers_enabled: "true",
+  section_coin_pocket_enabled: "true",
+  section_manifesto_enabled: "true",
+
   // Per-section decorative background images (home page)
   hero_bg_image: "",
   hero_bg_fit: "cover",

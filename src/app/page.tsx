@@ -18,6 +18,20 @@ const BACKGROUNDABLE_SECTIONS = {
   manifesto: "manifesto",
 } as const;
 
+// Home-page sections that an admin can toggle off (Design Manager → Section
+// Visibility). Hero is always shown; Shared Moments uses its own flag. Prefixes
+// match BACKGROUNDABLE_SECTIONS so the two features stay aligned.
+const TOGGLEABLE_SECTIONS = {
+  collections: "collections",
+  loom: "loom",
+  newArrivals: "new_arrivals",
+  lookbookBanner: "lookbook_banner",
+  hotspotCards: "hotspot_cards",
+  bestsellers: "bestsellers",
+  coinPocket: "coin_pocket",
+  manifesto: "manifesto",
+} as const;
+
 const DEFAULT_HERO_SLIDES = [
   {
     image: "/images/hero-1.png",
@@ -130,6 +144,13 @@ export default async function Home() {
     ])
   ) as Record<keyof typeof BACKGROUNDABLE_SECTIONS, { image?: string; fit: SectionBackgroundFit }>;
 
+  const sectionsEnabled = Object.fromEntries(
+    Object.entries(TOGGLEABLE_SECTIONS).map(([propKey, prefix]) => [
+      propKey,
+      designSettings[`section_${prefix}_enabled`] !== "false", // default on
+    ])
+  ) as Record<keyof typeof TOGGLEABLE_SECTIONS, boolean>;
+
   return (
     <HomeClient
       heroSlides={heroSlides}
@@ -151,6 +172,7 @@ export default async function Home() {
       shopLookHeader={shopLookHeader}
       sharedMoments={sharedMoments}
       sectionBackgrounds={sectionBackgrounds}
+      sectionsEnabled={sectionsEnabled}
     />
   );
 }

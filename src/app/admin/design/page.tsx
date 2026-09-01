@@ -14,6 +14,7 @@ import { FooterDoodleSection } from "@/components/admin/design/FooterDoodleSecti
 import { AnnouncementBarSection } from "@/components/admin/design/AnnouncementBarSection";
 import { SharedMomentsSection } from "@/components/admin/design/SharedMomentsSection";
 import { SectionBackgroundsSection, SECTION_BACKGROUND_KEYS } from "@/components/admin/design/SectionBackgroundsSection";
+import { SectionVisibilitySection, SECTION_VISIBILITY_KEYS } from "@/components/admin/design/SectionVisibilitySection";
 import { AboutPageSection } from "@/components/admin/design/AboutPageSection";
 import { JournalCollectionSection } from "@/components/admin/design/JournalCollectionSection";
 import { CheckoutFlowSection } from "@/components/admin/design/CheckoutFlowSection";
@@ -42,6 +43,7 @@ const TABS = [
   { id: "coinpocket", label: "Coin Pocket Card" },
   { id: "manifesto", label: "Manifesto" },
   { id: "headers", label: "Section Headers" },
+  { id: "visibility", label: "Section Visibility" },
   { id: "backgrounds", label: "Section Backgrounds" },
   { id: "doodle", label: "Footer Doodle" },
   { id: "announcements", label: "Announcements" },
@@ -101,6 +103,11 @@ export default function AdminDesignPage() {
   const [backgroundsSaving, setBackgroundsSaving] = useState(false);
   const [backgroundsSaved, setBackgroundsSaved] = useState(false);
   const [backgroundsError, setBackgroundsError] = useState<string | null>(null);
+
+  // ── Section Visibility ─────────────────────────────────────────────────────
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
+  const [visibilitySaved, setVisibilitySaved] = useState(false);
+  const [visibilityError, setVisibilityError] = useState<string | null>(null);
 
   // ── Footer Doodle ──────────────────────────────────────────────────────────
   const [doodleSaving, setDoodleSaving] = useState(false);
@@ -364,6 +371,7 @@ export default function AdminDesignPage() {
   const saveJournalCollection = makeContentSave(JOURNAL_COLLECTION_KEYS, setJournalSaving, setJournalSaved, setJournalError);
   const saveCheckoutFlow = makeContentSave(CHECKOUT_FLOW_KEYS, setCheckoutSaving, setCheckoutSaved, setCheckoutError);
   const saveFooterContent = makeContentSave(FOOTER_CONTENT_KEYS, setFooterSaving, setFooterSaved, setFooterError);
+  const saveSectionVisibility = makeContentSave(SECTION_VISIBILITY_KEYS, setVisibilitySaving, setVisibilitySaved, setVisibilityError);
 
   const saveBackgrounds = async () => {
     setBackgroundsSaving(true);
@@ -636,6 +644,16 @@ export default function AdminDesignPage() {
               sectionHeadersSaving={sectionHeadersSaving}
               sectionHeadersSaved={sectionHeadersSaved}
               onSave={saveSectionHeaders}
+            />
+          )}
+          {activeTab === "visibility" && (
+            <SectionVisibilitySection
+              settings={settings}
+              update={update}
+              error={visibilityError}
+              saving={visibilitySaving}
+              saved={visibilitySaved}
+              onSave={saveSectionVisibility}
             />
           )}
           {activeTab === "backgrounds" && (

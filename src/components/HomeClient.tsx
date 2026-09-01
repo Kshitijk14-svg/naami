@@ -123,6 +123,18 @@ type SectionBackgrounds = {
   manifesto?: SectionBackground;
 };
 
+type SectionsEnabled = Record<
+  | "collections"
+  | "loom"
+  | "newArrivals"
+  | "lookbookBanner"
+  | "hotspotCards"
+  | "bestsellers"
+  | "coinPocket"
+  | "manifesto",
+  boolean
+>;
+
 interface HomeClientProps {
   heroSlides: HeroSlide[];
   newArrivals: CarouselProduct[];
@@ -139,6 +151,7 @@ interface HomeClientProps {
   shopLookHeader: ShopLookHeader;
   sharedMoments: SharedMoments;
   sectionBackgrounds: SectionBackgrounds;
+  sectionsEnabled: SectionsEnabled;
 }
 
 export default function HomeClient({
@@ -157,6 +170,7 @@ export default function HomeClient({
   shopLookHeader,
   sharedMoments,
   sectionBackgrounds,
+  sectionsEnabled,
 }: HomeClientProps) {
   // Force scroll to top on reload/mount
   useEffect(() => {
@@ -388,75 +402,89 @@ export default function HomeClient({
       </section>
 
       {/* ── Collections Showcase ─────────────────────────────────── */}
-      <CollectionsShowcase
-        collections={homepageCollections}
-        kicker={collectionsHeader.kicker}
-        title={collectionsHeader.title}
-        titleAccent={collectionsHeader.titleAccent}
-        sideNote={collectionsHeader.sideNote}
-        backgroundImage={sectionBackgrounds.collections?.image}
-        backgroundImageFit={sectionBackgrounds.collections?.fit}
-      />
+      {sectionsEnabled.collections && (
+        <CollectionsShowcase
+          collections={homepageCollections}
+          kicker={collectionsHeader.kicker}
+          title={collectionsHeader.title}
+          titleAccent={collectionsHeader.titleAccent}
+          sideNote={collectionsHeader.sideNote}
+          backgroundImage={sectionBackgrounds.collections?.image}
+          backgroundImageFit={sectionBackgrounds.collections?.fit}
+        />
+      )}
 
       {/* ── Scroll-Pinned Loom Horizontal Timeline ── */}
-      <LoomTimeline
-        content={loomContent}
-        backgroundImage={sectionBackgrounds.loom?.image}
-        backgroundImageFit={sectionBackgrounds.loom?.fit}
-      />
+      {sectionsEnabled.loom && (
+        <LoomTimeline
+          content={loomContent}
+          backgroundImage={sectionBackgrounds.loom?.image}
+          backgroundImageFit={sectionBackgrounds.loom?.fit}
+        />
+      )}
 
       {/* ── New Arrivals Section ────────────────────────────────── */}
-      <div className="reveal-fade-up">
-        <ProductCarousel
-          title={newArrivalsSection.title}
-          tag={newArrivalsSection.tag}
-          products={newArrivals}
-          gatewayLabel={newArrivalsSection.gatewayLabel}
-          backgroundImage={sectionBackgrounds.newArrivals?.image}
-          backgroundImageFit={sectionBackgrounds.newArrivals?.fit}
-        />
-      </div>
+      {sectionsEnabled.newArrivals && (
+        <div className="reveal-fade-up">
+          <ProductCarousel
+            title={newArrivalsSection.title}
+            tag={newArrivalsSection.tag}
+            products={newArrivals}
+            gatewayLabel={newArrivalsSection.gatewayLabel}
+            backgroundImage={sectionBackgrounds.newArrivals?.image}
+            backgroundImageFit={sectionBackgrounds.newArrivals?.fit}
+          />
+        </div>
+      )}
 
       {/* ── Hotspot Banner ─────────────────────────────────────── */}
-      <div className="reveal-fade-up">
-        <HotspotBanner
-          image={lookbookBanner.image}
-          label={lookbookBanner.label}
-          hotspots={lookbookBanner.hotspots}
-          backgroundImage={sectionBackgrounds.lookbookBanner?.image}
-          backgroundImageFit={sectionBackgrounds.lookbookBanner?.fit}
-        />
-      </div>
+      {sectionsEnabled.lookbookBanner && (
+        <div className="reveal-fade-up">
+          <HotspotBanner
+            image={lookbookBanner.image}
+            label={lookbookBanner.label}
+            hotspots={lookbookBanner.hotspots}
+            backgroundImage={sectionBackgrounds.lookbookBanner?.image}
+            backgroundImageFit={sectionBackgrounds.lookbookBanner?.fit}
+          />
+        </div>
+      )}
 
       {/* ── Hotspot Cards Section ──────────────────────────────── */}
-      <HotspotCards
-        lookCards={lookCards}
-        kicker={shopLookHeader.kicker}
-        title={shopLookHeader.title}
-        backgroundImage={sectionBackgrounds.hotspotCards?.image}
-        backgroundImageFit={sectionBackgrounds.hotspotCards?.fit}
-      />
+      {sectionsEnabled.hotspotCards && (
+        <HotspotCards
+          lookCards={lookCards}
+          kicker={shopLookHeader.kicker}
+          title={shopLookHeader.title}
+          backgroundImage={sectionBackgrounds.hotspotCards?.image}
+          backgroundImageFit={sectionBackgrounds.hotspotCards?.fit}
+        />
+      )}
 
       {/* ── Bestsellers Section ─────────────────────────────────── */}
-      <div className="reveal-fade-up">
-        <ProductCarousel
-          title={bestsellersSection.title}
-          tag={bestsellersSection.tag}
-          products={bestsellers}
-          gatewayLabel={bestsellersSection.gatewayLabel}
-          backgroundImage={sectionBackgrounds.bestsellers?.image}
-          backgroundImageFit={sectionBackgrounds.bestsellers?.fit}
-        />
-      </div>
+      {sectionsEnabled.bestsellers && (
+        <div className="reveal-fade-up">
+          <ProductCarousel
+            title={bestsellersSection.title}
+            tag={bestsellersSection.tag}
+            products={bestsellers}
+            gatewayLabel={bestsellersSection.gatewayLabel}
+            backgroundImage={sectionBackgrounds.bestsellers?.image}
+            backgroundImageFit={sectionBackgrounds.bestsellers?.fit}
+          />
+        </div>
+      )}
 
       {/* ── Coin Pocket Pull-Drag Reveal ── */}
-      <div className="reveal-fade-up">
-        <CoinPocketReveal
-          content={coinPocketContent}
-          backgroundImage={sectionBackgrounds.coinPocket?.image}
-          backgroundImageFit={sectionBackgrounds.coinPocket?.fit}
-        />
-      </div>
+      {sectionsEnabled.coinPocket && (
+        <div className="reveal-fade-up">
+          <CoinPocketReveal
+            content={coinPocketContent}
+            backgroundImage={sectionBackgrounds.coinPocket?.image}
+            backgroundImageFit={sectionBackgrounds.coinPocket?.fit}
+          />
+        </div>
+      )}
 
       {/* ── Shared Moments (admin-uploaded video clips) ──────────── */}
       {sharedMoments.enabled && (
@@ -470,6 +498,7 @@ export default function HomeClient({
       )}
 
       {/* ── Asymmetric Manifesto Split ─────────────────────────── */}
+      {sectionsEnabled.manifesto && (
       <section
         className="px-0 md:px-12 py-10 md:py-14 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center reveal-stagger-container"
         style={{ backgroundColor: "#FFF9EF", ...sectionBackgroundStyle(sectionBackgrounds.manifesto?.image, sectionBackgrounds.manifesto?.fit) }}
@@ -574,6 +603,7 @@ export default function HomeClient({
           />
         </div>
       </section>
+      )}
 
       {/* ── Evanlite-inspired Footer ─────────────────────────────── */}
       <EvanliteFooter />
