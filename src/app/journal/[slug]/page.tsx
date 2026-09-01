@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getPublishedPosts } from "@/db/queries/blog";
+import { getAllDesignSettings } from "@/db/queries/designSettings";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 
@@ -55,7 +56,7 @@ export const revalidate = 300;
 
 export default async function JournalPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const [post, settings] = await Promise.all([getPostBySlug(slug), getAllDesignSettings()]);
 
   if (!post || !post.isPublished) notFound();
 
@@ -133,7 +134,7 @@ export default async function JournalPostPage({ params }: Props) {
               ← All Stories
             </Link>
             <span className="font-sans font-bold uppercase tracking-[0.2em]" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-              NAAMI // ATELIER
+              {settings.journal_post_footer_label}
             </span>
           </div>
         </div>

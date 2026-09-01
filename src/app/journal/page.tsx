@@ -1,9 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { getPublishedPosts } from "@/db/queries/blog";
+import { getAllDesignSettings } from "@/db/queries/designSettings";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+
+/** Render a setting string with "\n" turned into <br/> line breaks. */
+function withLineBreaks(text: string) {
+  return text.split("\n").map((line, i) => (
+    <Fragment key={i}>
+      {i > 0 && <br />}
+      {line}
+    </Fragment>
+  ));
+}
 
 export const metadata: Metadata = {
   title: "Journal — NAAMI Atelier",
@@ -18,7 +30,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function JournalPage() {
-  const posts = await getPublishedPosts();
+  const [posts, settings] = await Promise.all([getPublishedPosts(), getAllDesignSettings()]);
 
   return (
     <main
@@ -28,10 +40,10 @@ export default async function JournalPage() {
       {/* Header */}
       <section className="px-6 md:px-12 py-16">
         <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-          NAAMI // THE JOURNAL
+          {settings.journal_kicker}
         </p>
         <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4.5rem)")}>
-          Stories from<br />the Atelier
+          {withLineBreaks(settings.journal_title)}
         </h1>
 
         {/* Selvedge rule */}
@@ -47,7 +59,7 @@ export default async function JournalPage() {
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-50 mx-auto mb-8" />
             <p className="font-serif font-light" style={{ fontSize: "1.3rem", color: "rgba(17,17,17,0.4)" }}>
-              New stories coming soon.
+              {settings.journal_empty_state}
             </p>
           </div>
         ) : (

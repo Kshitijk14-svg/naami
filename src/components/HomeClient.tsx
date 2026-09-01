@@ -24,6 +24,7 @@ import SharedMomentsCarousel from "@/components/SharedMomentsCarousel";
 import { useCartStore } from "@/models/cartStore";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 type CarouselProduct = {
   id: number;
@@ -167,6 +168,7 @@ export default function HomeClient({
 
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
   const incrementItems = useCartStore((state) => state.incrementItems);
+  const cms = useDesignSettings();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideTextRef = useRef<HTMLDivElement>(null);
@@ -515,7 +517,7 @@ export default function HomeClient({
               className="absolute bottom-6 left-6 font-sans font-bold uppercase tracking-[0.25em]"
               style={{ fontSize: "9px", color: "#1A1212", opacity: 0.7 }}
             >
-              NAAMI // COLLECTION
+              {cms.manifesto_card_label}
             </div>
             {/* Crimson corner rivet accent */}
             <div

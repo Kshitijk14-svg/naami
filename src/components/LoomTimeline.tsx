@@ -97,13 +97,13 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
   }, [currentSlide]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full px-0 md:px-12" style={sectionBackgroundStyle(backgroundImage, backgroundImageFit)}>
       <div
         ref={containerRef}
         // h-screen is the 100vh fallback: if a browser does not support svh the
         // inline height below is dropped and the section would lose its height.
-        className="relative w-full h-screen [height:80svh] md:[height:100svh] overflow-hidden"
-        style={{ backgroundColor: "#F4F0E6", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
+        className="relative w-full h-screen [height:80svh] md:[height:100svh] overflow-hidden border border-black/5"
+        style={{ backgroundColor: "#F4F0E6" }}
       >
         {/* PANEL 1: Weave & The Count */}
         <section

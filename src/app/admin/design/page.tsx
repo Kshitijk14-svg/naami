@@ -14,6 +14,25 @@ import { FooterDoodleSection } from "@/components/admin/design/FooterDoodleSecti
 import { AnnouncementBarSection } from "@/components/admin/design/AnnouncementBarSection";
 import { SharedMomentsSection } from "@/components/admin/design/SharedMomentsSection";
 import { SectionBackgroundsSection, SECTION_BACKGROUND_KEYS } from "@/components/admin/design/SectionBackgroundsSection";
+import { AboutPageSection } from "@/components/admin/design/AboutPageSection";
+import { JournalCollectionSection } from "@/components/admin/design/JournalCollectionSection";
+import { CheckoutFlowSection } from "@/components/admin/design/CheckoutFlowSection";
+import { FooterContentSection } from "@/components/admin/design/FooterContentSection";
+import { PAGE_CONTENT_KEYS } from "@/lib/pageContentDefaults";
+
+const ABOUT_KEYS = PAGE_CONTENT_KEYS.filter((k) => k.startsWith("about_"));
+const JOURNAL_COLLECTION_KEYS = PAGE_CONTENT_KEYS.filter(
+  (k) =>
+    k.startsWith("journal_") ||
+    k.startsWith("collection_") ||
+    k.startsWith("product_") ||
+    k === "carousel_quickview_eyebrow_suffix" ||
+    k === "manifesto_card_label",
+);
+const CHECKOUT_FLOW_KEYS = PAGE_CONTENT_KEYS.filter(
+  (k) => k.startsWith("cart_") || k.startsWith("checkout_") || k.startsWith("profile_") || k.startsWith("order_"),
+);
+const FOOTER_CONTENT_KEYS = ["footer_columns_json", "footer_copyright", "footer_tagline"];
 
 const TABS = [
   { id: "hero", label: "Hero Banner" },
@@ -27,6 +46,10 @@ const TABS = [
   { id: "doodle", label: "Footer Doodle" },
   { id: "announcements", label: "Announcements" },
   { id: "shared-moments", label: "Shared Moments" },
+  { id: "about", label: "About Page" },
+  { id: "journal", label: "Journal & Collection" },
+  { id: "checkout", label: "Checkout Flow" },
+  { id: "footer", label: "Footer" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -98,6 +121,20 @@ export default function AdminDesignPage() {
   const [videosSaving, setVideosSaving] = useState(false);
   const [videosSaved, setVideosSaved] = useState(false);
   const [videosError, setVideosError] = useState<string | null>(null);
+
+  // ── Non-homepage page content ──────────────────────────────────────────────
+  const [aboutSaving, setAboutSaving] = useState(false);
+  const [aboutSaved, setAboutSaved] = useState(false);
+  const [aboutError, setAboutError] = useState<string | null>(null);
+  const [journalSaving, setJournalSaving] = useState(false);
+  const [journalSaved, setJournalSaved] = useState(false);
+  const [journalError, setJournalError] = useState<string | null>(null);
+  const [checkoutSaving, setCheckoutSaving] = useState(false);
+  const [checkoutSaved, setCheckoutSaved] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [footerSaving, setFooterSaving] = useState(false);
+  const [footerSaved, setFooterSaved] = useState(false);
+  const [footerError, setFooterError] = useState<string | null>(null);
 
   const loadAll = () => {
     setLoading(true);
@@ -301,6 +338,32 @@ export default function AdminDesignPage() {
       setSectionHeadersSaving(false);
     }
   };
+
+  // Generic save for a plain key/value content tab.
+  const makeContentSave = (
+    keys: string[],
+    setSaving: (v: boolean) => void,
+    setSaved: (v: boolean) => void,
+    setError: (v: string | null) => void,
+  ) => async () => {
+    setSaving(true);
+    setError(null);
+    setSaved(false);
+    try {
+      await saveSettingsSubset(keys);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveAbout = makeContentSave(ABOUT_KEYS, setAboutSaving, setAboutSaved, setAboutError);
+  const saveJournalCollection = makeContentSave(JOURNAL_COLLECTION_KEYS, setJournalSaving, setJournalSaved, setJournalError);
+  const saveCheckoutFlow = makeContentSave(CHECKOUT_FLOW_KEYS, setCheckoutSaving, setCheckoutSaved, setCheckoutError);
+  const saveFooterContent = makeContentSave(FOOTER_CONTENT_KEYS, setFooterSaving, setFooterSaved, setFooterError);
 
   const saveBackgrounds = async () => {
     setBackgroundsSaving(true);
@@ -596,6 +659,46 @@ export default function AdminDesignPage() {
               announcementsSaving={announcementsSaving}
               announcementsSaved={announcementsSaved}
               onSave={saveAnnouncements}
+            />
+          )}
+          {activeTab === "about" && (
+            <AboutPageSection
+              settings={settings}
+              update={update}
+              aboutError={aboutError}
+              aboutSaving={aboutSaving}
+              aboutSaved={aboutSaved}
+              onSave={saveAbout}
+            />
+          )}
+          {activeTab === "journal" && (
+            <JournalCollectionSection
+              settings={settings}
+              update={update}
+              journalError={journalError}
+              journalSaving={journalSaving}
+              journalSaved={journalSaved}
+              onSave={saveJournalCollection}
+            />
+          )}
+          {activeTab === "checkout" && (
+            <CheckoutFlowSection
+              settings={settings}
+              update={update}
+              checkoutError={checkoutError}
+              checkoutSaving={checkoutSaving}
+              checkoutSaved={checkoutSaved}
+              onSave={saveCheckoutFlow}
+            />
+          )}
+          {activeTab === "footer" && (
+            <FooterContentSection
+              settings={settings}
+              update={update}
+              footerError={footerError}
+              footerSaving={footerSaving}
+              footerSaved={footerSaved}
+              onSave={saveFooterContent}
             />
           )}
           {activeTab === "shared-moments" && (

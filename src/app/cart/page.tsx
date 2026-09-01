@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCartStore } from "@/models/cartStore";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 function formatPrice(inr: number): string {
   return `₹${inr.toLocaleString("en-IN")}`;
@@ -19,6 +20,7 @@ function lineKey(productId: number, size: string): string {
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, cartItemsCount } = useCartStore();
+  const cms = useDesignSettings();
   const [couponCode, setCouponCode] = useState("");
   const [couponResult, setCouponResult] = useState<{
     discountInr: number;
@@ -117,23 +119,23 @@ export default function CartPage() {
         <div className="text-center max-w-md">
           <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-70 mx-auto mb-8" />
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            NAAMI // YOUR WARDROBE
+            {cms.cart_empty_kicker}
           </p>
           <h1 className={`${TITLE_CLASS} mb-4`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-            Your cart is empty
+            {cms.cart_empty_title}
           </h1>
           <p className="font-serif mb-6" style={{ fontSize: "1.05rem", color: "#5B1C1C" }}>
-            If found Wear again
+            {cms.cart_empty_tagline}
           </p>
           <p className="font-sans mb-10" style={{ fontSize: "13px", color: "rgba(17,17,17,0.5)", lineHeight: 1.7 }}>
-            Discover pieces crafted from heritage weaves and finest cottons.
+            {cms.cart_empty_body}
           </p>
           <Link
             href="/collection"
             className="inline-block font-sans font-bold uppercase tracking-[0.25em] py-4 px-10 hover:opacity-80 transition-opacity"
             style={{ fontSize: "10px", backgroundColor: "#5B1C1C", color: "#FFF9EF" }}
           >
-            Explore Collections
+            {cms.cart_empty_cta_label}
           </Link>
         </div>
         <EvanliteFooter />
@@ -149,13 +151,13 @@ export default function CartPage() {
       <div className="flex-1 w-full max-w-6xl mx-auto px-6 md:px-12 py-12">
         <div className="mb-10">
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            NAAMI // YOUR WARDROBE
+            {cms.cart_kicker}
           </p>
           <h1 className={`${TITLE_CLASS} mb-2`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-            Shopping Cart
+            {cms.cart_title}
           </h1>
           <p className="font-serif" style={{ fontSize: "1rem", color: "#5B1C1C" }}>
-            If found Wear again
+            {cms.cart_tagline}
           </p>
         </div>
 
@@ -245,7 +247,7 @@ export default function CartPage() {
           <div className="lg:w-80 flex-shrink-0">
             <div className="sticky top-24" style={{ backgroundColor: "#F8F1E5", padding: "28px" }}>
               <p className="font-sans font-bold uppercase tracking-[0.25em] mb-6" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-                Order Summary
+                {cms.cart_order_summary_label}
               </p>
 
               <div className="flex justify-between mb-3">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import FeedbackForm from "@/components/FeedbackForm";
 import { PRICE_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 function formatPrice(inr: number): string {
   return `₹${inr.toLocaleString("en-IN")}`;
@@ -58,6 +59,8 @@ interface OrderAddress {
 
 export default function OrderConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const cms = useDesignSettings();
+  const statusLabel = (status: string) => cms[`order_status_${status}`] || STATUS_LABELS[status] || status;
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,16 +113,16 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         <div className="mb-12 text-center">
           <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-70 mx-auto mb-6" />
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-3" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            NAAMI // ORDER CONFIRMED
+            {cms.order_confirmed_kicker}
           </p>
           <h1 className={`${TITLE_CLASS} mb-4`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-            Thank you{order.shippingName ? `, ${order.shippingName.split(" ")[0]}` : ""}
+            {cms.order_confirmed_thankyou}{order.shippingName ? `, ${order.shippingName.split(" ")[0]}` : ""}
           </h1>
           <p className="font-serif mb-4" style={{ fontSize: "1.1rem", color: "#5B1C1C" }}>
-            If found Wear again
+            {cms.order_confirmed_tagline}
           </p>
           <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.55)", lineHeight: 1.7 }}>
-            Your order has been received. A confirmation has been sent{order.shippingEmail ? ` to ${order.shippingEmail}` : ""}.
+            {cms.order_confirmed_body}{order.shippingEmail ? ` to ${order.shippingEmail}` : ""}.
           </p>
         </div>
 
@@ -128,7 +131,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#5B1C1C" }}>
-                Order Reference
+                {cms.order_ref_label}
               </p>
               <p className="font-serif font-light" style={{ fontSize: "1.5rem", color: "#111" }}>{order.id}</p>
               <p className="font-sans mt-2" style={{ fontSize: "11px", color: "rgba(17,17,17,0.45)" }}>
@@ -140,7 +143,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
                 Status
               </p>
               <p className="font-sans font-bold uppercase tracking-[0.15em]" style={{ fontSize: "11px", color: "#111" }}>
-                {STATUS_LABELS[order.status] ?? order.status}
+                {statusLabel(order.status)}
               </p>
             </div>
           </div>
@@ -150,7 +153,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         {order.history && order.history.length > 0 && (
           <div className="mb-8">
             <p className="font-sans font-bold uppercase tracking-[0.22em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-              Order Journey
+              {cms.order_journey_label}
             </p>
             <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: 18 }}>
               {[...order.history].reverse().map((h, i) => (
@@ -160,7 +163,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
                     style={{ width: 8, height: 8, backgroundColor: "#5B1C1C", left: -23, top: 4 }}
                   />
                   <p className="font-sans font-bold uppercase tracking-[0.12em]" style={{ fontSize: "10px", color: "#111" }}>
-                    {STATUS_LABELS[h.toStatus] ?? h.toStatus}
+                    {statusLabel(h.toStatus)}
                   </p>
                   <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)" }}>
                     {new Date(h.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })}
@@ -175,7 +178,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         {order.trackingNumber && (
           <div className="mb-8 px-8 py-6" style={{ backgroundColor: "#F8F1E5" }}>
             <p className="font-sans font-bold uppercase tracking-[0.2em] mb-2" style={{ fontSize: "8px", color: "#5B1C1C" }}>
-              Shipment Tracking
+              {cms.order_tracking_label}
             </p>
             <p className="font-serif font-light" style={{ fontSize: "1.1rem", color: "#111" }}>{order.trackingNumber}</p>
             {order.trackingCarrier && (
@@ -198,7 +201,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         {/* Items */}
         <div className="mb-8">
           <p className="font-sans font-bold uppercase tracking-[0.22em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            Items Ordered
+            {cms.order_items_label}
           </p>
           {items.map((item) => (
             <div key={item.id} className="flex justify-between py-4" style={{ borderBottom: "1px solid rgba(139,26,26,0.06)" }}>
@@ -228,7 +231,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         {address && (
           <div className="mb-10">
             <p className="font-sans font-bold uppercase tracking-[0.22em] mb-3" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-              Shipping To
+              {cms.order_shipping_to_label}
             </p>
             <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.7)", lineHeight: 1.7 }}>
               {order.shippingName}<br />

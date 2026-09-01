@@ -8,6 +8,7 @@ import { Role, ROLE_LABELS } from "@/models/roles";
 import { formatINR } from "@/lib/format";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 type Tab = "profile" | "orders" | "wishlist";
 
@@ -36,6 +37,7 @@ interface WishlistItem {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const cms = useDesignSettings();
   const [session, setSession] = useState<SessionData | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [orders, setOrders] = useState<Order[]>([]);
@@ -87,9 +89,9 @@ export default function ProfilePage() {
   }
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "profile", label: "Profile" },
-    { id: "orders", label: "Order History" },
-    { id: "wishlist", label: "Wishlist" },
+    { id: "profile", label: cms.profile_tab_profile },
+    { id: "orders", label: cms.profile_tab_orders },
+    { id: "wishlist", label: cms.profile_tab_wishlist },
   ];
 
   // Brand-palette status treatment (matches orders/[id]'s STATUS_LABELS
@@ -118,7 +120,7 @@ export default function ProfilePage() {
             className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
             style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
-            NAAMI // MY ACCOUNT
+            {cms.profile_kicker}
           </span>
           <h1 className={`${TITLE_CLASS} mb-2`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
             {session.name ?? session.email?.split("@")[0]}
@@ -195,7 +197,7 @@ export default function ProfilePage() {
               {!ordersLoading && orders.length === 0 && (
                 <div className="py-12 text-center">
                   <p className="font-serif font-light" style={{ fontSize: "1.25rem", color: "rgba(17,17,17,0.5)" }}>
-                    No orders yet.
+                    {cms.profile_empty_orders}
                   </p>
                   <Link
                     href="/"
@@ -253,7 +255,7 @@ export default function ProfilePage() {
               {!wishlistLoading && wishlist.length === 0 && (
                 <div className="py-12 text-center">
                   <p className="font-serif font-light" style={{ fontSize: "1.25rem", color: "rgba(17,17,17,0.5)" }}>
-                    Your wishlist is empty.
+                    {cms.profile_empty_wishlist}
                   </p>
                   <Link
                     href="/"

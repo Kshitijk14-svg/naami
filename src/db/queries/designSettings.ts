@@ -3,6 +3,7 @@ import { designSettings } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { getCached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { redisDel } from "@/lib/redis";
+import { PAGE_CONTENT_DEFAULTS } from "@/lib/pageContentDefaults";
 
 export type DesignSetting = typeof designSettings.$inferSelect;
 
@@ -112,6 +113,10 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   shared_moments_bg_fit: "cover",
   manifesto_bg_image: "",
   manifesto_bg_fit: "cover",
+
+  // Editable copy for every non-homepage surface (About, Journal, Collection,
+  // Product, Cart, Checkout, Profile, Order confirmation, Footer).
+  ...PAGE_CONTENT_DEFAULTS,
 };
 
 export async function getAllDesignSettings(): Promise<Record<string, string>> {

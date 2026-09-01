@@ -8,6 +8,7 @@ import { useCartStore } from "@/models/cartStore";
 import { trackEvent } from "@/components/MetaPixel";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { PRICE_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 declare global {
   interface Window {
@@ -52,6 +53,7 @@ export default function CheckoutPage() {
   const couponParam = searchParams.get("coupon") ?? "";
 
   const { items, cartItemsCount, clearCart } = useCartStore();
+  const cms = useDesignSettings();
   const [form, setForm] = useState<AddressForm>(EMPTY_FORM);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -220,10 +222,10 @@ export default function CheckoutPage() {
       <div className="flex-1 w-full max-w-6xl mx-auto px-6 md:px-12 py-12">
         <div className="mb-10">
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            NAAMI // CHECKOUT
+            {cms.checkout_kicker}
           </p>
           <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-            Complete Order
+            {cms.checkout_title}
           </h1>
         </div>
 
@@ -231,7 +233,7 @@ export default function CheckoutPage() {
           {/* Address Form */}
           <div className="flex-1">
             <p className="font-sans font-bold uppercase tracking-[0.22em] mb-6" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-              Shipping Details
+              {cms.checkout_shipping_label}
             </p>
 
             <div className="flex flex-col gap-4">
@@ -265,7 +267,7 @@ export default function CheckoutPage() {
             </button>
 
             <p className="font-sans mt-3 text-center" style={{ fontSize: "10px", color: "rgba(17,17,17,0.35)" }}>
-              Secured by Razorpay · 256-bit SSL encryption
+              {cms.checkout_secure_note}
             </p>
           </div>
 
@@ -273,7 +275,7 @@ export default function CheckoutPage() {
           <div className="lg:w-80 flex-shrink-0">
             <div style={{ backgroundColor: "#F8F1E5", padding: "28px" }}>
               <p className="font-sans font-bold uppercase tracking-[0.25em] mb-6" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-                Your Order
+                {cms.checkout_order_summary_label}
               </p>
               {items.map((item) => (
                 <div key={`${item.productId}-${item.size}`} className="flex justify-between mb-4">

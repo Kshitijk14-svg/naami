@@ -10,6 +10,7 @@ import EvanliteFooter from "@/components/EvanliteFooter";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,6 +34,7 @@ type CollectionTab = {
 export default function CollectionPageContent() {
   const searchParams = useSearchParams();
   const collectionParam = searchParams.get("collection");
+  const cms = useDesignSettings();
 
   const [collections, setCollections] = useState<CollectionTab[]>([]);
   const [activeCollectionId, setActiveCollectionId] = useState<number | null>(
@@ -135,7 +137,7 @@ export default function CollectionPageContent() {
         >
           {activeCollection && activeCollection.tag
             ? `NAAMI // ${activeCollection.tag}`
-            : "NAAMI // AW26"}
+            : cms.collection_fallback_eyebrow}
         </span>
         {/* Doubles as the collection name, so it keeps the uppercase treatment
             product/collection names use rather than the plain title casing. */}
@@ -144,9 +146,9 @@ export default function CollectionPageContent() {
             activeCollection.name
           ) : (
             <>
-              The
+              {cms.collection_fallback_title}
               <br />
-              <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>Collection</span>
+              <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{cms.collection_fallback_title_accent}</span>
             </>
           )}
         </h1>
@@ -154,7 +156,7 @@ export default function CollectionPageContent() {
 
       {/* Filters */}
       <section className="px-8 md:px-12 py-6 flex items-center gap-6 overflow-x-auto" style={{ borderBottom: "1px solid rgba(17,17,17,0.06)" }}>
-        {[{ id: null as number | null, name: "ALL" }, ...collections].map((tab) => {
+        {[{ id: null as number | null, name: cms.collection_filter_all_label }, ...collections].map((tab) => {
           const active = activeCollectionId === tab.id;
           return (
             <button
@@ -283,7 +285,7 @@ export default function CollectionPageContent() {
             <div className="w-full md:w-7/12 p-8 md:p-10 flex flex-col justify-between overflow-y-auto">
               <div>
                 <span className="font-sans font-bold uppercase tracking-[0.25em] block mb-2" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-                  {expandedProduct.number} // NAAMI ATELIER
+                  {`${expandedProduct.number} // ${cms.collection_quickview_eyebrow_suffix}`}
                 </span>
                 <h2
                   className={`${PRODUCT_NAME_CLASS} mb-2`}
@@ -331,7 +333,7 @@ export default function CollectionPageContent() {
                     className="font-sans font-bold uppercase tracking-[0.2em] mb-2 block"
                     style={{ fontSize: "9px", color: sizeError ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
                   >
-                    {sizeError ? "Please select a size" : "Select Size"}
+                    {sizeError ? "Please select a size" : cms.collection_select_size_label}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {expandedProduct.sizes!.map(({ size: sz, stock }) => {
@@ -387,7 +389,7 @@ export default function CollectionPageContent() {
                 className="mt-6 w-full py-4 font-sans font-bold uppercase tracking-[0.25em] hover:opacity-80 transition-opacity"
                 style={{ fontSize: "10px", backgroundColor: "#5B1C1C", color: "#FFF9EF" }}
               >
-                Add to Wardrobe
+                {cms.collection_add_to_wardrobe_label}
               </button>
             </div>
           </div>

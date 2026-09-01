@@ -11,6 +11,7 @@ import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import WishlistButton from "@/components/WishlistButton";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 type ProductImage = { url: string; thumbnailUrl: string | null };
 type ProductMetafield = { name: string; description: string };
@@ -41,6 +42,7 @@ function getDiscount(product: Product) {
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const productId = parseInt(resolvedParams.id, 10);
+  const cms = useDesignSettings();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -239,7 +241,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 className="font-sans font-bold uppercase tracking-[0.3em]"
                 style={{ fontSize: "10px", color: "#5B1C1C" }}
               >
-                {product.number} // NAAMI ATELIER
+                {`${product.number} // ${cms.product_eyebrow_suffix}`}
               </span>
               <Link
                 href="/"
@@ -392,7 +394,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 }}
                 data-cursor-text={product.available === false ? undefined : added ? "DONE" : "ADD"}
               >
-                {product.available === false ? "OUT OF STOCK" : added ? "ADDED TO WARDROBE ✓" : "ADD TO WARDROBE"}
+                {product.available === false ? "OUT OF STOCK" : added ? "ADDED TO WARDROBE ✓" : cms.product_add_to_wardrobe_label}
                 {product.available !== false && !added && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                     <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -411,7 +413,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 border: "1px solid rgba(139,26,26,0.2)",
               }}
             >
-              View Cart →
+              {cms.product_view_cart_label}
             </Link>
           </div>
         </div>

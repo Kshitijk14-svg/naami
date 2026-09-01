@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/adminAuth";
 import { getAllDesignSettings, bulkSetSettings } from "@/db/queries/designSettings";
 
@@ -31,5 +32,11 @@ export async function POST(request: NextRequest) {
   }
 
   await bulkSetSettings(updates);
+
+  // ISR-cached server routes (home, about, journal) don't see the Redis bust —
+  // drop their cached HTML so edits surface on the next request.
+  for (const path of ["/", "/about", "/journal"]) revalidatePath(path);
+  revalidatePath("/journal/[slug]", "page");
+
   return Response.json({ success: true });
 }

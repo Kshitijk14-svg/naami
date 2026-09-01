@@ -10,6 +10,7 @@ import NaamiGatewayButton from "./NaamiGatewayButton";
 import WishlistButton from "./WishlistButton";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { useDesignSettings } from "@/lib/useDesignSettings";
 
 export interface ProductMetafield {
   name: string;
@@ -740,6 +741,7 @@ function ProductDetailContent({
   addItem: (item: { productId: number; name: string; priceInr: number; image: string; size: string }) => void;
   isMobile?: boolean;
 }) {
+  const cms = useDesignSettings();
   return (
     <div
       className={`relative w-full flex flex-col ${
@@ -756,7 +758,7 @@ function ProductDetailContent({
             className="font-sans font-bold uppercase tracking-[0.3em]"
             style={{ fontSize: "9px", color: "#5B1C1C" }}
           >
-            {product.number} // NAAMI // AW26
+            {`${product.number} // ${cms.carousel_quickview_eyebrow_suffix}`}
           </span>
         </div>
 

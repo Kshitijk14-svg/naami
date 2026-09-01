@@ -5,11 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import DoodleSvg from "@/components/DoodleSvg";
 import type { DoodleStroke } from "@/lib/doodle";
-
-interface FooterColumn {
-  title: string;
-  links: { label: string; href: string }[];
-}
+import { useDesignSettings, useDesignList } from "@/lib/useDesignSettings";
+import { FOOTER_COLUMNS_DEFAULT, type FooterColumn } from "@/lib/pageContentDefaults";
 
 // Module-scope memo: the doodle is fetched once per full page load and reused
 // across SPA navigations. Any failure resolves to null (footer stays as-is).
@@ -55,34 +52,18 @@ export default function EvanliteFooter() {
   // Click-to-expand accordion at every breakpoint; multiple columns may be open.
   const [openCols, setOpenCols] = useState<string[]>([]);
   const doodle = useFooterDoodle();
+  const cms = useDesignSettings();
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
 
-  const footerData: FooterColumn[] = [
-    {
-      title: "Collections",
-      links: [
-        { label: "Full Collection", href: "/collection" },
-        { label: "Shirts", href: "/collection?filter=SHIRTS" },
-        { label: "Accessories", href: "/collection?filter=ACCESSORIES" },
-        { label: "Limited Editions", href: "/collection?filter=LIMITED" },
-      ],
-    },
-    {
-      title: "Philosophy",
-      links: [{ label: "Our Story", href: "/about" }],
-    },
-    {
-      title: "Customer Care",
-      links: [
-        { label: "My Orders", href: "/profile" },
-        ...(contactEmail ? [{ label: "Contact Support", href: `mailto:${contactEmail}` }] : []),
-      ],
-    },
-    {
-      title: "Naami Universe",
-      links: [{ label: "Naami Journal", href: "/journal" }],
-    },
-  ];
+  const columns = useDesignList<FooterColumn>("footer_columns_json", FOOTER_COLUMNS_DEFAULT);
+
+  // The Contact Support mail link is still injected from the env var into
+  // whichever column is titled "Customer Care" (admin manages the rest).
+  const footerData: FooterColumn[] = columns.map((col) =>
+    contactEmail && col.title.trim().toLowerCase() === "customer care"
+      ? { ...col, links: [...col.links, { label: "Contact Support", href: `mailto:${contactEmail}` }] }
+      : col
+  );
 
   const toggleAccordion = (title: string) => {
     setOpenCols((prev) =>
@@ -193,13 +174,13 @@ export default function EvanliteFooter() {
             className="font-sans font-bold uppercase tracking-[0.2em]"
             style={{ fontSize: "9px", color: "rgba(17,17,17,0.4)" }}
           >
-            © 2026 Naami — All rights reserved
+            {cms.footer_copyright}
           </div>
           <div
             className="font-sans font-bold uppercase tracking-[0.2em]"
             style={{ fontSize: "9px", color: "rgba(17,17,17,0.22)" }}
           >
-            Crafted with precision. Made to last lifetimes.
+            {cms.footer_tagline}
           </div>
         </div>
       </div>
