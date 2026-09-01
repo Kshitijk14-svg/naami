@@ -9,6 +9,7 @@ export type SharedMomentVideoRow = typeof homepageSharedMomentVideos.$inferSelec
 
 interface HotspotInput {
   productId: number | null;
+  linkUrl?: string | null;
   topPct: number;
   leftPct: number;
   sortOrder?: number;
@@ -18,6 +19,7 @@ interface ResolvedHotspot {
   id: number;
   topPct: number;
   leftPct: number;
+  linkUrl: string | null;
   product: { id: number; name: string; priceInr: number; image: string } | null;
 }
 
@@ -26,9 +28,15 @@ export function validateHotspots(hotspots: unknown): string | null {
   if (!Array.isArray(hotspots)) return "hotspots must be an array";
   for (const h of hotspots) {
     if (typeof h !== "object" || h === null) return "each hotspot must be an object";
-    const { productId, topPct, leftPct } = h as Record<string, unknown>;
+    const { productId, linkUrl, topPct, leftPct } = h as Record<string, unknown>;
     if (productId !== null && typeof productId !== "number") {
       return "hotspot productId must be a number or null";
+    }
+    if (linkUrl !== undefined && linkUrl !== null && typeof linkUrl !== "string") {
+      return "hotspot linkUrl must be a string or null";
+    }
+    if (typeof linkUrl === "string" && linkUrl.trim() !== "" && !/^(\/|https?:\/\/)/.test(linkUrl.trim())) {
+      return "hotspot linkUrl must be a relative path (starting with /) or an http(s) URL";
     }
     if (!Number.isInteger(topPct) || (topPct as number) < 0 || (topPct as number) > 100) {
       return "hotspot topPct must be an integer between 0 and 100";
@@ -44,6 +52,7 @@ function resolveRow(r: {
   id: number;
   topPct: number;
   leftPct: number;
+  linkUrl: string | null;
   productId: number | null;
   productName: string | null;
   productPriceInr: number | null;
@@ -53,6 +62,7 @@ function resolveRow(r: {
     id: r.id,
     topPct: r.topPct,
     leftPct: r.leftPct,
+    linkUrl: r.linkUrl,
     product:
       r.productId !== null
         ? { id: r.productId, name: r.productName!, priceInr: r.productPriceInr!, image: r.productImage! }
@@ -66,6 +76,7 @@ async function resolveHotspots(lookCardId: number | null): Promise<ResolvedHotsp
       id: homepageHotspots.id,
       topPct: homepageHotspots.topPct,
       leftPct: homepageHotspots.leftPct,
+      linkUrl: homepageHotspots.linkUrl,
       productId: products.id,
       productName: products.name,
       productPriceInr: products.priceInr,
@@ -93,6 +104,7 @@ async function resolveHotspotsBatch(lookCardIds: number[]): Promise<Record<numbe
       lookCardId: homepageHotspots.lookCardId,
       topPct: homepageHotspots.topPct,
       leftPct: homepageHotspots.leftPct,
+      linkUrl: homepageHotspots.linkUrl,
       productId: products.id,
       productName: products.name,
       productPriceInr: products.priceInr,
@@ -121,13 +133,17 @@ async function replaceHotspots(lookCardId: number | null, hotspots: HotspotInput
       );
     if (hotspots.length > 0) {
       await tx.insert(homepageHotspots).values(
-        hotspots.map((h, idx) => ({
-          lookCardId,
-          productId: h.productId,
-          topPct: h.topPct,
-          leftPct: h.leftPct,
-          sortOrder: h.sortOrder ?? idx,
-        }))
+        hotspots.map((h, idx) => {
+          const link = typeof h.linkUrl === "string" ? h.linkUrl.trim() : "";
+          return {
+            lookCardId,
+            productId: h.productId,
+            linkUrl: link === "" ? null : link,
+            topPct: h.topPct,
+            leftPct: h.leftPct,
+            sortOrder: h.sortOrder ?? idx,
+          };
+        })
       );
     }
   });

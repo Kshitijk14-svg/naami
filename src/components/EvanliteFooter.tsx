@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import DoodleSvg from "@/components/DoodleSvg";
 import type { DoodleStroke } from "@/lib/doodle";
 
@@ -208,20 +209,17 @@ export default function EvanliteFooter() {
         /* Doodle present: wordmark shrinks left, doodle takes the right column */
         <div className="w-full mt-4 md:mt-8 z-0 flex flex-col md:flex-row md:items-end md:justify-between gap-3 md:gap-8">
           <div
-            className="order-2 md:order-1 min-w-0 text-center md:text-left select-none pointer-events-none text-[8vw] md:text-[11vw]"
-            style={{
-              fontFamily: "var(--font-august), sans-serif",
-              fontWeight: "700",
-              letterSpacing: "0.25em",
-              lineHeight: "0.8",
-              color: "#5B1C1C",
-              opacity: 0.075,
-              transform: "translateY(15%)",
-              willChange: "transform",
-              whiteSpace: "nowrap",
-            }}
+            className="order-2 md:order-1 min-w-0 mx-auto md:mx-0 w-[38vw] md:w-[26vw] select-none pointer-events-none"
+            style={{ opacity: 0.075, transform: "translateY(15%)", willChange: "transform" }}
           >
-            naami
+            <Image
+              src="/images/naami-wordmark.png"
+              alt=""
+              width={415}
+              height={295}
+              className="w-full h-auto"
+              style={{ display: "block" }}
+            />
           </div>
           <div className="order-1 md:order-2 w-[42%] mx-auto md:mx-0 md:w-[30%] md:max-w-[420px] md:shrink-0 md:pb-[1%] pointer-events-none select-none">
             <DoodleSvg strokes={doodle} className="w-full h-auto" faded />
@@ -229,19 +227,17 @@ export default function EvanliteFooter() {
         </div>
       ) : (
         <div
-          className="w-full text-center select-none pointer-events-none mt-4 md:mt-8 z-0 text-[9vw] md:text-[16vw]"
-          style={{
-            fontFamily: "var(--font-august), sans-serif",
-            fontWeight: "700",
-            letterSpacing: "0.25em",
-            lineHeight: "0.8",
-            color: "#5B1C1C",
-            opacity: 0.075,
-            transform: "translateY(15%)",
-            willChange: "transform",
-          }}
+          className="select-none pointer-events-none mt-4 md:mt-8 z-0 mx-auto w-[62vw] md:w-[44vw]"
+          style={{ opacity: 0.075, transform: "translateY(15%)", willChange: "transform" }}
         >
-          naami
+          <Image
+            src="/images/naami-wordmark.png"
+            alt=""
+            width={415}
+            height={295}
+            className="w-full h-auto"
+            style={{ display: "block", marginInline: "auto" }}
+          />
         </div>
       )}
     </footer>

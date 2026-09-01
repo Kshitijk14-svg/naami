@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import Image from "next/image";
+import Link from "next/link";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
@@ -19,16 +20,30 @@ interface HotspotData {
   id: number;
   topPct: number;
   leftPct: number;
+  linkUrl: string | null;
   product: ResolvedProduct | null;
+}
+
+/** Turns a hotspot link URL ("/collection", "https://…/journal") into a short
+ *  human label for the popover CTA. Falls back to "Explore". */
+function linkLabel(url: string): string {
+  try {
+    const path = url.startsWith("http") ? new URL(url).pathname : url;
+    const seg = path.split("/").filter(Boolean)[0];
+    if (!seg) return "Explore";
+    return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+  } catch {
+    return "Explore";
+  }
 }
 
 // Shown only when no admin-configured lookbook banner data exists yet.
 const FALLBACK_IMAGE = "/images/campaign-new.png";
 const FALLBACK_LABEL = "NAAMI // INTERACTIVE LOOKBOOK";
 const FALLBACK_HOTSPOTS: HotspotData[] = [
-  { id: 1, topPct: 32, leftPct: 45, product: null },
-  { id: 2, topPct: 68, leftPct: 52, product: null },
-  { id: 3, topPct: 50, leftPct: 48, product: null },
+  { id: 1, topPct: 32, leftPct: 45, linkUrl: null, product: null },
+  { id: 2, topPct: 68, leftPct: 52, linkUrl: null, product: null },
+  { id: 3, topPct: 50, leftPct: 48, linkUrl: null, product: null },
 ];
 
 interface HotspotBannerProps {
@@ -159,6 +174,7 @@ function HotspotNode({
   };
 
   const product = data.product;
+  const link = data.linkUrl && data.linkUrl.trim() !== "" ? data.linkUrl.trim() : null;
 
   return (
     <div
@@ -168,7 +184,7 @@ function HotspotNode({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouch}
-      data-cursor-text="VIEW PIECE"
+      data-cursor-text={link ? "VIEW" : "VIEW PIECE"}
     >
       {/* Rivet dot with ping halo */}
       <div
@@ -229,7 +245,34 @@ function HotspotNode({
         >
           {number}
         </div>
-        {product ? (
+        {link ? (
+          <Link
+            href={link}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
+            style={{
+              fontSize: "10px",
+              color: "#1A1212",
+              borderBottom: "1px solid #1A1212",
+              paddingBottom: "2px",
+            }}
+            data-cursor-text="VIEW"
+          >
+            {linkLabel(link)}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        ) : product ? (
           <>
             <h4
               className="font-sans font-bold uppercase tracking-[0.1em] mb-2"

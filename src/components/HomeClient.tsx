@@ -59,7 +59,7 @@ type HeroSlide = {
 
 type ResolvedProduct = { id: number; name: string; priceInr: number; image: string };
 
-type HotspotData = { id: number; topPct: number; leftPct: number; product: ResolvedProduct | null };
+type HotspotData = { id: number; topPct: number; leftPct: number; linkUrl: string | null; product: ResolvedProduct | null };
 
 type LookCardData = {
   id: number;

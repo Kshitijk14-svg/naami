@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import gsap from "gsap";
 import { useCartStore } from "@/models/cartStore";
@@ -81,11 +82,18 @@ export default function Navbar() {
       {/* Brand wordmark */}
       <Link
         href="/"
-        className="font-wordmark lowercase font-bold hover:opacity-75 transition-opacity flex-shrink-0"
-        style={{ fontSize: "1.6rem", letterSpacing: "0.18em", color: "#5B1C1C" }}
+        aria-label="naami — home"
+        className="hover:opacity-75 transition-opacity flex-shrink-0 flex items-center"
         data-cursor-text={pathname.startsWith("/product/") ? "BACK" : "HOME"}
       >
-        naami
+        <Image
+          src="/images/naami-wordmark.png"
+          alt="naami"
+          width={415}
+          height={295}
+          priority
+          style={{ height: "1.9rem", width: "auto", display: "block" }}
+        />
       </Link>
 
       {/* Search bar — grows to fill middle space */}

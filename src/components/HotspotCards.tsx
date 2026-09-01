@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
@@ -19,7 +20,21 @@ interface CardHotspot {
   id: number;
   topPct: number;
   leftPct: number;
+  linkUrl: string | null;
   product: ResolvedProduct | null;
+}
+
+/** Turns a hotspot link URL ("/collection", "https://…/journal") into a short
+ *  human label for the popover CTA. Falls back to "Explore". */
+function linkLabel(url: string): string {
+  try {
+    const path = url.startsWith("http") ? new URL(url).pathname : url;
+    const seg = path.split("/").filter(Boolean)[0];
+    if (!seg) return "Explore";
+    return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+  } catch {
+    return "Explore";
+  }
 }
 
 interface LookCardData {
@@ -38,8 +53,8 @@ const FALLBACK_LOOK_CARDS: LookCardData[] = [
     subtitle: "Heavyweight utility layer combination",
     image: "/images/hero-2.png",
     hotspots: [
-      { id: 101, topPct: 32, leftPct: 52, product: null },
-      { id: 102, topPct: 72, leftPct: 48, product: null },
+      { id: 101, topPct: 32, leftPct: 52, linkUrl: null, product: null },
+      { id: 102, topPct: 72, leftPct: 48, linkUrl: null, product: null },
     ],
   },
   {
@@ -48,8 +63,8 @@ const FALLBACK_LOOK_CARDS: LookCardData[] = [
     subtitle: "Indigo-dyed sashiko weave & hardware focus",
     image: "/images/campaign.jpg",
     hotspots: [
-      { id: 201, topPct: 38, leftPct: 54, product: null },
-      { id: 202, topPct: 76, leftPct: 58, product: null },
+      { id: 201, topPct: 38, leftPct: 54, linkUrl: null, product: null },
+      { id: 202, topPct: 76, leftPct: 58, linkUrl: null, product: null },
     ],
   },
   {
@@ -58,8 +73,8 @@ const FALLBACK_LOOK_CARDS: LookCardData[] = [
     subtitle: "Classic denim overalls & loom-state canvas",
     image: "/images/campaign-new.png",
     hotspots: [
-      { id: 301, topPct: 50, leftPct: 46, product: null },
-      { id: 302, topPct: 78, leftPct: 52, product: null },
+      { id: 301, topPct: 50, leftPct: 46, linkUrl: null, product: null },
+      { id: 302, topPct: 78, leftPct: 52, linkUrl: null, product: null },
     ],
   },
 ];
@@ -285,11 +300,13 @@ function HotspotCardNode({
   };
 
   const product = spot.product;
+  const link = spot.linkUrl && spot.linkUrl.trim() !== "" ? spot.linkUrl.trim() : null;
 
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer z-30"
       style={{ top: `${spot.topPct}%`, left: `${spot.leftPct}%` }}
+      data-cursor-text={link ? "VIEW" : undefined}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -341,9 +358,35 @@ function HotspotCardNode({
           className="font-sans font-bold uppercase tracking-[0.15em] mb-1"
           style={{ fontSize: "8px", color: "#5B1C1C" }}
         >
-          {number} // PIECE
+          {number} {link ? "// EXPLORE" : "// PIECE"}
         </div>
-        {product ? (
+        {link ? (
+          <Link
+            href={link}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 font-sans font-bold uppercase tracking-widest hover:opacity-60 transition-opacity cursor-pointer"
+            style={{
+              fontSize: "9px",
+              color: "#1A1212",
+              borderBottom: "1px solid #1A1212",
+              paddingBottom: "1px",
+            }}
+          >
+            {linkLabel(link)}
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        ) : product ? (
           <>
             <h4
               className="font-sans font-bold uppercase tracking-[0.1em] mb-1"

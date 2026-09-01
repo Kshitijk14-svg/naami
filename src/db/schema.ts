@@ -275,6 +275,9 @@ export const homepageHotspots = pgTable(
     id: serial("id").primaryKey(),
     lookCardId: integer("look_card_id").references(() => homepageLookCards.id, { onDelete: "cascade" }),
     productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
+    // Optional destination URL (e.g. "/about", "/collection"). When set, the
+    // hotspot navigates here instead of opening the product quick-add popover.
+    linkUrl: text("link_url"),
     topPct: integer("top_pct").notNull(),
     leftPct: integer("left_pct").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),

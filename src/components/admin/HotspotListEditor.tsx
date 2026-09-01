@@ -5,6 +5,9 @@ import { ProductPicker } from "./ProductPicker";
 
 export interface HotspotRow {
   productId: number | null;
+  /** Optional destination URL. When set, the hotspot links here instead of
+   *  opening the product quick-add popover (link takes precedence over product). */
+  linkUrl: string | null;
   topPct: number;
   leftPct: number;
 }
@@ -80,7 +83,7 @@ export function HotspotListEditor({ hotspots, onChange, image, aspectRatio }: Ho
   };
 
   const addRow = () => {
-    onChange([...hotspots, { productId: null, topPct: 50, leftPct: 50 }]);
+    onChange([...hotspots, { productId: null, linkUrl: null, topPct: 50, leftPct: 50 }]);
     setSelectedIdx(hotspots.length);
   };
 
@@ -189,48 +192,57 @@ export function HotspotListEditor({ hotspots, onChange, image, aspectRatio }: Ho
           key={idx}
           onClick={() => setSelectedIdx(idx)}
           style={{
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            marginBottom: 8,
+            marginBottom: 12,
             paddingLeft: 8,
             borderLeft: image && idx === selectedIdx ? "2px solid #8B1A1A" : "2px solid transparent",
           }}
         >
-          {image && (
-            <span className="font-sans font-bold" style={{ fontSize: "10px", color: "#8B1A1A", width: 14, textAlign: "center" }}>
-              {idx + 1}
-            </span>
-          )}
-          <div style={{ flex: 1 }}>
-            <ProductPicker
-              value={h.productId}
-              onChange={(productId) => updateRow(idx, { productId })}
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+            {image && (
+              <span className="font-sans font-bold" style={{ fontSize: "10px", color: "#8B1A1A", width: 14, textAlign: "center" }}>
+                {idx + 1}
+              </span>
+            )}
+            <div style={{ flex: 1 }}>
+              <ProductPicker
+                value={h.productId}
+                onChange={(productId) => updateRow(idx, { productId })}
+              />
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              style={numberInputStyle}
+              value={h.topPct}
+              onChange={(e) => updateRow(idx, { topPct: clampPct(Number(e.target.value)) })}
+              title="Top %"
+              placeholder="Top %"
+            />
+            <input
+              type="number"
+              min={0}
+              max={100}
+              style={numberInputStyle}
+              value={h.leftPct}
+              onChange={(e) => updateRow(idx, { leftPct: clampPct(Number(e.target.value)) })}
+              title="Left %"
+              placeholder="Left %"
+            />
+            <button type="button" style={removeButtonStyle} onClick={(e) => { e.stopPropagation(); removeRow(idx); }}>
+              ✕
+            </button>
+          </div>
+          <div style={{ paddingLeft: image ? 22 : 0 }}>
+            <input
+              type="text"
+              style={{ ...numberInputStyle, width: "100%" }}
+              value={h.linkUrl ?? ""}
+              onChange={(e) => updateRow(idx, { linkUrl: e.target.value.trim() === "" ? null : e.target.value })}
+              title="When set, this hotspot links here instead of opening the product quick-add popover"
+              placeholder="Link URL (optional) — e.g. /about, /collection, /journal"
             />
           </div>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            style={numberInputStyle}
-            value={h.topPct}
-            onChange={(e) => updateRow(idx, { topPct: clampPct(Number(e.target.value)) })}
-            title="Top %"
-            placeholder="Top %"
-          />
-          <input
-            type="number"
-            min={0}
-            max={100}
-            style={numberInputStyle}
-            value={h.leftPct}
-            onChange={(e) => updateRow(idx, { leftPct: clampPct(Number(e.target.value)) })}
-            title="Left %"
-            placeholder="Left %"
-          />
-          <button type="button" style={removeButtonStyle} onClick={(e) => { e.stopPropagation(); removeRow(idx); }}>
-            ✕
-          </button>
         </div>
       ))}
       <button type="button" style={addButtonStyle} onClick={addRow}>

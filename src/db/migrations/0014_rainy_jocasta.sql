@@ -1,0 +1,1 @@
+ALTER TABLE "homepage_hotspots" ADD COLUMN "link_url" text;

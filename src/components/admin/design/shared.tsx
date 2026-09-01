@@ -4,6 +4,7 @@ export interface ResolvedHotspot {
   id: number;
   topPct: number;
   leftPct: number;
+  linkUrl: string | null;
   product: { id: number; name: string; priceInr: number; image: string } | null;
 }
 
@@ -29,6 +30,7 @@ export interface SharedMomentVideo {
 export function toHotspotRows(resolved: ResolvedHotspot[]): HotspotRow[] {
   return resolved.map((h) => ({
     productId: h.product?.id ?? null,
+    linkUrl: h.linkUrl ?? null,
     topPct: h.topPct,
     leftPct: h.leftPct,
   }));
