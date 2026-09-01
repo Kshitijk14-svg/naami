@@ -94,8 +94,8 @@ export default async function JournalPage() {
                 )}
 
                 <h2
-                  className={`${PRODUCT_NAME_CLASS} group-hover:text-[#5B1C1C] transition-colors mb-3`}
-                  style={{ fontSize: "1.15rem", color: "#111", letterSpacing: "0.03em", lineHeight: 1.25 }}
+                  className={`${PRODUCT_NAME_CLASS} mb-3`}
+                  style={{ fontSize: "1.15rem", color: "#5B1C1C", letterSpacing: "0.03em", lineHeight: 1.25 }}
                 >
                   {post.title}
                 </h2>

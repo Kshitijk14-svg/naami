@@ -233,10 +233,10 @@ function PortraitCollectionCard({ id, name, tag, description, image }: PortraitC
             <div className="h-px flex-1 bg-black/5" />
           </div>
           <h3
-            className={`${PRODUCT_NAME_CLASS} mb-3 transition-colors group-hover:text-[#5B1C1C]`}
+            className={`${PRODUCT_NAME_CLASS} mb-3`}
             style={{
               fontSize: "1.6rem",
-              color: "#1A1212",
+              color: "#5B1C1C",
               letterSpacing: "0.03em",
             }}
           >
@@ -353,10 +353,10 @@ function LandscapeCollectionCard({ id, name, tag, description, image }: Landscap
             {tag}
           </span>
           <h3
-            className={`${PRODUCT_NAME_CLASS} mb-4 transition-colors group-hover:text-[#5B1C1C]`}
+            className={`${PRODUCT_NAME_CLASS} mb-4`}
             style={{
               fontSize: "1.85rem",
-              color: "#1A1212",
+              color: "#5B1C1C",
               letterSpacing: "0.03em",
               lineHeight: 1.1,
             }}

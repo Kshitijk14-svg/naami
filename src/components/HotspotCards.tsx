@@ -179,7 +179,7 @@ export default function HotspotCards({ lookCards, kicker, title, backgroundImage
               <div className="mb-4">
                 <h3
                   className={PRODUCT_NAME_CLASS}
-                  style={{ fontSize: "1.25rem", color: "#1A1212" }}
+                  style={{ fontSize: "1.25rem", color: "#5B1C1C" }}
                 >
                   {look.title}
                 </h3>

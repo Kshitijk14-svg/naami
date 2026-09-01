@@ -160,7 +160,7 @@ export default function AboutPage() {
               </div>
               <h3
                 className={`${PRODUCT_NAME_CLASS} mb-4`}
-                style={{ fontSize: "1.4rem", color: "#1A1212", letterSpacing: "0.03em" }}
+                style={{ fontSize: "1.4rem", color: "#5B1C1C", letterSpacing: "0.03em" }}
               >
                 {p.title}
               </h3>

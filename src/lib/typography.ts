@@ -25,7 +25,7 @@ export const TITLE_ACCENT_STYLE = {
 } as const;
 
 /** Title metrics. Pass `color` only for headings on dark or photographic backgrounds. */
-export function titleStyle(fontSize: string, color = "#1A1212") {
+export function titleStyle(fontSize: string, color = "#5B1C1C") {
   return { fontSize, color, lineHeight: 1.05, letterSpacing: "0.02em" } as const;
 }
 

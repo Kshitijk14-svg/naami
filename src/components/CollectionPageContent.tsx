@@ -214,8 +214,8 @@ export default function CollectionPageContent() {
             {/* Details */}
             <div className="pt-4">
               <h3
-                className={`${PRODUCT_NAME_CLASS} mb-0.5 group-hover:text-[#5B1C1C] transition-colors`}
-                style={{ fontSize: "0.95rem", letterSpacing: "0.03em", lineHeight: 1.2 }}
+                className={`${PRODUCT_NAME_CLASS} mb-0.5`}
+                style={{ fontSize: "0.95rem", color: "#5B1C1C", letterSpacing: "0.03em", lineHeight: 1.2 }}
               >
                 {product.name}
               </h3>
@@ -287,7 +287,7 @@ export default function CollectionPageContent() {
                 </span>
                 <h2
                   className={`${PRODUCT_NAME_CLASS} mb-2`}
-                  style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", letterSpacing: "0.02em", lineHeight: 1.1 }}
+                  style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", color: "#5B1C1C", letterSpacing: "0.02em", lineHeight: 1.1 }}
                 >
                   {expandedProduct.name}
                 </h2>
