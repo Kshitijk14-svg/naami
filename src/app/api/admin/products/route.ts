@@ -109,6 +109,8 @@ export async function POST(request: NextRequest) {
     subtitle: body.subtitle ?? "",
     image: body.image ?? "/images/product-jacket.png",
     thumbnailImage: body.thumbnailImage ?? null,
+    videoUrl: body.videoUrl ?? null,
+    videoThumbnailImage: body.videoThumbnailImage ?? null,
     categoryId: body.categoryId ?? null,
     lowStockThreshold: body.lowStockThreshold ?? 5,
   });

@@ -6,6 +6,7 @@ import { field, checkboxRow, inputStyle, labelCls, labelStyle } from "./formFiel
 import { SizeStockField, type SizeStockDraft } from "./SizeStockField";
 import { MetafieldsField, type MetafieldDraft } from "./MetafieldsField";
 import { ProductImagesField, type ProductImageDraft } from "./ProductImagesField";
+import { VideoUploadField } from "./VideoUploadField";
 
 interface Category {
   id: number;
@@ -30,6 +31,8 @@ interface ProductDetail {
   sizes: SizeStockDraft[];
   metafields: MetafieldDraft[];
   images: ProductImageDraft[];
+  videoUrl: string | null;
+  videoThumbnailImage: string | null;
 }
 
 interface FormState {
@@ -49,6 +52,8 @@ interface FormState {
   sizes: SizeStockDraft[];
   metafields: MetafieldDraft[];
   images: ProductImageDraft[];
+  videoUrl: string;
+  videoThumbnailImage: string;
 }
 
 const emptyForm: FormState = {
@@ -73,6 +78,8 @@ const emptyForm: FormState = {
   ],
   metafields: [],
   images: [],
+  videoUrl: "",
+  videoThumbnailImage: "",
 };
 
 export function ProductForm({ productId }: { productId?: number }) {
@@ -113,6 +120,8 @@ export function ProductForm({ productId }: { productId?: number }) {
           sizes: p.sizes ?? [],
           metafields: p.metafields ?? [],
           images: p.images ?? [],
+          videoUrl: p.videoUrl ?? "",
+          videoThumbnailImage: p.videoThumbnailImage ?? "",
         });
         setLoading(false);
       })
@@ -157,6 +166,8 @@ export function ProductForm({ productId }: { productId?: number }) {
         thumbnailUrl: img.thumbnailUrl,
         sizeBytes: img.sizeBytes,
       })),
+      videoUrl: form.videoUrl || null,
+      videoThumbnailImage: form.videoThumbnailImage || null,
     };
 
     const url = productId ? `/api/admin/products/${productId}` : "/api/admin/products";
@@ -250,6 +261,16 @@ export function ProductForm({ productId }: { productId?: number }) {
         <SizeStockField sizes={form.sizes} onChange={(sizes) => setForm((f) => ({ ...f, sizes }))} />
         <MetafieldsField metafields={form.metafields} onChange={(metafields) => setForm((f) => ({ ...f, metafields }))} />
         <ProductImagesField images={form.images} onChange={(images) => setForm((f) => ({ ...f, images }))} />
+
+        <VideoUploadField
+          label="Product video (floating player)"
+          hint="Optional. Max 60MB, up to 60 seconds. Shown as a floating video on the product page and compressed automatically."
+          uploadType="products"
+          video={form.videoUrl}
+          onUploaded={(v, t) => setForm((f) => ({ ...f, videoUrl: v, videoThumbnailImage: t }))}
+          allowClear
+          onClear={() => setForm((f) => ({ ...f, videoUrl: "", videoThumbnailImage: "" }))}
+        />
 
         <div style={{ marginTop: 8, marginBottom: 4 }}>
           <p className={labelCls} style={{ ...labelStyle, marginBottom: 8 }}>Homepage featuring</p>

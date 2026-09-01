@@ -108,6 +108,10 @@ export const products = pgTable(
     subtitle: text("subtitle").notNull().default(""),
     image: text("image").notNull().default("/images/product-jacket.png"),
     thumbnailImage: text("thumbnail_image"),
+    // Optional promo clip shown as a floating player on the product page.
+    // video_thumbnail_image is the ffmpeg-extracted poster frame.
+    videoUrl: text("video_url"),
+    videoThumbnailImage: text("video_thumbnail_image"),
     priceInr: integer("price_inr").notNull(),
     compareAtPriceInr: integer("compare_at_price_inr"),
     stock: integer("stock").notNull().default(0),

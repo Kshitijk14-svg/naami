@@ -20,6 +20,7 @@ import {
 
 const MAX_IMAGES = 6;
 const PRODUCT_IMAGES_DIR = path.join(process.cwd(), "public", "images", "products");
+const PRODUCT_VIDEOS_DIR = path.join(process.cwd(), "public", "videos", "products");
 
 function validateSizes(input: unknown): input is ProductSize[] {
   if (!Array.isArray(input)) return false;
@@ -56,6 +57,20 @@ async function unlinkProductImage(url: string | null | undefined) {
   if (!url || !url.startsWith("/images/products/")) return;
   const resolved = path.join(process.cwd(), "public", path.normalize(url));
   if (!resolved.startsWith(PRODUCT_IMAGES_DIR)) return;
+  await fs.unlink(resolved).catch(() => {});
+}
+
+/** Best-effort delete of a replaced/cleared promo video + its poster frame. */
+async function unlinkProductVideoAsset(url: string | null | undefined) {
+  if (!url) return;
+  const dir = url.startsWith("/videos/products/")
+    ? PRODUCT_VIDEOS_DIR
+    : url.startsWith("/images/products/")
+      ? PRODUCT_IMAGES_DIR
+      : null;
+  if (!dir) return;
+  const resolved = path.join(process.cwd(), "public", path.normalize(url));
+  if (!resolved.startsWith(dir)) return;
   await fs.unlink(resolved).catch(() => {});
 }
 
@@ -129,13 +144,33 @@ export async function PUT(
   if (body.homeSortOrder !== undefined) updateData.homeSortOrder = body.homeSortOrder;
   if (body.categoryId !== undefined) updateData.categoryId = body.categoryId;
   if (body.lowStockThreshold !== undefined) updateData.lowStockThreshold = body.lowStockThreshold;
+  if (body.videoUrl !== undefined) updateData.videoUrl = body.videoUrl;
+  if (body.videoThumbnailImage !== undefined) updateData.videoThumbnailImage = body.videoThumbnailImage;
   // Accept both camelCase variants for price
   const priceInr = body.priceInr ?? body.priceINR;
   if (priceInr !== undefined) updateData.priceInr = priceInr;
   if (body.compareAtPriceInr !== undefined) updateData.compareAtPriceInr = body.compareAtPriceInr;
 
+  // Capture the promo-video files this edit is about to replace so their disk
+  // copies can be cleaned up once the row update succeeds.
+  const videoChanging =
+    (body.videoUrl !== undefined || body.videoThumbnailImage !== undefined);
+  const prev = videoChanging ? await getProductById(Number(id)) : null;
+
   const updated = await updateProduct(Number(id), updateData);
   if (!updated) return Response.json({ error: "Not found" }, { status: 404 });
+
+  if (prev) {
+    if (body.videoUrl !== undefined && body.videoUrl !== prev.videoUrl) {
+      await unlinkProductVideoAsset(prev.videoUrl);
+    }
+    if (
+      body.videoThumbnailImage !== undefined &&
+      body.videoThumbnailImage !== prev.videoThumbnailImage
+    ) {
+      await unlinkProductVideoAsset(prev.videoThumbnailImage);
+    }
+  }
 
   // sizes/metafields/images touch three independent tables and only depend
   // on the updateProduct() above having already completed -- issuing them

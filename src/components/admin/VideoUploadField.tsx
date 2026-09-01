@@ -20,9 +20,12 @@ interface VideoUploadFieldProps {
   hint?: string;
   allowClear?: boolean;
   onClear?: () => void;
+  /** Which feature is uploading — controls the storage subdir and whether the
+   *  clip is re-encoded server-side. Defaults to the Shared Moments behaviour. */
+  uploadType?: "moments" | "products";
 }
 
-export function VideoUploadField({ video, onUploaded, label = "Video", hint, allowClear, onClear }: VideoUploadFieldProps) {
+export function VideoUploadField({ video, onUploaded, label = "Video", hint, allowClear, onClear, uploadType }: VideoUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [sizeInfo, setSizeInfo] = useState("");
@@ -35,6 +38,7 @@ export function VideoUploadField({ video, onUploaded, label = "Video", hint, all
 
     const formData = new FormData();
     formData.append("file", file);
+    if (uploadType) formData.append("type", uploadType);
 
     try {
       const res = await fetch("/api/admin/upload-video", { method: "POST", body: formData });
@@ -92,7 +96,7 @@ export function VideoUploadField({ video, onUploaded, label = "Video", hint, all
             style={{ fontSize: "11px" }}
           />
           <p className="font-sans" style={{ fontSize: "9.5px", color: "rgba(17,17,17,0.4)", marginTop: 4 }}>
-            Max 60MB, up to 2 minutes. A thumbnail is generated automatically.
+            Max 60MB, up to 60 seconds. A thumbnail is generated automatically.
           </p>
           {uploading && (
             <p className="font-sans" style={{ fontSize: "10px", color: "rgba(17,17,17,0.55)", marginTop: 4 }}>

@@ -11,7 +11,7 @@ ffmpeg.setFfmpegPath(ffmpegPath.path);
 ffmpeg.setFfprobePath(ffprobePath.path);
 
 export const MAX_VIDEO_UPLOAD_BYTES = 60 * 1024 * 1024;
-export const MAX_VIDEO_DURATION_SECONDS = 120;
+export const MAX_VIDEO_DURATION_SECONDS = 60;
 
 export class InvalidVideoError extends Error {}
 
@@ -62,6 +62,47 @@ export async function validateVideoBuffer(buffer: Buffer): Promise<VideoMetadata
     }
 
     return { durationSeconds };
+  });
+}
+
+/**
+ * Re-encodes an upload to a web-friendly MP4: H.264 + AAC, downscaled to at
+ * most 1080px wide, with the moov atom moved to the front (`+faststart`) so a
+ * <video> can start playing from the first range request instead of waiting
+ * for the whole file. Always emits MP4 regardless of the input container, so
+ * the stored extension and Content-Type are deterministic.
+ */
+export async function compressVideo(buffer: Buffer): Promise<Buffer> {
+  return withTempFile(buffer, async (inPath) => {
+    const outPath = path.join(os.tmpdir(), `naami-compressed-${crypto.randomBytes(6).toString("hex")}.mp4`);
+
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inPath)
+        .videoCodec("libx264")
+        .audioCodec("aac")
+        .audioBitrate("128k")
+        .outputOptions([
+          "-preset veryfast",
+          "-crf 26",
+          "-pix_fmt yuv420p",
+          // Downscale only (never upscale); keep dimensions even for yuv420p.
+          "-vf", "scale='min(1080,iw)':-2",
+          "-movflags +faststart",
+          "-map_metadata -1",
+        ])
+        .format("mp4")
+        .on("end", () => resolve())
+        .on("error", (err) => reject(err))
+        .save(outPath);
+    }).catch(() => {
+      throw new InvalidVideoError("Could not process this video");
+    });
+
+    try {
+      return await fs.readFile(outPath);
+    } finally {
+      await fs.unlink(outPath).catch(() => {});
+    }
   });
 }
 

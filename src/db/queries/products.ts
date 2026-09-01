@@ -45,6 +45,8 @@ export function projectPublicProduct(
     compareAtPriceInr: p.compareAtPriceInr ?? null,
     image: p.image,
     thumbnailImage: p.thumbnailImage ?? p.image,
+    videoUrl: p.videoUrl ?? null,
+    videoThumbnailImage: p.videoThumbnailImage ?? null,
     categoryId: p.categoryId,
     sizes,
     available,

@@ -10,6 +10,7 @@ import { trackEvent } from "@/components/MetaPixel";
 import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import WishlistButton from "@/components/WishlistButton";
+import ProductPromoVideo from "@/components/ProductPromoVideo";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, titleStyle } from "@/lib/typography";
 import { useDesignSettings } from "@/lib/useDesignSettings";
 
@@ -26,6 +27,8 @@ type Product = {
   compareAtPriceInr?: number | null;
   image: string;
   images?: ProductImage[];
+  videoUrl?: string | null;
+  videoThumbnailImage?: string | null;
   metafields?: ProductMetafield[];
   sizes?: { size: string; stock: number }[];
   available?: boolean;
@@ -172,6 +175,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       style={{ backgroundColor: "#FFF9EF", color: "#1A1212" }}
     >
       {showSizeGuide && <SizeGuideModal onClose={() => setShowSizeGuide(false)} />}
+
+      {product.videoUrl && (
+        <ProductPromoVideo
+          videoUrl={product.videoUrl}
+          poster={product.videoThumbnailImage}
+          productId={product.id}
+        />
+      )}
 
       {/* ── Product Split Section ─────────────────────────────── */}
       <section className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-20 gap-12 md:gap-16 items-stretch">
