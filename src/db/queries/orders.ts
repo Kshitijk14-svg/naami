@@ -9,8 +9,13 @@ import {
   orderStatusHistory,
 } from "@/db/schema";
 import { eq, and, or, sql, desc, isNull, inArray, gte, lte, ilike } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
 import { enqueueJob } from "@/lib/jobs";
-import { computeDiscount, validateCouponWindow, checkRedemptionLimits } from "@/lib/coupons";
+import {
+  lockStockRows,
+  consumeReservations,
+  InsufficientStockError,
+} from "@/db/queries/reservations";
 import { canTransition, ORDER_TRANSITIONS } from "@/lib/orderStatus";
 import {
   encryptField,
@@ -50,12 +55,27 @@ const VALID_STATUSES: OrderStatus[] = [
   "cancelled",
 ];
 
+const ORDER_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no I/O/0/1
+const MAX_ORDER_ID_ATTEMPTS = 5;
+
+/**
+ * Random, non-sequential order id. The old scheme took the low six base-36
+ * digits of Date.now(), which collided for orders in the same millisecond and
+ * let anyone guess neighbouring ids.
+ */
 function makeOrderId(): string {
-  return `ORD-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+  const bytes = randomBytes(8);
+  let out = "";
+  for (let i = 0; i < 8; i++) {
+    out += ORDER_ID_ALPHABET[bytes[i] % ORDER_ID_ALPHABET.length];
+  }
+  return `ORD-${out}`;
 }
 
-/** Thrown when an item's requested quantity exceeds available stock under the lock. */
-export class InsufficientStockError extends Error {}
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Re-exported so existing callers keep importing it from here.
+export { InsufficientStockError };
 
 export interface CreateOrderInput {
   userId: number;
@@ -66,139 +86,55 @@ export interface CreateOrderInput {
     quantity: number;
     size?: string;
   }[];
-  /** Server-computed subtotal from DB prices — never client-sent. */
+  /** Subtotal from the intent snapshot — priced from DB rows, never client-sent. */
   subtotalInr: number;
-  couponCode?: string;
-  /** Client IP for per-IP coupon limits; null when unknown. */
-  ip?: string | null;
+  /**
+   * Discount settled when the coupon was held at create-order time. Taken as
+   * given: the customer was already charged subtotal minus this, so re-deriving
+   * it here could make the recorded total disagree with the money captured.
+   */
+  discountInr: number;
+  /** Coupon whose use was reserved for this intent, if any. */
+  couponId?: number | null;
+  /** The checkout intent being fulfilled — owns the stock and coupon holds. */
+  intentId?: number;
   shippingName?: string;
   shippingEmail?: string;
   shippingPhone?: string;
   shippingAddress?: string; // JSON string
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
+  /** What the gateway reported it actually captured, in whole rupees. */
+  paidAmountInr?: number;
+  paymentStatus?: "pending" | "paid" | "failed" | "refunded";
 }
 
 /**
- * Create an order atomically: validates coupon, increments usedCount,
- * locks product rows (deadlock prevention), inserts order + items, decrements stock.
- * Any violation rolls back everything.
+ * Create an order atomically from an already-paid checkout intent.
+ *
+ * By the time this runs the money has moved, so it must not make judgement
+ * calls that could reject a paid customer: pricing, the coupon and the stock
+ * hold were all settled at create-order time, before payment. What is left here
+ * is bookkeeping — write the order, consume the hold, decrement stock, link the
+ * coupon redemption. Any violation rolls the whole thing back.
  */
 export async function createOrder(input: CreateOrderInput) {
   return db.transaction(async (tx) => {
-    let couponId: number | null = null;
-    let discountInr = 0;
+    // Lock the stock rows first, in the same ascending-id order every other
+    // path uses, so concurrent checkouts queue instead of deadlocking.
+    const productIds = [...new Set(input.items.map((i) => i.productId))];
+    const { productRows, sizeRows } = await lockStockRows(tx, productIds);
 
-    if (input.couponCode) {
-      // FOR UPDATE prevents TOCTOU double-spend race on coupon usedCount
-      const [coupon] = await tx
-        .select()
-        .from(coupons)
-        .where(
-          and(
-            eq(coupons.code, input.couponCode.toUpperCase()),
-            isNull(coupons.deletedAt)
-          )
-        )
-        .for("update")
-        .limit(1);
-
-      if (!coupon) throw new Error("Invalid or inactive coupon");
-
-      // Authoritative validation under the lock: window/limits/min-order,
-      // then per-user + per-IP counts against coupon_redemptions.
-      const windowError = validateCouponWindow(coupon, input.subtotalInr);
-      if (windowError) throw new Error(windowError);
-
-      const limitError = await checkRedemptionLimits(tx, coupon, input.userId, input.ip ?? null);
-      if (limitError) throw new Error(limitError);
-
-      couponId = coupon.id;
-      discountInr = computeDiscount(coupon, input.subtotalInr);
-
-      await tx
-        .update(coupons)
-        .set({ usedCount: sql`${coupons.usedCount} + 1` })
-        .where(eq(coupons.id, coupon.id));
-    }
-
-    // Lock product rows (and their size rows, if any) in ascending ID order —
-    // consistent ordering prevents deadlocks with concurrent orders.
-    const sortedProductIds = [...new Set(input.items.map((i) => i.productId))].sort(
-      (a, b) => a - b
+    const trackStockMap = new Map(productRows.map((r) => [r.id, r.trackStock]));
+    const productsWithSizes = new Set(sizeRows.map((r) => r.productId));
+    const sizeStockRemaining = new Map(
+      sizeRows.map((r) => [`${r.productId}::${r.size}`, r.stock])
     );
-    const trackStockMap = new Map<number, boolean>();
-    const productStockRemaining = new Map<number, number>();
-    if (sortedProductIds.length > 0) {
-      const locked = await tx
-        .select({ id: products.id, stock: products.stock, trackStock: products.trackStock })
-        .from(products)
-        .where(inArray(products.id, sortedProductIds))
-        .for("update");
-      for (const row of locked) {
-        trackStockMap.set(row.id, row.trackStock);
-        productStockRemaining.set(row.id, row.stock);
-      }
-    }
 
-    const sizeRows =
-      sortedProductIds.length > 0
-        ? await tx
-            .select({ productId: productSizes.productId, size: productSizes.size, stock: productSizes.stock })
-            .from(productSizes)
-            .where(inArray(productSizes.productId, sortedProductIds))
-            .for("update")
-        : [];
-    const sizeStockRemaining = new Map<string, number>();
-    const productsWithSizes = new Set<number>();
-    for (const row of sizeRows) {
-      sizeStockRemaining.set(`${row.productId}::${row.size}`, row.stock);
-      productsWithSizes.add(row.productId);
-    }
+    const discountInr = input.discountInr;
+    const totalInr = Math.max(0, input.subtotalInr - discountInr);
 
-    // Insufficient-stock guard: defense in depth against a stale client-side
-    // cart check (priceCart already checks this pre-payment, but re-verify
-    // under the lock here). Runs against running per-item remainders so
-    // duplicate lines for the same product+size are validated cumulatively.
-    for (const item of input.items) {
-      if (trackStockMap.get(item.productId) === false) continue; // infinite stock
-      if (productsWithSizes.has(item.productId)) {
-        const key = `${item.productId}::${item.size ?? ""}`;
-        const remaining = sizeStockRemaining.get(key);
-        if (remaining === undefined) {
-          throw new InsufficientStockError(`"${item.name}" is no longer available in size ${item.size}.`);
-        }
-        if (remaining < item.quantity) {
-          throw new InsufficientStockError(`Not enough stock for "${item.name}" (${item.size}).`);
-        }
-        sizeStockRemaining.set(key, remaining - item.quantity);
-      } else {
-        const remaining = productStockRemaining.get(item.productId) ?? 0;
-        if (remaining < item.quantity) {
-          throw new InsufficientStockError(`Not enough stock for "${item.name}".`);
-        }
-        productStockRemaining.set(item.productId, remaining - item.quantity);
-      }
-    }
-
-    const orderId = makeOrderId();
-    const [order] = await tx
-      .insert(orders)
-      .values({
-        id: orderId,
-        userId: input.userId,
-        totalInr: Math.max(0, input.subtotalInr - discountInr),
-        discountInr,
-        couponId,
-        status: "pending",
-        shippingName: input.shippingName ?? null,
-        shippingEmail: input.shippingEmail ?? null,
-        shippingPhone: encryptPII(input.shippingPhone),
-        shippingAddress: encryptPII(input.shippingAddress),
-        razorpayOrderId: input.razorpayOrderId ?? null,
-        razorpayPaymentId: input.razorpayPaymentId ?? null,
-      })
-      .returning();
+    const orderId = await insertOrderRow(tx, input, { totalInr, discountInr });
 
     await tx.insert(orderItems).values(
       input.items.map((item) => ({
@@ -211,35 +147,64 @@ export async function createOrder(input: CreateOrderInput) {
       }))
     );
 
-    // Redemption audit row — powers per-user/per-IP limits. Same transaction,
-    // so a rollback also releases the redemption.
-    if (couponId !== null) {
-      await tx.insert(couponRedemptions).values({
-        couponId,
-        orderId,
-        userId: input.userId,
-        ip: input.ip ?? null,
-        discountInr,
-      });
+    // Link the coupon redemption reserved when the intent was created. The use
+    // was already counted then; this just attaches it to the real order.
+    if (input.intentId !== undefined) {
+      await tx
+        .update(couponRedemptions)
+        .set({ orderId })
+        .where(
+          and(
+            eq(couponRedemptions.intentId, input.intentId),
+            isNull(couponRedemptions.orderId)
+          )
+        );
+
+      // Convert the stock hold into a real decrement. Both happen in this
+      // transaction, so units are never counted twice or dropped in between.
+      await consumeReservations(tx, input.intentId);
     }
 
-    // Decrement stock for each product — skipped for infinite-stock products.
-    // Sized products also decrement their specific size row; products.stock
-    // is always kept in sync as the derived aggregate so every other
-    // stock-reading path (low-stock alerts, admin lists) needs no changes.
     for (const item of input.items) {
-      if (trackStockMap.get(item.productId) === false) continue;
+      if (trackStockMap.get(item.productId) === false) continue; // infinite stock
+
       if (productsWithSizes.has(item.productId)) {
-        await tx
+        const sizeKey = `${item.productId}::${item.size ?? ""}`;
+        // The `stock >= quantity` predicate is the backstop: if the lock above
+        // were ever missed, this matches zero rows instead of driving stock
+        // negative, and the rowCount assertion turns that into a rollback.
+        const updated = await tx
           .update(productSizes)
           .set({ stock: sql`${productSizes.stock} - ${item.quantity}` })
-          .where(and(eq(productSizes.productId, item.productId), eq(productSizes.size, item.size ?? "")));
+          .where(
+            and(
+              eq(productSizes.productId, item.productId),
+              eq(productSizes.size, item.size ?? ""),
+              gte(productSizes.stock, item.quantity)
+            )
+          )
+          .returning({ stock: productSizes.stock });
+
+        if (updated.length !== 1) {
+          throw new InsufficientStockError(
+            `Not enough stock for "${item.name}"${item.size ? ` (${item.size})` : ""}.`
+          );
+        }
+        sizeStockRemaining.set(sizeKey, updated[0].stock);
       }
-      await tx
+
+      const updatedProduct = await tx
         .update(products)
         .set({ stock: sql`${products.stock} - ${item.quantity}` })
-        .where(eq(products.id, item.productId));
+        .where(and(eq(products.id, item.productId), gte(products.stock, item.quantity)))
+        .returning({ stock: products.stock });
+
+      if (updatedProduct.length !== 1) {
+        throw new InsufficientStockError(`Not enough stock for "${item.name}".`);
+      }
     }
+
+    const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
 
     // Side effects go through the transactional outbox: enqueued in THIS
     // transaction so they're created iff the order commits, then delivered
@@ -252,7 +217,7 @@ export async function createOrder(input: CreateOrderInput) {
           order: {
             id: order.id,
             totalInr: order.totalInr,
-            // Use plaintext input for the email — the stored columns are encrypted.
+            // Use plaintext input for the email — stored columns are encrypted.
             shippingName: input.shippingName ?? null,
             shippingAddress: input.shippingAddress ?? null,
           },
@@ -267,59 +232,114 @@ export async function createOrder(input: CreateOrderInput) {
       );
     }
 
-    // Low-stock check on the affected products (post-decrement), also enqueued.
-    // Checks both the product's aggregate stock AND each individual size touched
-    // by this order — a size selling out completely can otherwise hide behind
-    // other sizes still having healthy stock, since the aggregate stays above
-    // threshold. Both kinds of breach batch into a single job for the order.
-    const affectedIds = [...new Set(input.items.map((i) => i.productId))];
-    const affectedProducts = await tx
-      .select({
-        id: products.id,
-        name: products.name,
-        number: products.number,
-        stock: products.stock,
-        lowStockThreshold: products.lowStockThreshold,
-        trackStock: products.trackStock,
-      })
-      .from(products)
-      .where(inArray(products.id, affectedIds));
-
-    const lowStock: { name: string; number: string; stock: number; lowStockThreshold: number }[] = [];
-    const productById = new Map(affectedProducts.map((p) => [p.id, p]));
-
-    for (const p of affectedProducts) {
-      if (p.trackStock && p.stock < p.lowStockThreshold) {
-        lowStock.push({ name: p.name, number: p.number, stock: p.stock, lowStockThreshold: p.lowStockThreshold });
-      }
-    }
-
-    const touchedSizeKeys = new Set(
-      input.items
-        .filter((i) => productsWithSizes.has(i.productId))
-        .map((i) => `${i.productId}::${i.size ?? ""}`)
-    );
-    for (const key of touchedSizeKeys) {
-      const [productIdStr, size] = key.split("::");
-      const p = productById.get(Number(productIdStr));
-      if (!p || !p.trackStock) continue;
-      const remaining = sizeStockRemaining.get(key);
-      if (remaining !== undefined && remaining < p.lowStockThreshold) {
-        lowStock.push({
-          name: `${p.name} — Size ${size}`,
-          number: p.number,
-          stock: remaining,
-          lowStockThreshold: p.lowStockThreshold,
-        });
-      }
-    }
-
-    if (lowStock.length > 0) {
-      await enqueueJob("email:low_stock", { items: lowStock }, tx);
-    }
+    await enqueueLowStockAlerts(tx, input, { productsWithSizes, sizeStockRemaining });
 
     return order;
   });
+}
+
+/**
+ * Insert the order row, retrying on an id collision.
+ *
+ * Order ids are random rather than time-derived: the previous scheme kept only
+ * the low digits of the millisecond clock, so two orders in the same
+ * millisecond collided outright — and a collision here means a primary-key
+ * violation on a transaction that already has a captured payment behind it.
+ */
+async function insertOrderRow(
+  tx: Tx,
+  input: CreateOrderInput,
+  amounts: { totalInr: number; discountInr: number }
+): Promise<string> {
+  const values = {
+    userId: input.userId,
+    totalInr: amounts.totalInr,
+    discountInr: amounts.discountInr,
+    couponId: input.couponId ?? null,
+    status: "pending" as const,
+    paymentStatus: input.paymentStatus ?? ("pending" as const),
+    paidAmountInr: input.paidAmountInr ?? null,
+    shippingName: input.shippingName ?? null,
+    shippingEmail: input.shippingEmail ?? null,
+    shippingPhone: encryptPII(input.shippingPhone),
+    shippingAddress: encryptPII(input.shippingAddress),
+    razorpayOrderId: input.razorpayOrderId ?? null,
+    razorpayPaymentId: input.razorpayPaymentId ?? null,
+  };
+
+  for (let attempt = 0; attempt < MAX_ORDER_ID_ATTEMPTS; attempt++) {
+    const [row] = await tx
+      .insert(orders)
+      .values({ id: makeOrderId(), ...values })
+      .onConflictDoNothing({ target: orders.id })
+      .returning({ id: orders.id });
+    if (row) return row.id;
+  }
+  throw new Error("Could not allocate a unique order id.");
+}
+
+/**
+ * Low-stock alerts for the products this order touched, batched into one job.
+ * Checks both the product aggregate and each individual size — a size selling
+ * out completely otherwise hides behind other sizes keeping the total healthy.
+ */
+async function enqueueLowStockAlerts(
+  tx: Tx,
+  input: CreateOrderInput,
+  ctx: { productsWithSizes: Set<number>; sizeStockRemaining: Map<string, number> }
+): Promise<void> {
+  const affectedIds = [...new Set(input.items.map((i) => i.productId))];
+  if (affectedIds.length === 0) return;
+
+  const affectedProducts = await tx
+    .select({
+      id: products.id,
+      name: products.name,
+      number: products.number,
+      stock: products.stock,
+      lowStockThreshold: products.lowStockThreshold,
+      trackStock: products.trackStock,
+    })
+    .from(products)
+    .where(inArray(products.id, affectedIds));
+
+  const lowStock: { name: string; number: string; stock: number; lowStockThreshold: number }[] = [];
+  const productById = new Map(affectedProducts.map((p) => [p.id, p]));
+
+  for (const p of affectedProducts) {
+    if (p.trackStock && p.stock < p.lowStockThreshold) {
+      lowStock.push({
+        name: p.name,
+        number: p.number,
+        stock: p.stock,
+        lowStockThreshold: p.lowStockThreshold,
+      });
+    }
+  }
+
+  const touchedSizeKeys = new Set(
+    input.items
+      .filter((i) => ctx.productsWithSizes.has(i.productId))
+      .map((i) => `${i.productId}::${i.size ?? ""}`)
+  );
+  for (const key of touchedSizeKeys) {
+    const [productIdStr, size] = key.split("::");
+    const p = productById.get(Number(productIdStr));
+    if (!p || !p.trackStock) continue;
+    const remaining = ctx.sizeStockRemaining.get(key);
+    if (remaining !== undefined && remaining < p.lowStockThreshold) {
+      lowStock.push({
+        name: `${p.name} — Size ${size}`,
+        number: p.number,
+        stock: remaining,
+        lowStockThreshold: p.lowStockThreshold,
+      });
+    }
+  }
+
+  if (lowStock.length > 0) {
+    await enqueueJob("email:low_stock", { items: lowStock }, tx);
+  }
 }
 
 export async function getAllOrders() {
@@ -346,8 +366,11 @@ export async function getOrdersByStatus(status: string) {
   return rows.map(decryptOrderRow);
 }
 
+// Reads the PRIMARY, not the replica: the order confirmation page calls this
+// immediately after checkout writes the row, and under replication lag the
+// replica would 404 an order the customer has just paid for.
 export async function getOrderById(id: string) {
-  const rows = await dbRead.select().from(orders).where(eq(orders.id, id)).limit(1);
+  const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
   return rows[0] ? decryptOrderRow(rows[0]) : null;
 }
 
@@ -375,6 +398,49 @@ export interface UpdateOrderStatusOptions {
   trackingNumber?: string;
   trackingCarrier?: string;
   trackingUrl?: string;
+}
+
+/**
+ * Put a cancelled order's units back. Locks the product rows in the same
+ * ascending-id order as every other stock path so this can never deadlock
+ * against a concurrent checkout.
+ */
+async function restoreOrderInventory(tx: Tx, orderId: string): Promise<void> {
+  const items = await tx
+    .select({
+      productId: orderItems.productId,
+      quantity: orderItems.quantity,
+      size: orderItems.size,
+    })
+    .from(orderItems)
+    .where(eq(orderItems.orderId, orderId));
+  if (items.length === 0) return;
+
+  const { productRows, sizeRows } = await lockStockRows(
+    tx,
+    items.map((i) => i.productId)
+  );
+  const trackStock = new Map(productRows.map((r) => [r.id, r.trackStock]));
+  const sizedProducts = new Set(sizeRows.map((r) => r.productId));
+
+  for (const item of items) {
+    if (trackStock.get(item.productId) === false) continue; // infinite stock
+    if (sizedProducts.has(item.productId)) {
+      await tx
+        .update(productSizes)
+        .set({ stock: sql`${productSizes.stock} + ${item.quantity}` })
+        .where(
+          and(
+            eq(productSizes.productId, item.productId),
+            eq(productSizes.size, item.size ?? "")
+          )
+        );
+    }
+    await tx
+      .update(products)
+      .set({ stock: sql`${products.stock} + ${item.quantity}` })
+      .where(eq(products.id, item.productId));
+  }
 }
 
 /**
@@ -423,6 +489,19 @@ export async function updateOrderStatus(
       changedBy,
       note: opts.note || null,
     });
+
+    // Cancelling returns the goods to the shelf and the coupon to its pool.
+    // Without this, cancelled orders burned inventory permanently.
+    if (toStatus === "cancelled") {
+      await restoreOrderInventory(tx, id);
+      if (order.couponId !== null) {
+        await tx
+          .update(coupons)
+          .set({ usedCount: sql`GREATEST(${coupons.usedCount} - 1, 0)` })
+          .where(eq(coupons.id, order.couponId));
+        await tx.delete(couponRedemptions).where(eq(couponRedemptions.orderId, id));
+      }
+    }
 
     if (order.shippingEmail) {
       await enqueueJob(

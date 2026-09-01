@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Role, ROLE_REDIRECT } from '@/models/roles';
-
-function getJwtSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET ?? '';
-  return new TextEncoder().encode(secret);
-}
+import { getJwtSecret } from '@/lib/jwt';
 
 async function getSessionPayload(request: NextRequest): Promise<{ email: string; role: Role } | null> {
   const token = request.cookies.get('naami_session')?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, getJwtSecret());
+    // getJwtSecret() throws when JWT_SECRET is unset. This file used to fall
+    // back to an empty string while lib/jwt.ts and lib/adminAuth.ts both threw;
+    // one shared implementation keeps a misconfigured deploy from behaving
+    // differently at the edge than it does in the API routes.
+    const { payload } = await jwtVerify(token, getJwtSecret(), { algorithms: ['HS256'] });
     return { email: payload.email as string, role: payload.role as Role };
   } catch {
     return null;
@@ -40,9 +40,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect /orders — any signed-in user (per-order ownership is enforced by the
-  // /api/orders route + query layer; this just blocks anonymous access).
-  if (pathname.startsWith('/orders')) {
+  // Protect /orders and /profile — any signed-in user. Per-order ownership is
+  // enforced by the /api/orders route + query layer; this just blocks anonymous
+  // access so the page shell never renders for a logged-out visitor.
+  if (pathname.startsWith('/orders') || pathname.startsWith('/profile')) {
     const session = await getSessionPayload(request);
     if (!session) {
       const loginUrl = new URL('/auth', request.url);
@@ -65,5 +66,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/orders/:path*', '/auth'],
+  matcher: ['/admin/:path*', '/orders/:path*', '/profile/:path*', '/auth'],
 };

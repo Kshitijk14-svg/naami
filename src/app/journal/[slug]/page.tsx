@@ -6,6 +6,23 @@ import { getPostBySlug, getPublishedPosts } from "@/db/queries/blog";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 
+/**
+ * Post bodies are authored as plain text - the only markup this view ever wanted
+ * was the newline-to-<br/> treatment below. Interpolating the raw body into
+ * dangerouslySetInnerHTML made every published post a stored-XSS vector for
+ * anyone with journal-authoring access. Escape first, then add the breaks, so
+ * the <br/> tags are the only HTML that can reach the DOM.
+ */
+function toParagraphHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/\r?\n/g, "<br/>");
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -101,7 +118,7 @@ export default async function JournalPostPage({ params }: Props) {
         <div
           className="prose-naami"
           style={{ fontSize: "15px", lineHeight: "1.85", color: "rgba(17,17,17,0.82)" }}
-          dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, "<br/>") }}
+          dangerouslySetInnerHTML={{ __html: toParagraphHtml(post.content) }}
         />
 
         {/* Footer rule */}

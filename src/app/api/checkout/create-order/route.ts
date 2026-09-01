@@ -2,20 +2,20 @@ import { NextRequest } from "next/server";
 import { verifyAdminRequest } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { abandonedCarts } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { getUserByEmail } from "@/db/queries/users";
+import { priceCart, CheckoutPricingError, type CartItemInput } from "@/lib/checkoutPricing";
 import {
-  priceCart,
-  resolveCoupon,
-  CheckoutPricingError,
-  type CartItemInput,
-} from "@/lib/checkoutPricing";
+  prepareIntent,
+  attachRazorpayOrder,
+  CouponHoldError,
+} from "@/db/queries/checkoutIntents";
+import { InsufficientStockError } from "@/db/queries/reservations";
+import { createRazorpayOrder, isRazorpayConfigured } from "@/lib/razorpay";
 import { clientIp } from "@/lib/requestIp";
+import { checkRateLimit } from "@/lib/redis";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("create-order");
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
 export async function POST(request: NextRequest) {
   // Any authenticated user can checkout
@@ -23,14 +23,34 @@ export async function POST(request: NextRequest) {
   if (auth instanceof Response) return auth;
 
   try {
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    if (!isRazorpayConfigured()) {
       return Response.json({ error: "Payment gateway not configured." }, { status: 503 });
     }
 
+    // Each call opens a real gateway order and holds real inventory, so it
+    // cannot be free to spam.
+    const rate = await checkRateLimit(`checkout:${auth.email}`, {
+      requests: 12,
+      window: "5 m",
+    });
+    if (rate?.limited) {
+      return Response.json(
+        { error: "Too many checkout attempts. Please wait a moment." },
+        { status: 429 }
+      );
+    }
+
+    const user = await getUserByEmail(auth.email);
+    if (!user) return Response.json({ error: "User not found." }, { status: 401 });
+
     const body = await request.json();
     const items: CartItemInput[] = Array.isArray(body.items) ? body.items : [];
-    const shippingEmail: string = (body.shippingEmail ?? "").trim();
     const couponCode: string = (body.couponCode ?? "").toUpperCase().trim();
+
+    // The receipt email is the session's, not the body's. It used to be
+    // client-supplied and written straight into abandoned_carts, which let one
+    // account queue "abandoned cart" mail to any address from our domain.
+    const shippingEmail = auth.email;
 
     // Price the cart from DB rows — client-sent prices are never trusted.
     let subtotalInr: number;
@@ -44,79 +64,87 @@ export async function POST(request: NextRequest) {
       throw err;
     }
 
-    // Apply the coupon server-side so the Razorpay charge reflects the discount.
-    let discountInr = 0;
-    if (couponCode) {
-      const user = await getUserByEmail(auth.email);
-      if (!user) {
-        return Response.json({ error: "User not found." }, { status: 401 });
+    // Hold stock and the coupon, and record what this checkout is allowed to
+    // buy — all before the customer can pay. Losing a race here costs nothing.
+    let prepared;
+    try {
+      prepared = await prepareIntent({
+        userId: user.id,
+        pricedItems,
+        subtotalInr,
+        couponCode: couponCode || undefined,
+        ip: clientIp(request),
+        shipping: {
+          name: body.shippingName || undefined,
+          email: shippingEmail,
+          phone: body.shippingPhone || undefined,
+          address: body.shippingAddress ? JSON.stringify(body.shippingAddress) : undefined,
+        },
+      });
+    } catch (err) {
+      if (err instanceof InsufficientStockError) {
+        return Response.json({ error: err.message }, { status: 409 });
       }
-      const result = await resolveCoupon(couponCode, subtotalInr, user.id, clientIp(request));
-      if ("error" in result) {
-        return Response.json({ error: result.error }, { status: 400 });
+      if (err instanceof CouponHoldError) {
+        return Response.json({ error: err.message }, { status: 400 });
       }
-      discountInr = result.discountInr;
+      throw err;
     }
 
-    const payableInr = Math.max(0, subtotalInr - discountInr);
-
-    // Save/update abandoned cart snapshot — deleted after successful payment
-    if (shippingEmail) {
-      const snapshot = JSON.stringify(
-        pricedItems.map((i) => ({
-          productName: i.name,
-          unitPriceInr: i.unitPriceInr,
-          quantity: i.quantity,
-          size: i.size,
-        }))
-      );
-      const existing = await db
-        .select({ id: abandonedCarts.id })
-        .from(abandonedCarts)
-        .where(eq(abandonedCarts.email, shippingEmail.toLowerCase()))
-        .limit(1);
-
-      if (existing.length > 0) {
-        await db
-          .update(abandonedCarts)
-          .set({ items: snapshot, updatedAt: new Date() })
-          .where(eq(abandonedCarts.id, existing[0].id));
-      } else {
-        await db.insert(abandonedCarts).values({
-          email: shippingEmail.toLowerCase(),
-          items: snapshot,
-        });
-      }
-    }
-
-    // Create Razorpay order
-    const rzpRes = await fetch("https://api.razorpay.com/v1/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64")}`,
-      },
-      body: JSON.stringify({
-        amount: payableInr * 100, // paise
-        currency: "INR",
-        receipt: `rcpt_${Date.now()}`,
-      }),
-    });
-
-    if (!rzpRes.ok) {
-      const rzpErr = await rzpRes.text();
-      log.error("Razorpay order creation failed", { status: rzpRes.status, rzpErr });
+    // Open the gateway order for exactly the amount the intent records.
+    let rzpOrder;
+    try {
+      rzpOrder = await createRazorpayOrder({
+        amountInr: prepared.payableInr,
+        receipt: `rcpt_${prepared.intentId}`,
+        notes: { intentId: String(prepared.intentId), userId: String(user.id) },
+      });
+    } catch (err) {
+      // The intent keeps its holds until the expiry sweep reclaims them, so a
+      // gateway blip cannot leave stock permanently stuck.
+      log.error("Razorpay order creation failed", { intentId: prepared.intentId, err });
       return Response.json({ error: "Failed to create payment order." }, { status: 502 });
     }
 
-    const rzpOrder = await rzpRes.json();
+    await attachRazorpayOrder(prepared.intentId, rzpOrder.id);
+
+    // Abandoned-cart snapshot, keyed to the signed-in user's own address.
+    await db
+      .insert(abandonedCarts)
+      .values({
+        email: shippingEmail.toLowerCase(),
+        items: JSON.stringify(
+          pricedItems.map((i) => ({
+            productName: i.name,
+            unitPriceInr: i.unitPriceInr,
+            quantity: i.quantity,
+            size: i.size,
+          }))
+        ),
+      })
+      .onConflictDoUpdate({
+        target: abandonedCarts.email,
+        set: {
+          items: JSON.stringify(
+            pricedItems.map((i) => ({
+              productName: i.name,
+              unitPriceInr: i.unitPriceInr,
+              quantity: i.quantity,
+              size: i.size,
+            }))
+          ),
+          updatedAt: new Date(),
+        },
+      });
+
     return Response.json({
       razorpayOrderId: rzpOrder.id,
       amount: rzpOrder.amount,
       currency: rzpOrder.currency,
-      subtotalInr,
-      discountInr,
-      payableInr,
+      subtotalInr: prepared.subtotalInr,
+      discountInr: prepared.discountInr,
+      payableInr: prepared.payableInr,
+      expiresAt: prepared.expiresAt.toISOString(),
     });
   } catch (err) {
     log.error("unexpected failure", { err });

@@ -29,6 +29,9 @@ export interface PricedItem {
   size?: string;
 }
 
+/** Per-line quantity ceiling, enforced before any stock or pricing lookup. */
+const MAX_QUANTITY_PER_LINE = 20;
+
 export async function priceCart(
   items: CartItemInput[]
 ): Promise<{ subtotalInr: number; pricedItems: PricedItem[] }> {
@@ -37,6 +40,14 @@ export async function priceCart(
   for (const item of items) {
     if (!item.productId || !Number.isInteger(item.quantity) || item.quantity < 1) {
       throw new CheckoutPricingError("Invalid cart item.");
+    }
+    // Upper bound. Without it a line quantity was limited only by stock, and for
+    // trackStock:false products by nothing at all - so a single request could
+    // open a multi-crore Razorpay order and reserve unbounded inventory.
+    if (item.quantity > MAX_QUANTITY_PER_LINE) {
+      throw new CheckoutPricingError(
+        `You can order at most ${MAX_QUANTITY_PER_LINE} of any one item. Please contact us for bulk orders.`
+      );
     }
   }
 

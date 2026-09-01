@@ -28,10 +28,12 @@ function applySessionTimeouts(pool: Pool) {
 
 // Primary (write) Pool — one per process. Self-hosted Postgres (Docker dev / OVH VPS
 // prod). SSL is opt-in: local Postgres has no TLS; set DATABASE_SSL=true only for
-// remote DBs that require it.
+// remote DBs that require it. When enabled the server certificate IS verified —
+// this used to pass rejectUnauthorized:false, which negotiated TLS and then
+// accepted any certificate, leaving the connection open to interception.
 const primaryPool = new Pool({
   connectionString: process.env.DATABASE_URL!,
-  ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DATABASE_SSL === "true",
   max: Number(process.env.DB_POOL_MAX ?? 10),
   connectionTimeoutMillis: 5_000,
   idleTimeoutMillis: 30_000,
@@ -44,7 +46,7 @@ const replicaUrl = process.env.DATABASE_REPLICA_URL;
 const replicaPool = replicaUrl
   ? new Pool({
       connectionString: replicaUrl,
-      ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
+      ssl: process.env.DATABASE_SSL === "true",
       max: Number(process.env.DB_POOL_MAX ?? 10),
       connectionTimeoutMillis: 5_000,
       idleTimeoutMillis: 30_000,

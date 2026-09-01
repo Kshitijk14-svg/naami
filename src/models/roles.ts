@@ -1,8 +1,15 @@
 export type Role = 'customer' | 'staff' | 'admin' | 'super_admin';
 
-export const ROLE_ASSIGNMENTS: Record<string, Role> = {
-  'kshitijmay14@gmail.com': 'super_admin',
-};
+/**
+ * Email -> role grants applied at account creation. Sourced from
+ * SUPER_ADMIN_EMAIL rather than a committed literal, so the privileged identity
+ * is not published in the repository and can differ per environment.
+ */
+export function roleForEmail(email: string): Role {
+  const superAdmin = process.env.SUPER_ADMIN_EMAIL?.toLowerCase().trim();
+  if (superAdmin && email.toLowerCase().trim() === superAdmin) return 'super_admin';
+  return 'customer';
+}
 
 export const ROLE_REDIRECT: Record<Role, string> = {
   customer: '/',

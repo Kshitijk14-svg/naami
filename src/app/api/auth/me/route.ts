@@ -13,15 +13,22 @@ export async function GET() {
       return Response.json({ authenticated: false }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(token, getJwtSecret());
+    const { payload } = await jwtVerify(token, getJwtSecret(), { algorithms: ["HS256"] });
     const email = payload.email as string;
     const user = await getUserByEmail(email);
 
+    // Soft-deleted accounts resolve to null — treat them as signed out.
+    if (!user) {
+      return Response.json({ authenticated: false }, { status: 401 });
+    }
+
+    // Role comes from the row, not the token: a demotion should be visible on
+    // the next request, not whenever the 7-day token happens to expire.
     return Response.json({
       authenticated: true,
       email,
-      name: user?.name,
-      role: payload.role as Role,
+      name: user.name,
+      role: user.role as Role,
     });
   } catch {
     return Response.json({ authenticated: false }, { status: 401 });

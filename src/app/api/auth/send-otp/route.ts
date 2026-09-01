@@ -93,7 +93,6 @@ export async function POST(request: Request) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user: gmailUser, pass: gmailPass },
-      tls: { rejectUnauthorized: false },
     });
     const from = `"NAAMI Atelier" <${gmailUser}>`;
 

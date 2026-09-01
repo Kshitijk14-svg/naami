@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { users } from "@/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
-import { ROLE_ASSIGNMENTS } from "@/models/roles";
+import { roleForEmail } from "@/models/roles";
 
 export type UserRow = typeof users.$inferSelect;
 
@@ -31,7 +31,7 @@ export async function getOrCreateUser(
 
   if (existing.length > 0) return existing[0];
 
-  const role = ROLE_ASSIGNMENTS[normalized] ?? "customer";
+  const role = roleForEmail(normalized);
   const [created] = await db
     .insert(users)
     .values({ email: normalized, name: name ?? null, role })
@@ -66,7 +66,7 @@ export async function upsertUserWithPassword(
     return updated;
   }
 
-  const role = ROLE_ASSIGNMENTS[normalized] ?? "customer";
+  const role = roleForEmail(normalized);
   const [created] = await db
     .insert(users)
     .values({ email: normalized, name: name ?? null, passwordHash, role })

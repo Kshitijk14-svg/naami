@@ -69,7 +69,7 @@ export default function CheckoutPage() {
     if (items.length === 0 || initiateCheckoutFired.current) return;
     initiateCheckoutFired.current = true;
     trackEvent("InitiateCheckout", {
-      value: subtotal / 100,
+      value: subtotal,
       currency: "INR",
       content_ids: items.map((i) => String(i.productId)),
       num_items: items.length,
@@ -139,6 +139,9 @@ export default function CheckoutPage() {
         theme: { color: "#5B1C1C" },
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
           // 3. Verify payment and create DB order
+          // Only the three gateway ids. What is being bought, and for how
+          // much, comes from the checkout intent the server stored before
+          // payment — never from this request.
           const verifyRes = await fetch("/api/checkout/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -146,25 +149,32 @@ export default function CheckoutPage() {
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              items,
-              shippingName: form.name,
-              shippingEmail: form.email,
-              shippingPhone: form.phone,
-              shippingAddress: { line1: form.line1, line2: form.line2 || undefined, city: form.city, state: form.state, pincode: form.pincode },
-              couponCode: couponParam || undefined,
             }),
           });
-          const verifyData = await verifyRes.json();
-          if (!verifyRes.ok) { setError(verifyData.error ?? "Payment verification failed."); setProcessing(false); return; }
+          try {
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) {
+              setError(verifyData.error ?? "Payment verification failed.");
+              setProcessing(false);
+              return;
+            }
 
-          trackEvent("Purchase", {
-            value: payable / 100,
-            currency: "INR",
-            content_ids: items.map((i) => String(i.productId)),
-          });
+            trackEvent("Purchase", {
+              value: payable,
+              currency: "INR",
+              content_ids: items.map((i) => String(i.productId)),
+            });
 
-          clearCart();
-          router.push(`/orders/${verifyData.orderId}`);
+            clearCart();
+            router.push(`/orders/${verifyData.orderId}`);
+          } catch {
+            // The payment itself succeeded — the webhook will still create the
+            // order. Say so rather than leaving the button spinning forever.
+            setError(
+              "Payment received, but we could not load your order page. It will appear in your profile shortly."
+            );
+            setProcessing(false);
+          }
         },
         modal: { ondismiss: () => setProcessing(false) },
       });

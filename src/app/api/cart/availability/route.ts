@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { dbRead } from "@/lib/db";
 import { products, productSizes } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
+import { checkRateLimit } from "@/lib/redis";
+import { rateLimitKey } from "@/lib/requestIp";
 
 interface CartLineInput {
   productId: number;
@@ -16,6 +18,9 @@ interface AvailabilityResult {
   available: boolean;
 }
 
+/** Nobody's cart is larger than this; the cap keeps the IN (...) list bounded. */
+const MAX_LINES = 100;
+
 function isValidLine(l: unknown): l is CartLineInput {
   return (
     !!l &&
@@ -24,15 +29,30 @@ function isValidLine(l: unknown): l is CartLineInput {
   );
 }
 
-// Public, unauthenticated — same trust level as the product detail endpoint.
+// Public, unauthenticated — same trust level as the product detail endpoint,
+// which is exactly why the isPublished filter below is not optional: without it
+// this route leaked stock levels for unreleased products to anyone willing to
+// enumerate ids, while /api/products/[id] 404s them.
+//
 // Used by the cart page to grey out lines that went out of stock after being
 // added; createOrder()'s server-side guard is the real backstop regardless.
 export async function POST(request: NextRequest) {
+  // Unauthenticated and it hits the DB, so it is throttled per client IP.
+  // rateLimitKey() never returns null — an absent IP must not disable the limit.
+  const rate = await checkRateLimit(`cart-availability:${rateLimitKey(request)}`, {
+    requests: 60,
+    window: "1 m",
+  });
+  if (rate?.limited) {
+    return Response.json({ error: "Too many requests." }, { status: 429 });
+  }
+
   const body = await request.json().catch(() => null);
-  const lines: CartLineInput[] = Array.isArray(body?.lines) ? body.lines.filter(isValidLine) : [];
-  if (lines.length === 0) {
+  const parsed: CartLineInput[] = Array.isArray(body?.lines) ? body.lines.filter(isValidLine) : [];
+  if (parsed.length === 0) {
     return Response.json({ results: [] });
   }
+  const lines = parsed.slice(0, MAX_LINES);
 
   const productIds = [...new Set(lines.map((l) => l.productId))];
 
@@ -40,7 +60,7 @@ export async function POST(request: NextRequest) {
     dbRead
       .select({ id: products.id, stock: products.stock, trackStock: products.trackStock })
       .from(products)
-      .where(inArray(products.id, productIds)),
+      .where(and(inArray(products.id, productIds), eq(products.isPublished, true))),
     dbRead
       .select({ productId: productSizes.productId, size: productSizes.size, stock: productSizes.stock })
       .from(productSizes)
@@ -53,6 +73,7 @@ export async function POST(request: NextRequest) {
 
   const results: AvailabilityResult[] = lines.map((line) => {
     const product = productMap.get(line.productId);
+    // Unknown *or* unpublished: indistinguishable to the caller, by design.
     if (!product) {
       return { productId: line.productId, size: line.size, stock: 0, available: false };
     }

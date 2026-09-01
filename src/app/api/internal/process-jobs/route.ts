@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { processJobs } from "@/lib/jobs";
 import { enqueueDueCartReminders } from "@/db/queries/abandonedCarts";
 import { purgeExpiredIdempotencyKeys } from "@/lib/idempotency";
+import { releaseExpiredReservations } from "@/db/queries/reservations";
 import { createLogger } from "@/lib/logger";
 
 // Drains the async job queue. Intended to be called on a schedule (PM2 cron,
@@ -38,10 +39,23 @@ export async function POST(request: NextRequest) {
     const cartRemindersEnqueued = await enqueueDueCartReminders(
       Number(process.env.ABANDONED_CART_REMINDER_HOURS ?? 6)
     );
+    // Lapsed checkouts give their stock and coupon holds back before anything
+    // else runs, so a shopper waiting on inventory sees it as soon as possible.
+    const expired = await releaseExpiredReservations();
     const result = await processJobs();
     const purged = await purgeExpiredIdempotencyKeys();
-    log.info("worker run complete", { ...result, cartRemindersEnqueued, purged });
-    return Response.json({ ...result, cartRemindersEnqueued, purgedIdempotencyKeys: purged });
+    log.info("worker run complete", {
+      ...result,
+      cartRemindersEnqueued,
+      purged,
+      ...expired,
+    });
+    return Response.json({
+      ...result,
+      cartRemindersEnqueued,
+      purgedIdempotencyKeys: purged,
+      ...expired,
+    });
   } catch (err) {
     log.error("worker run failed", { err });
     return Response.json({ error: "Worker run failed." }, { status: 500 });

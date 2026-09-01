@@ -7,7 +7,7 @@
  * Reuses the app's own account-creation path (hashPassword + upsertUserWithPassword)
  * rather than inserting a row by hand, so the resulting account is byte-for-byte
  * what the real signup flow would have produced — same hash format, and the
- * same ROLE_ASSIGNMENTS (src/models/roles.ts) lookup applied on create.
+ * same roleForEmail() (src/models/roles.ts) lookup applied on create.
  *
  * Usage:
  *   npx tsx src/db/createSuperAdmin.ts <email> <password> [name]
