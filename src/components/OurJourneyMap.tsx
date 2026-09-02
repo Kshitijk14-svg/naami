@@ -18,50 +18,62 @@ function PlaneGlyph({ className, style }: { className?: string; style?: React.CS
 
 /**
  * Winding dashed trail between two stops, styled after the hand-drawn
- * treasure-map reference. `flip` mirrors it horizontally so the route zig-zags,
- * and the arrowhead always points toward the next stop. `plane` drops a small
- * airplane riding the trail.
+ * treasure-map reference. It stretches the full width and stays short, so its
+ * ends sit right under / over the framed photos on either side. `fromRight` is
+ * true when the stop above sits on the right — the trail then curves back to
+ * the left, and the arrowhead + plane always face the next stop.
  */
-function TrailConnector({ flip, plane }: { flip: boolean; plane: boolean }) {
+function TrailConnector({ fromRight, plane }: { fromRight: boolean; plane: boolean }) {
+  const fromX = fromRight ? 82 : 18;
+  const toX = fromRight ? 18 : 82;
+  const goingRight = toX > fromX;
+
   return (
-    <div aria-hidden="true" className="relative w-full">
+    <div aria-hidden="true" className="relative w-full" style={{ height: "62px" }}>
       <svg
-        className="mx-auto block w-full max-w-[520px]"
-        style={{ height: "132px" }}
-        viewBox="0 0 200 120"
-        fill="none"
+        className="absolute inset-0 h-full w-full"
+        viewBox="0 0 100 60"
+        preserveAspectRatio="none"
       >
-        <g transform={flip ? "translate(200 0) scale(-1 1)" : undefined}>
-          <path
-            d="M 14 8 C 78 8 74 100 186 106"
-            stroke={INK}
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeDasharray="2 5"
-            vectorEffect="non-scaling-stroke"
-          />
-          {/* arrowhead at the end, pointing toward the next stop */}
-          <path
-            d="M 176 98 L 188 106 L 174 112"
-            stroke={INK}
-            strokeWidth={1}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-            vectorEffect="non-scaling-stroke"
-          />
-        </g>
+        <path
+          d={`M ${fromX} 1 C ${fromX} 33, ${toX} 24, ${toX} 59`}
+          stroke={INK}
+          strokeWidth={1}
+          strokeLinecap="round"
+          strokeDasharray="2 4"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
+
+      {/* Arrowhead at the trail's landing point (kept aspect-correct) */}
+      <svg
+        className="absolute"
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+        style={{ left: `${toX}%`, bottom: "-2px", transform: "translateX(-50%)" }}
+      >
+        <path
+          d={goingRight ? "M 3 2 L 8 7 L 2 9" : "M 9 2 L 4 7 L 10 9"}
+          stroke={INK}
+          strokeWidth={1}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
       {plane && (
         <PlaneGlyph
           className="absolute"
           style={{
             width: "15px",
             height: "15px",
-            left: "48%",
-            top: "44%",
+            left: "50%",
+            top: "38%",
             opacity: 0.8,
-            transform: `rotate(${flip ? -28 : 28}deg)`,
+            transform: `translateX(-50%) rotate(${goingRight ? 24 : -24}deg)`,
           }}
         />
       )}
@@ -75,24 +87,12 @@ function MobileConnector() {
     <svg
       aria-hidden="true"
       className="mx-auto block"
-      style={{ height: "64px", width: "24px" }}
-      viewBox="0 0 24 64"
+      style={{ height: "40px", width: "24px" }}
+      viewBox="0 0 24 40"
       fill="none"
     >
-      <path
-        d="M 12 2 L 12 54"
-        stroke={INK}
-        strokeWidth={1}
-        strokeLinecap="round"
-        strokeDasharray="2 5"
-      />
-      <path
-        d="M 6 48 L 12 58 L 18 48"
-        stroke={INK}
-        strokeWidth={1}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M 12 1 L 12 32" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeDasharray="2 4" />
+      <path d="M 7 27 L 12 35 L 17 27" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -132,17 +132,7 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
   }, [stops.length]);
 
   return (
-    <div
-      ref={rootRef}
-      className="relative mx-auto max-w-4xl px-4 py-10 md:px-10 md:py-14"
-      style={{
-        backgroundColor: "#FBF3E1",
-        borderRadius: "2px",
-        boxShadow: "inset 0 0 60px rgba(91,28,28,0.06)",
-        backgroundImage:
-          "radial-gradient(120% 55% at 50% 0%, rgba(91,28,28,0.06), transparent 60%), radial-gradient(120% 55% at 50% 100%, rgba(91,28,28,0.05), transparent 60%)",
-      }}
-    >
+    <div ref={rootRef} className="mx-auto max-w-3xl">
       {stops.map((stop, i) => {
         const isRight = i % 2 === 1;
         const last = i === stops.length - 1;
@@ -150,14 +140,14 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
         return (
           <div key={i}>
             <div
-              className={`journey-reveal flex flex-col items-center gap-5 md:gap-10 md:flex-row ${
+              className={`journey-reveal flex flex-col items-center gap-3 md:gap-8 md:flex-row ${
                 isRight ? "md:flex-row-reverse" : ""
               }`}
               style={{ opacity: 0 }}
             >
               {/* Framed photo — scrapbook tape / pin */}
               <div
-                className={`tape-frame tape-frame--${i % 2 === 0 ? "pin" : "tape"} shrink-0 w-[190px] md:w-[240px]`}
+                className={`tape-frame tape-frame--${i % 2 === 0 ? "pin" : "tape"} shrink-0 w-[180px] md:w-[220px]`}
                 style={{ "--tilt": `${isRight ? 2 : -2}deg` } as React.CSSProperties}
               >
                 <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3 / 4" }}>
@@ -166,7 +156,7 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
                     alt={stop.caption || `Journey stop ${i + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 190px, 240px"
+                    sizes="(max-width: 768px) 180px, 220px"
                   />
                 </div>
               </div>
@@ -193,7 +183,7 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
             {!last && (
               <>
                 <div className="hidden md:block">
-                  <TrailConnector flip={isRight} plane={i % 2 === 0} />
+                  <TrailConnector fromRight={isRight} plane={i % 2 === 0} />
                 </div>
                 <div className="md:hidden">
                   <MobileConnector />
@@ -205,31 +195,15 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
       })}
 
       {/* Route end marker */}
-      <div className="journey-reveal mt-8 flex items-center justify-center gap-3" style={{ opacity: 0 }}>
-        <svg aria-hidden="true" width="64" height="16" viewBox="0 0 64 16" fill="none">
-          <path d="M 2 8 L 52 8" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeDasharray="2 5" />
-          <path d="M 46 3 L 56 8 L 46 13" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" />
+      <div className="journey-reveal mt-4 flex items-center justify-center gap-3" style={{ opacity: 0 }}>
+        <svg aria-hidden="true" width="60" height="16" viewBox="0 0 60 16" fill="none">
+          <path d="M 2 8 L 48 8" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeDasharray="2 4" />
+          <path d="M 42 3 L 52 8 L 42 13" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className="font-serif" style={{ fontStyle: "italic", fontSize: "1.5rem", color: INK }}>
+        <span className="font-serif" style={{ fontStyle: "italic", fontSize: "1.4rem", color: INK }}>
           end
         </span>
       </div>
-
-      {/* Corner sparkle */}
-      <svg
-        aria-hidden="true"
-        className="absolute bottom-4 right-4"
-        width="22"
-        height="22"
-        viewBox="0 0 22 22"
-        fill="none"
-      >
-        <path
-          d="M11 1 C 11 7, 15 11, 21 11 C 15 11, 11 15, 11 21 C 11 15, 7 11, 1 11 C 7 11, 11 7, 11 1 Z"
-          fill={INK}
-          opacity={0.35}
-        />
-      </svg>
     </div>
   );
 }
