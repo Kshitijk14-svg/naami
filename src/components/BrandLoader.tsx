@@ -35,10 +35,11 @@ export default function BrandLoader() {
     )
     // 2. Brand text fades in
     .to(textRef.current, { opacity: 1, duration: 0.7 }, "-=0.2")
-    // 3. Letter-spacing expands simultaneously, with a synchronized marginLeft
-    //    (always half the letterSpacing) to offset the trailing letter-spacing
-    //    gap and keep the wordmark's glyphs optically centered under the logo
-    .to(textRef.current, { letterSpacing: "0.45em", marginLeft: "0.225em", duration: 1.4, ease: "power2.inOut" }, "<")
+    // 3. Letter-spacing expands simultaneously, with a synchronized negative
+    //    marginRight (always the exact negative of letterSpacing) that cancels
+    //    the trailing letter-spacing gap from the box's layout width, so the
+    //    glyph run stays exactly centered under the logo
+    .to(textRef.current, { letterSpacing: "0.45em", marginRight: "-0.45em", duration: 1.4, ease: "power2.inOut" }, "<")
     // 4. Hold the fully-assembled lockup on screen for a beat
     .to({}, { duration: 0.6 })
     // 5. Logo fades out
@@ -97,11 +98,12 @@ export default function BrandLoader() {
             color: NAAMI_CRIMSON,
             opacity: 0,
             margin: 0,
-            // Offsets the trailing letter-spacing gap (browsers include it in
-            // the box's layout width, which shifts centered text left) — kept
-            // at half of letterSpacing in lockstep by the GSAP tween below.
+            // Cancels the trailing letter-spacing gap (browsers include it in
+            // the box's layout width, which shifts centered text left) by
+            // pulling the right edge back in by the full letterSpacing — kept
+            // as its exact negative in lockstep by the GSAP tween below.
             // Must come after `margin: 0` so the shorthand doesn't reset it.
-            marginLeft: "0.05em",
+            marginRight: "-0.1em",
           }}
         >
           naami

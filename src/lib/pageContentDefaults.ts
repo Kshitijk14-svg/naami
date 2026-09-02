@@ -24,6 +24,11 @@ export interface AboutMilestone {
   detail: string;
 }
 
+export interface JourneyStop {
+  image: string;
+  caption: string;
+}
+
 export interface AboutTeamMember {
   name: string;
   title: string;
@@ -67,6 +72,9 @@ const ABOUT_TIMELINE: AboutMilestone[] = [
   { year: "2026", event: "AW26 Collection Launch", detail: "Fourteen styles across Oxford, Linen, Chambray, and Sashiko lines — available now." },
 ];
 
+// Ships empty — the admin populates the stops from /admin/our-journey.
+const OUR_JOURNEY: JourneyStop[] = [];
+
 const ABOUT_TEAM: AboutTeamMember[] = [
   { name: "Arjun Mehta", title: "Founder & Creative Director" },
   { name: "Clara Fonseca", title: "Head of Pattern & Cut" },
@@ -93,7 +101,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
   },
   {
     title: "Naami Universe",
-    links: [{ label: "Naami Journal", href: "/journal" }],
+    links: [{ label: "Our Journey", href: "/our-journey" }],
   },
 ];
 
@@ -125,11 +133,13 @@ export const PAGE_CONTENT_DEFAULTS: Record<string, string> = {
   about_closing_attribution: "— The Atelier Philosophy",
   about_closing_cta_label: "Shop the Collection",
 
-  // ─── Journal ──────────────────────────────────────────────────────────────
-  journal_kicker: "NAAMI // THE JOURNAL",
-  journal_title: "Stories from\nthe Atelier",
-  journal_empty_state: "New stories coming soon.",
-  journal_post_footer_label: "NAAMI // ATELIER",
+  // ─── Our Journey ──────────────────────────────────────────────────────────
+  our_journey_kicker: "NAAMI // OUR JOURNEY",
+  our_journey_title: "Our Journey",
+  our_journey_empty_state: "Our journey is being charted.",
+  // JSON array of JourneyStop ({ image, caption }) — same pattern as the *_json
+  // keys above. Edited from /admin/our-journey.
+  our_journey_json: JSON.stringify(OUR_JOURNEY),
 
   // ─── Collection ───────────────────────────────────────────────────────────
   collection_fallback_eyebrow: "NAAMI // AW26",
@@ -213,5 +223,6 @@ export function parseListSetting<T>(value: string | undefined, fallback: T[]): T
 
 export const ABOUT_PILLARS_DEFAULT = ABOUT_PILLARS;
 export const ABOUT_TIMELINE_DEFAULT = ABOUT_TIMELINE;
+export const OUR_JOURNEY_DEFAULT = OUR_JOURNEY;
 export const ABOUT_TEAM_DEFAULT = ABOUT_TEAM;
 export const FOOTER_COLUMNS_DEFAULT = FOOTER_COLUMNS;

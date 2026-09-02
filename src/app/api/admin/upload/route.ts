@@ -11,7 +11,7 @@ import {
   uniqueFilename,
 } from "@/lib/imageProcessing";
 
-const ALLOWED_TYPES = new Set(["product", "collection", "lookcard", "banner", "blog", "section"]);
+const ALLOWED_TYPES = new Set(["product", "collection", "lookcard", "banner", "blog", "section", "journey"]);
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);

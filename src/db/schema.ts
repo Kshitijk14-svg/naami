@@ -571,6 +571,9 @@ export const otpCodes = pgTable("otp_codes", {
 });
 
 // ─── 11. blog_posts ───────────────────────────────────────────────────────────
+// UNUSED as of the Journal → Our Journey conversion. Kept so existing rows are
+// not lost; a follow-up migration can drop the table. Our Journey stores its
+// data in the `our_journey_json` design setting, not here.
 
 export const blogPosts = pgTable(
   "blog_posts",

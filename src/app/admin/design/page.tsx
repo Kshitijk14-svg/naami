@@ -24,7 +24,6 @@ import { PAGE_CONTENT_KEYS } from "@/lib/pageContentDefaults";
 const ABOUT_KEYS = PAGE_CONTENT_KEYS.filter((k) => k.startsWith("about_"));
 const JOURNAL_COLLECTION_KEYS = PAGE_CONTENT_KEYS.filter(
   (k) =>
-    k.startsWith("journal_") ||
     k.startsWith("collection_") ||
     k.startsWith("product_") ||
     k === "carousel_quickview_eyebrow_suffix" ||
@@ -49,7 +48,7 @@ const TABS = [
   { id: "announcements", label: "Announcements" },
   { id: "shared-moments", label: "Shared Moments" },
   { id: "about", label: "About Page" },
-  { id: "journal", label: "Journal & Collection" },
+  { id: "journal", label: "Collection & Product" },
   { id: "checkout", label: "Checkout Flow" },
   { id: "footer", label: "Footer" },
 ] as const;

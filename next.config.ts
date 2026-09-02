@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // The Journal was replaced by Our Journey.
+    return [
+      { source: "/journal", destination: "/our-journey", permanent: true },
+      { source: "/journal/:slug", destination: "/our-journey", permanent: true },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [400, 640, 750, 828, 1080, 1280, 1920],

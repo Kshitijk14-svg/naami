@@ -24,7 +24,7 @@ interface CardHotspot {
   product: ResolvedProduct | null;
 }
 
-/** Turns a hotspot link URL ("/collection", "https://…/journal") into a short
+/** Turns a hotspot link URL ("/collection", "https://…/our-journey") into a short
  *  human label for the popover CTA. Falls back to "Explore". */
 function linkLabel(url: string): string {
   try {

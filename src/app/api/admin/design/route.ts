@@ -33,10 +33,9 @@ export async function POST(request: NextRequest) {
 
   await bulkSetSettings(updates);
 
-  // ISR-cached server routes (home, about, journal) don't see the Redis bust —
-  // drop their cached HTML so edits surface on the next request.
-  for (const path of ["/", "/about", "/journal"]) revalidatePath(path);
-  revalidatePath("/journal/[slug]", "page");
+  // ISR-cached server routes (home, about, our-journey) don't see the Redis
+  // bust — drop their cached HTML so edits surface on the next request.
+  for (const path of ["/", "/about", "/our-journey"]) revalidatePath(path);
 
   return Response.json({ success: true });
 }

@@ -240,7 +240,7 @@ export function HotspotListEditor({ hotspots, onChange, image, aspectRatio }: Ho
               value={h.linkUrl ?? ""}
               onChange={(e) => updateRow(idx, { linkUrl: e.target.value.trim() === "" ? null : e.target.value })}
               title="When set, this hotspot links here instead of opening the product quick-add popover"
-              placeholder="Link URL (optional) — e.g. /about, /collection, /journal"
+              placeholder="Link URL (optional) — e.g. /about, /collection, /our-journey"
             />
           </div>
         </div>

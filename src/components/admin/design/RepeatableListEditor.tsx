@@ -1,11 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { addCardButtonStyle, fieldLabelStyle, inputStyle, removeCardButtonStyle, textareaStyle } from "./shared";
+
+type ImageUploadType = React.ComponentProps<typeof ImageUploadField>["type"];
 
 export interface FieldDef {
   key: string;
   label: string;
+  /** Field control to render. `multiline` is a legacy alias for `"textarea"`. */
+  type?: "text" | "textarea" | "image";
   multiline?: boolean;
 }
 
@@ -17,6 +22,8 @@ interface Props {
   fields: FieldDef[];
   /** Singular noun for the add button / row headings, e.g. "Pillar". */
   itemLabel: string;
+  /** Upload bucket for `type: "image"` fields (see ImageUploadField). */
+  imageType?: ImageUploadType;
   min?: number;
   max?: number;
 }
@@ -33,7 +40,7 @@ function parseRows(value: string): Row[] {
   }
 }
 
-export function RepeatableListEditor({ value, onChange, fields, itemLabel, min = 0, max }: Props) {
+export function RepeatableListEditor({ value, onChange, fields, itemLabel, imageType = "section", min = 0, max }: Props) {
   const rows = useMemo(() => parseRows(value), [value]);
 
   const commit = (next: Row[]) => onChange(JSON.stringify(next));
@@ -83,26 +90,40 @@ export function RepeatableListEditor({ value, onChange, fields, itemLabel, min =
               )}
             </div>
           </div>
-          {fields.map((field) => (
-            <div key={field.key}>
-              <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>
-                {field.label}
-              </label>
-              {field.multiline ? (
-                <textarea
-                  value={row[field.key] ?? ""}
-                  onChange={(e) => updateField(idx, field.key, e.target.value)}
-                  style={textareaStyle}
+          {fields.map((field) => {
+            const fieldType = field.type ?? (field.multiline ? "textarea" : "text");
+            if (fieldType === "image") {
+              return (
+                <ImageUploadField
+                  key={field.key}
+                  type={imageType}
+                  label={field.label}
+                  image={row[field.key] ?? ""}
+                  onUploaded={(image) => updateField(idx, field.key, image)}
                 />
-              ) : (
-                <input
-                  value={row[field.key] ?? ""}
-                  onChange={(e) => updateField(idx, field.key, e.target.value)}
-                  style={inputStyle}
-                />
-              )}
-            </div>
-          ))}
+              );
+            }
+            return (
+              <div key={field.key}>
+                <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>
+                  {field.label}
+                </label>
+                {fieldType === "textarea" ? (
+                  <textarea
+                    value={row[field.key] ?? ""}
+                    onChange={(e) => updateField(idx, field.key, e.target.value)}
+                    style={textareaStyle}
+                  />
+                ) : (
+                  <input
+                    value={row[field.key] ?? ""}
+                    onChange={(e) => updateField(idx, field.key, e.target.value)}
+                    style={inputStyle}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       ))}
       {(max === undefined || rows.length < max) && (

@@ -17,15 +17,8 @@ export function JournalCollectionSection({ settings, update, journalError, journ
 
   return (
     <section>
-      <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>Journal &amp; Collection</h2>
+      <h2 className="font-serif font-light uppercase mb-6" style={{ fontSize: "1.2rem", color: "#111" }}>Collection &amp; Product</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-        <ContentGroup title="Journal">
-          {f("journal_kicker", "Kicker")}
-          {f("journal_title", "Title (new line = line break)", true)}
-          {f("journal_empty_state", "Empty State")}
-          {f("journal_post_footer_label", "Post Footer Label")}
-        </ContentGroup>
-
         <ContentGroup title="Collection">
           {f("collection_fallback_eyebrow", "Fallback Eyebrow (when no collection tag)")}
           {f("collection_fallback_title", "Fallback Title")}
@@ -44,7 +37,7 @@ export function JournalCollectionSection({ settings, update, journalError, journ
           {f("manifesto_card_label", "Homepage Manifesto Card Label")}
         </ContentGroup>
 
-        <SaveControl saving={journalSaving} saved={journalSaved} error={journalError} onSave={onSave} label="Save Journal & Collection" />
+        <SaveControl saving={journalSaving} saved={journalSaved} error={journalError} onSave={onSave} label="Save Collection & Product" />
       </div>
     </section>
   );

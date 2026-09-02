@@ -36,8 +36,6 @@ export const CACHE_KEYS = {
   COLLECTIONS_HOMEPAGE: "collections:homepage",
   COLLECTION_BY_ID: (id: number) => `collections:${id}`,
   SEARCH_RESULTS: (q: string) => `search:${q.toLowerCase().trim()}`,
-  BLOG_ALL: "blog:all",
-  BLOG_BY_SLUG: (slug: string) => `blog:${slug}`,
   DESIGN_SETTINGS: "design:settings",
   HOMEPAGE_LOOK_CARDS: "homepage:look-cards",
   HOMEPAGE_LOOK_CARDS_PUBLISHED: "homepage:look-cards:published",
@@ -53,7 +51,6 @@ export const CACHE_TTL = {
   CATEGORIES: 600,
   COLLECTIONS: 600,
   SEARCH: 60,
-  BLOG: 300,
   DESIGN: 3600,
   HOME: 300,
 } as const;

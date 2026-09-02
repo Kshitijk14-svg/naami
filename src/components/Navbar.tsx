@@ -126,12 +126,12 @@ export default function Navbar() {
           About
         </Link>
         <Link
-          href="/journal"
+          href="/our-journey"
           className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
           style={{ color: "#1A1212" }}
           data-cursor-text="READ"
         >
-          Journal
+          Our Journey
         </Link>
 
         {/* Auth: profile dropdown when signed in, sign-in link when not */}
