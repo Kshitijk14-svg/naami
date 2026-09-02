@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import { ROLE_REDIRECT, Role } from "@/models/roles";
-import { TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import SectionTitle from "@/components/SectionTitle";
 
 type AuthMode = "signin" | "signup" | "reset";
 type AuthStep = "form" | "otp" | "success";
@@ -271,18 +271,14 @@ export default function AuthForm() {
       </Link>
 
       <div ref={containerRef} className="w-full max-w-sm" style={{ opacity: 0 }}>
-        <p
-          className="font-sans font-bold uppercase tracking-[0.3em] mb-4"
-          style={{ fontSize: "9px", color: "#5B1C1C" }}
-        >
-          NAAMI // ATELIER ACCESS
-        </p>
-
-        <h1 className={`${TITLE_CLASS} mb-8`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-          {headline}
-          <br />
-          <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{headlineAccent}</span>
-        </h1>
+        <SectionTitle
+          as="h1"
+          kicker="NAAMI // ATELIER ACCESS"
+          title={headline}
+          accent={headlineAccent}
+          size="clamp(2.5rem, 5vw, 4rem)"
+          className="mb-8"
+        />
 
         {/* Sign in / Create account tabs (only on the entry form) */}
         {step === "form" && mode !== "reset" && (

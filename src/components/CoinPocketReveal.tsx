@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
-import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import { PRODUCT_NAME_CLASS } from "@/lib/typography";
+import SectionTitle from "@/components/SectionTitle";
 
 export interface CoinPocketContent {
   kicker: string;
@@ -126,19 +127,13 @@ export default function CoinPocketReveal({ content, backgroundImage, backgroundI
 
         {/* Left Editorial Copy Column */}
         <div className="lg:col-span-5 text-left z-10">
-          <span
-            className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-            style={{ fontSize: "9px", color: "#5B1C1C" }}
-          >
-            {content.kicker}
-          </span>
-          <h2 className={`${TITLE_CLASS} mb-6`} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
-            {content.title}
-            <br />
-            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>
-              {content.titleAccent}
-            </span>
-          </h2>
+          <SectionTitle
+            kicker={content.kicker}
+            title={content.title}
+            accent={content.titleAccent}
+            size="clamp(2rem, 4vw, 3rem)"
+            className="mb-6"
+          />
           <p className="font-sans text-[12.5px] text-[#1A1212]/70 leading-relaxed mb-8 max-w-md">
             {content.description}
           </p>

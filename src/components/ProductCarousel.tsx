@@ -79,6 +79,8 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
   const coverRef = useRef<HTMLDivElement>(null);
   // Mobile quick-view is a slide-up sheet, not the 3D book flip.
   const sheetRef = useRef<HTMLDivElement>(null);
+  // Off-screen copy of the detail page, measured to size the open booklet.
+  const measureRef = useRef<HTMLDivElement>(null);
 
   // Keep track of desktop mode responsively
   useEffect(() => {
@@ -88,10 +90,19 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Coordinate calculator for 3D Book Animation
-  const getLayoutCoords = useCallback((rect: DOMRect) => {
+  // Width of one open booklet page on desktop — shared by the layout math and
+  // the off-screen height measurement.
+  const getPageWidth = useCallback(
+    () => Math.min(window.innerWidth * 0.42, 460),
+    [],
+  );
+
+  // Coordinate calculator for 3D Book Animation. `contentHeight` (when given) is
+  // the natural height of the detail page; the open booklet grows to fit it
+  // instead of using a fixed cap, so long names / specs never push the CTAs off.
+  const getLayoutCoords = useCallback((rect: DOMRect, contentHeight?: number) => {
     const desktop = window.innerWidth >= 768;
-    
+
     // Closed position
     const closed = {
       left: desktop ? rect.left - rect.width : rect.left,
@@ -107,8 +118,12 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     let openTop = 0;
 
     if (desktop) {
-      const pageW = Math.min(window.innerWidth * 0.42, 460);
-      const pageH = Math.min(window.innerHeight * 0.8, 620);
+      const pageW = getPageWidth();
+      const MIN_H = 420;
+      const MAX_H = window.innerHeight * 0.92;
+      const pageH = contentHeight
+        ? Math.max(MIN_H, Math.min(contentHeight, MAX_H))
+        : Math.min(window.innerHeight * 0.8, 620);
       openWidth = pageW * 2;
       openHeight = pageH;
       openLeft = (window.innerWidth - openWidth) / 2;
@@ -128,7 +143,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     };
 
     return { closed, open, desktop };
-  }, []);
+  }, [getPageWidth]);
 
   // Expand product / Open booklet
   const openProduct = useCallback((product: CarouselProduct, rect: DOMRect) => {
@@ -218,8 +233,14 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
     }, 0);
 
     if (window.innerWidth >= 768) {
-      // Desktop: 3D book flip
-      const { closed, open } = getLayoutCoords(expanded.originRect);
+      // Desktop: 3D book flip. Measure the detail page at its final width first
+      // so the booklet can open exactly as tall as the content needs.
+      let contentHeight: number | undefined;
+      if (measureRef.current) {
+        measureRef.current.style.width = `${getPageWidth()}px`;
+        contentHeight = measureRef.current.offsetHeight;
+      }
+      const { closed, open } = getLayoutCoords(expanded.originRect, contentHeight);
 
       if (bookContainerRef.current) {
         gsap.set(bookContainerRef.current, {
@@ -259,7 +280,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
         }, 0);
       }
     }
-  }, [expanded.productId, expanded.originRect, getLayoutCoords]);
+  }, [expanded.productId, expanded.originRect, getLayoutCoords, getPageWidth]);
 
   // Cleanup body scroll override on unmount
   useEffect(() => {
@@ -358,6 +379,24 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
       {/* Product Detail Overlay Modal */}
       {/* Product Detail Booklet Overlay */}
       {mounted && createPortal(
+        <>
+        {/* Off-screen measuring copy — sizes the open booklet to its content */}
+        {expandedProduct && isDesktop && (
+          <div
+            ref={measureRef}
+            aria-hidden="true"
+            style={{
+              position: "fixed",
+              left: -99999,
+              top: 0,
+              visibility: "hidden",
+              pointerEvents: "none",
+              zIndex: -1,
+            }}
+          >
+            <ProductDetailContent product={expandedProduct} onClose={() => {}} addItem={addItem} />
+          </div>
+        )}
         <div
           ref={overlayRef}
           style={{
@@ -471,6 +510,19 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
               </div>
             )}
 
+            {/* Soft bottom fade on the right page — hints that rare over-long
+                content scrolls, since the scrollbar is hidden app-wide. */}
+            {isDesktop && (
+              <div
+                className="absolute bottom-0 right-0 pointer-events-none z-20"
+                style={{
+                  left: "50%",
+                  height: "40px",
+                  background: "linear-gradient(to top, #FFF9EF, rgba(255,249,239,0))",
+                }}
+              />
+            )}
+
             {/* BOOK CENTER SPINE DETAILS (Desktop only) */}
             {isDesktop && (
               <>
@@ -515,7 +567,8 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
             </div>
           </div>
         ))}
-      </div>,
+      </div>
+      </>,
       document.body
       )}
 
@@ -745,11 +798,9 @@ function ProductDetailContent({
   return (
     <div
       className={`relative w-full flex flex-col ${
-        isMobile
-          ? "px-6 py-6 gap-7"
-          : "h-full justify-between px-12 py-12 md:px-16 md:py-14"
+        isMobile ? "px-6 py-6 gap-7" : "px-12 py-12 md:px-14 md:py-12 gap-8"
       }`}
-      style={{ backgroundColor: "#FFF9EF", minHeight: isMobile ? undefined : "100%" }}
+      style={{ backgroundColor: "#FFF9EF" }}
     >
       <div>
         {/* Header Metadata */}
@@ -764,7 +815,7 @@ function ProductDetailContent({
 
         {/* Title */}
         <h2
-          className={`${PRODUCT_NAME_CLASS} mb-2`}
+          className={`${TITLE_CLASS} mb-2`}
           style={titleStyle(isMobile ? "1.85rem" : "clamp(2rem, 3.5vw, 3rem)")}
         >
           {product.name}

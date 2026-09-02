@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
-import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import { PRODUCT_NAME_CLASS } from "@/lib/typography";
+import SectionTitle from "@/components/SectionTitle";
 
 type CollectionItem = {
   id?: number;
@@ -80,21 +81,12 @@ export default function CollectionsShowcase({
     >
       {/* Section Header */}
       <div className="px-4 md:px-0 mb-8 md:mb-12 flex flex-col md:flex-row md:items-end justify-between reveal-fade-up">
-        <div>
-          <span
-            className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block"
-            style={{ fontSize: "9px", color: "#5B1C1C" }}
-          >
-            {headerKicker}
-          </span>
-          <h2 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-            {headerTitle}
-            <br />
-            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>
-              {headerTitleAccent}
-            </span>
-          </h2>
-        </div>
+        <SectionTitle
+          kicker={headerKicker}
+          title={headerTitle}
+          accent={headerTitleAccent}
+          size="clamp(2.5rem, 5vw, 4rem)"
+        />
         <div
           className="mt-6 md:mt-0 font-sans font-bold uppercase tracking-[0.25em] text-left md:text-right"
           style={{ fontSize: "9px", color: "rgba(17,17,17,0.4)", lineHeight: 1.6 }}

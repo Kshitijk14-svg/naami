@@ -11,7 +11,7 @@ import SizeGuideModal from "@/components/SizeGuideModal";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import WishlistButton from "@/components/WishlistButton";
 import ProductPromoVideo from "@/components/ProductPromoVideo";
-import { PRICE_CLASS, PRODUCT_NAME_CLASS, titleStyle } from "@/lib/typography";
+import { PRICE_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 import { useDesignSettings } from "@/lib/useDesignSettings";
 
 type ProductImage = { url: string; thumbnailUrl: string | null };
@@ -263,7 +263,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </Link>
             </div>
 
-            <h1 className={`${PRODUCT_NAME_CLASS} mb-3`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
+            <h1 className={`${TITLE_CLASS} mb-3`} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
               {product.name}
             </h1>
 

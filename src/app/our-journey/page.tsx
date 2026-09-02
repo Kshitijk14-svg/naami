@@ -4,7 +4,7 @@ import { getAllDesignSettings } from "@/db/queries/designSettings";
 import { OUR_JOURNEY_DEFAULT, parseListSetting, type JourneyStop } from "@/lib/pageContentDefaults";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import OurJourneyMap from "@/components/OurJourneyMap";
-import { TITLE_CLASS, titleStyle } from "@/lib/typography";
+import SectionTitle from "@/components/SectionTitle";
 
 /** Render a setting string with "\n" turned into <br/> line breaks. */
 function withLineBreaks(text: string) {
@@ -41,12 +41,13 @@ export default async function OurJourneyPage() {
     >
       {/* Header */}
       <section className="px-6 md:px-12 py-16">
-        <p className="font-sans font-bold uppercase tracking-[0.3em] mb-4" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-          {settings.our_journey_kicker}
-        </p>
-        <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4.5rem)")}>
-          {withLineBreaks(settings.our_journey_title ?? "Our Journey")}
-        </h1>
+        <SectionTitle
+          as="h1"
+          kicker={settings.our_journey_kicker}
+          title={withLineBreaks(settings.our_journey_title ?? "Our")}
+          accent={settings.our_journey_title_accent || undefined}
+          size="clamp(2.5rem, 5vw, 4.5rem)"
+        />
 
         {/* Selvedge rule */}
         <div

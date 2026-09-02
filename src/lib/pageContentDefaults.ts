@@ -135,7 +135,10 @@ export const PAGE_CONTENT_DEFAULTS: Record<string, string> = {
 
   // ─── Our Journey ──────────────────────────────────────────────────────────
   our_journey_kicker: "NAAMI // OUR JOURNEY",
-  our_journey_title: "Our Journey",
+  our_journey_title: "Our",
+  // Uppercase accent line tucked under the title (like "Seasonal / COLLECTIONS").
+  // Clear it to render the title on its own.
+  our_journey_title_accent: "Journey",
   our_journey_empty_state: "Our journey is being charted.",
   // JSON array of JourneyStop ({ image, caption }) — same pattern as the *_json
   // keys above. Edited from /admin/our-journey.

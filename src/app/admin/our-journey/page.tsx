@@ -5,7 +5,13 @@ import { RepeatableListEditor } from "@/components/admin/design/RepeatableListEd
 import { ContentField, ContentGroup } from "@/components/admin/design/contentFields";
 import { SaveControl } from "@/components/admin/design/shared";
 
-const KEYS = ["our_journey_kicker", "our_journey_title", "our_journey_empty_state", "our_journey_json"] as const;
+const KEYS = [
+  "our_journey_kicker",
+  "our_journey_title",
+  "our_journey_title_accent",
+  "our_journey_empty_state",
+  "our_journey_json",
+] as const;
 
 export default function AdminOurJourneyPage() {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -69,6 +75,7 @@ export default function AdminOurJourneyPage() {
           <ContentGroup title="Page Header">
             <ContentField settings={settings} update={update} fieldKey="our_journey_kicker" label="Kicker" />
             <ContentField settings={settings} update={update} fieldKey="our_journey_title" label="Title (new line = line break)" multiline />
+            <ContentField settings={settings} update={update} fieldKey="our_journey_title_accent" label="Title Accent (uppercase line under the title — clear to hide)" />
             <ContentField settings={settings} update={update} fieldKey="our_journey_empty_state" label="Empty State (shown when there are no stops)" />
           </ContentGroup>
 

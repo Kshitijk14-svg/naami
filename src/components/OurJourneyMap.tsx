@@ -5,9 +5,97 @@ import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import type { JourneyStop } from "@/lib/pageContentDefaults";
 
-/** x-position (in the 0-100 viewBox) of a stop's image on desktop: the first
- *  stop sits left, and they alternate from there. */
-const imageX = (index: number) => (index % 2 === 0 ? 20 : 80);
+const INK = "#5B1C1C";
+
+/** Small airplane glyph (Material "airplanemode" silhouette), drawn in a 24×24 box. */
+function PlaneGlyph({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} style={style} fill={INK} aria-hidden="true">
+      <path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+    </svg>
+  );
+}
+
+/**
+ * Winding dashed trail between two stops, styled after the hand-drawn
+ * treasure-map reference. `flip` mirrors it horizontally so the route zig-zags,
+ * and the arrowhead always points toward the next stop. `plane` drops a small
+ * airplane riding the trail.
+ */
+function TrailConnector({ flip, plane }: { flip: boolean; plane: boolean }) {
+  return (
+    <div aria-hidden="true" className="relative w-full">
+      <svg
+        className="mx-auto block w-full max-w-[520px]"
+        style={{ height: "132px" }}
+        viewBox="0 0 200 120"
+        fill="none"
+      >
+        <g transform={flip ? "translate(200 0) scale(-1 1)" : undefined}>
+          <path
+            d="M 14 8 C 78 8 74 100 186 106"
+            stroke={INK}
+            strokeWidth={1}
+            strokeLinecap="round"
+            strokeDasharray="2 5"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* arrowhead at the end, pointing toward the next stop */}
+          <path
+            d="M 176 98 L 188 106 L 174 112"
+            stroke={INK}
+            strokeWidth={1}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      </svg>
+      {plane && (
+        <PlaneGlyph
+          className="absolute"
+          style={{
+            width: "15px",
+            height: "15px",
+            left: "48%",
+            top: "44%",
+            opacity: 0.8,
+            transform: `rotate(${flip ? -28 : 28}deg)`,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Short vertical dashed hop used on mobile, with an arrowhead at the bottom. */
+function MobileConnector() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="mx-auto block"
+      style={{ height: "64px", width: "24px" }}
+      viewBox="0 0 24 64"
+      fill="none"
+    >
+      <path
+        d="M 12 2 L 12 54"
+        stroke={INK}
+        strokeWidth={1}
+        strokeLinecap="round"
+        strokeDasharray="2 5"
+      />
+      <path
+        d="M 6 48 L 12 58 L 18 48"
+        stroke={INK}
+        strokeWidth={1}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -44,42 +132,50 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
   }, [stops.length]);
 
   return (
-    <div ref={rootRef} className="mx-auto max-w-5xl pt-6">
+    <div
+      ref={rootRef}
+      className="relative mx-auto max-w-4xl px-4 py-10 md:px-10 md:py-14"
+      style={{
+        backgroundColor: "#FBF3E1",
+        borderRadius: "2px",
+        boxShadow: "inset 0 0 60px rgba(91,28,28,0.06)",
+        backgroundImage:
+          "radial-gradient(120% 55% at 50% 0%, rgba(91,28,28,0.06), transparent 60%), radial-gradient(120% 55% at 50% 100%, rgba(91,28,28,0.05), transparent 60%)",
+      }}
+    >
       {stops.map((stop, i) => {
         const isRight = i % 2 === 1;
         const last = i === stops.length - 1;
-        const curveD = `M ${imageX(i)} 0 C ${imageX(i)} 55, ${imageX(i + 1)} 45, ${imageX(i + 1)} 100`;
 
         return (
           <div key={i}>
             <div
-              className={`journey-reveal flex flex-col items-center gap-6 md:gap-14 md:flex-row ${isRight ? "md:flex-row-reverse" : ""}`}
+              className={`journey-reveal flex flex-col items-center gap-5 md:gap-10 md:flex-row ${
+                isRight ? "md:flex-row-reverse" : ""
+              }`}
               style={{ opacity: 0 }}
             >
-              {/* Portrait image frame */}
+              {/* Framed photo — scrapbook tape / pin */}
               <div
-                className="relative w-[70%] max-w-[280px] shrink-0 overflow-hidden md:w-2/5 md:max-w-none"
-                style={{ aspectRatio: "3 / 4", backgroundColor: "#F8F1E5" }}
+                className={`tape-frame tape-frame--${i % 2 === 0 ? "pin" : "tape"} shrink-0 w-[190px] md:w-[240px]`}
+                style={{ "--tilt": `${isRight ? 2 : -2}deg` } as React.CSSProperties}
               >
-                <Image
-                  src={stop.image}
-                  alt={stop.caption || `Journey stop ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 70vw, 40vw"
-                />
-                {/* Selvedge line */}
-                <div
-                  className="absolute top-0 left-0 bottom-0"
-                  style={{ width: "3px", backgroundColor: "#5B1C1C", opacity: 0.75 }}
-                />
+                <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3 / 4" }}>
+                  <Image
+                    src={stop.image}
+                    alt={stop.caption || `Journey stop ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 190px, 240px"
+                  />
+                </div>
               </div>
 
               {/* Caption */}
-              <div className="md:w-2/5 text-center md:text-left">
+              <div className="md:flex-1 text-center md:text-left">
                 <p
                   className="font-sans font-bold uppercase tracking-[0.3em] mb-3"
-                  style={{ fontSize: "8px", color: "#5B1C1C" }}
+                  style={{ fontSize: "8px", color: INK }}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </p>
@@ -94,46 +190,46 @@ export default function OurJourneyMap({ stops }: { stops: JourneyStop[] }) {
               </div>
             </div>
 
-            {/* Winding dashed connector to the next stop */}
             {!last && (
-              <div aria-hidden="true">
-                <svg
-                  className="hidden md:block w-full"
-                  style={{ height: "150px" }}
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d={curveD}
-                    stroke="#5B1C1C"
-                    strokeWidth={1.5}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray="3 4"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-                <svg
-                  className="md:hidden w-full"
-                  style={{ height: "80px" }}
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M 50 0 L 50 100"
-                    stroke="#5B1C1C"
-                    strokeWidth={1.5}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray="3 4"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-              </div>
+              <>
+                <div className="hidden md:block">
+                  <TrailConnector flip={isRight} plane={i % 2 === 0} />
+                </div>
+                <div className="md:hidden">
+                  <MobileConnector />
+                </div>
+              </>
             )}
           </div>
         );
       })}
+
+      {/* Route end marker */}
+      <div className="journey-reveal mt-8 flex items-center justify-center gap-3" style={{ opacity: 0 }}>
+        <svg aria-hidden="true" width="64" height="16" viewBox="0 0 64 16" fill="none">
+          <path d="M 2 8 L 52 8" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeDasharray="2 5" />
+          <path d="M 46 3 L 56 8 L 46 13" stroke={INK} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="font-serif" style={{ fontStyle: "italic", fontSize: "1.5rem", color: INK }}>
+          end
+        </span>
+      </div>
+
+      {/* Corner sparkle */}
+      <svg
+        aria-hidden="true"
+        className="absolute bottom-4 right-4"
+        width="22"
+        height="22"
+        viewBox="0 0 22 22"
+        fill="none"
+      >
+        <path
+          d="M11 1 C 11 7, 15 11, 21 11 C 15 11, 11 15, 11 21 C 11 15, 7 11, 1 11 C 7 11, 11 7, 11 1 Z"
+          fill={INK}
+          opacity={0.35}
+        />
+      </svg>
     </div>
   );
 }

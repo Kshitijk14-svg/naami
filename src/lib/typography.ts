@@ -14,14 +14,21 @@
 /** Base title line — bold, never uppercase, never italic. */
 export const TITLE_CLASS = "font-sans font-bold";
 
-/** Accent line of a two-part title — smaller, regular weight, tracked-out caps. */
+/**
+ * Accent line of a two-part title — smaller, regular weight, tracked-out caps.
+ * Sits on its own line (after a `<br/>`) and is pulled up snug under the title
+ * with a negative top margin. `inline-block` + tight `line-height` keep that
+ * pull consistent no matter how the title above it wraps, so the accent never
+ * drifts or collides the way the old `position/top` offset could.
+ */
 export const TITLE_ACCENT_CLASS = "font-sans font-normal uppercase";
 export const TITLE_ACCENT_STYLE = {
   color: "#5B1C1C",
   fontSize: "0.32em",
   letterSpacing: "0.35em",
-  position: "relative",
-  top: "-1.12em",
+  display: "inline-block",
+  lineHeight: 1,
+  marginTop: "-1.1em",
 } as const;
 
 /** Title metrics. Pass `color` only for headings on dark or photographic backgrounds. */

@@ -6,7 +6,8 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import EvanliteFooter from "@/components/EvanliteFooter";
-import { PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import { PRODUCT_NAME_CLASS } from "@/lib/typography";
+import SectionTitle from "@/components/SectionTitle";
 import type { AboutMilestone, AboutPillar, AboutTeamMember } from "@/lib/pageContentDefaults";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -78,14 +79,13 @@ export default function AboutClient({ content }: { content: AboutContent }) {
 
       {/* Hero */}
       <section className="pt-36 pb-16 px-8 md:px-12 about-reveal" style={{ opacity: 0 }}>
-        <span className="font-sans font-bold uppercase tracking-[0.3em] mb-4 block" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-          {content.heroKicker}
-        </span>
-        <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
-          {content.heroTitle}
-          <br />
-          <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{content.heroTitleAccent}</span>
-        </h1>
+        <SectionTitle
+          as="h1"
+          kicker={content.heroKicker}
+          title={content.heroTitle}
+          accent={content.heroTitleAccent}
+          size="clamp(2.5rem, 5vw, 4rem)"
+        />
         <p className="font-sans mt-6 max-w-lg" style={{ fontSize: "13px", color: "rgba(17,17,17,0.55)", lineHeight: 1.7 }}>
           {content.heroSubline}
         </p>
@@ -120,14 +120,12 @@ export default function AboutClient({ content }: { content: AboutContent }) {
       {/* Pillars */}
       <section className="px-8 md:px-12 py-16" style={{ backgroundColor: "#F8F1E5" }}>
         <div className="mb-12 about-reveal" style={{ opacity: 0 }}>
-          <span className="font-sans font-bold uppercase tracking-[0.3em] mb-3 block" style={{ fontSize: "9px", color: "#5B1C1C" }}>
-            {content.methodKicker}
-          </span>
-          <h2 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
-            {content.methodTitle}
-            <br />
-            <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{content.methodTitleAccent}</span>
-          </h2>
+          <SectionTitle
+            kicker={content.methodKicker}
+            title={content.methodTitle}
+            accent={content.methodTitleAccent}
+            size="clamp(2rem, 4vw, 3rem)"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -9,7 +9,7 @@ import { CarouselProduct } from "@/models/products";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
-import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
+import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, TITLE_ACCENT_CLASS, TITLE_ACCENT_STYLE, titleStyle } from "@/lib/typography";
 import { useDesignSettings } from "@/lib/useDesignSettings";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -139,9 +139,9 @@ export default function CollectionPageContent() {
             ? `NAAMI // ${activeCollection.tag}`
             : cms.collection_fallback_eyebrow}
         </span>
-        {/* Doubles as the collection name, so it keeps the uppercase treatment
-            product/collection names use rather than the plain title casing. */}
-        <h1 className={PRODUCT_NAME_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
+        {/* Bold Title-Case, matching "Seasonal Collection" on the home page —
+            the accent line stays for the CMS-driven fallback heading. */}
+        <h1 className={TITLE_CLASS} style={titleStyle("clamp(2.5rem, 5vw, 4rem)")}>
           {activeCollection ? (
             activeCollection.name
           ) : (
