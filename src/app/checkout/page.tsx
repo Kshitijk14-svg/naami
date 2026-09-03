@@ -47,6 +47,55 @@ function validate(form: AddressForm): string | null {
   return null;
 }
 
+const inputCls =
+  "w-full font-sans px-4 py-3 outline-none border transition-colors focus:border-[rgba(139,26,26,0.4)]";
+const inputStyle = {
+  fontSize: "13px",
+  backgroundColor: "#fff",
+  border: "1px solid rgba(17,17,17,0.12)",
+  color: "#111",
+};
+
+// Defined at module scope, NOT inside CheckoutPage: a component declared inside
+// the render function gets a new identity on every keystroke, so React unmounts
+// and remounts the <input> and focus is lost after each character.
+function LabeledInput({
+  label,
+  field,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+}: {
+  label: string;
+  field: keyof AddressForm;
+  value: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={`checkout-${field}`}
+        className="block font-sans font-bold uppercase tracking-[0.18em] mb-1.5"
+        style={{ fontSize: "8px", color: "rgba(17,17,17,0.45)" }}
+      >
+        {label}
+      </label>
+      <input
+        id={`checkout-${field}`}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={inputCls}
+        style={inputStyle}
+      />
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -188,30 +237,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const inputCls = "w-full font-sans px-4 py-3 outline-none border transition-colors focus:border-[rgba(139,26,26,0.4)]";
-  const inputStyle = {
-    fontSize: "13px",
-    backgroundColor: "#fff",
-    border: "1px solid rgba(17,17,17,0.12)",
-    color: "#111",
-  };
-
-  const LabeledInput = ({ label, field, type = "text", placeholder = "" }: { label: string; field: keyof AddressForm; type?: string; placeholder?: string }) => (
-    <div>
-      <label className="block font-sans font-bold uppercase tracking-[0.18em] mb-1.5" style={{ fontSize: "8px", color: "rgba(17,17,17,0.45)" }}>
-        {label}
-      </label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={update(field)}
-        placeholder={placeholder}
-        className={inputCls}
-        style={inputStyle}
-      />
-    </div>
-  );
-
   return (
     <main
       className="relative w-full min-h-screen flex flex-col pt-[var(--site-header-h)]"
@@ -237,17 +262,17 @@ export default function CheckoutPage() {
             </p>
 
             <div className="flex flex-col gap-4">
-              <LabeledInput label="Full Name *" field="name" placeholder="As on courier" />
+              <LabeledInput label="Full Name *" field="name" value={form.name} onChange={update("name")} placeholder="As on courier" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <LabeledInput label="Email *" field="email" type="email" placeholder="For receipt" />
-                <LabeledInput label="Phone *" field="phone" type="tel" placeholder="10-digit mobile" />
+                <LabeledInput label="Email *" field="email" type="email" value={form.email} onChange={update("email")} placeholder="For receipt" />
+                <LabeledInput label="Phone *" field="phone" type="tel" value={form.phone} onChange={update("phone")} placeholder="10-digit mobile" />
               </div>
-              <LabeledInput label="Address Line 1 *" field="line1" placeholder="Building, street" />
-              <LabeledInput label="Address Line 2" field="line2" placeholder="Landmark, area (optional)" />
+              <LabeledInput label="Address Line 1 *" field="line1" value={form.line1} onChange={update("line1")} placeholder="Building, street" />
+              <LabeledInput label="Address Line 2" field="line2" value={form.line2} onChange={update("line2")} placeholder="Landmark, area (optional)" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <LabeledInput label="City *" field="city" />
-                <LabeledInput label="State *" field="state" />
-                <LabeledInput label="PIN Code *" field="pincode" placeholder="6-digit" />
+                <LabeledInput label="City *" field="city" value={form.city} onChange={update("city")} />
+                <LabeledInput label="State *" field="state" value={form.state} onChange={update("state")} />
+                <LabeledInput label="PIN Code *" field="pincode" value={form.pincode} onChange={update("pincode")} placeholder="6-digit" />
               </div>
             </div>
 
