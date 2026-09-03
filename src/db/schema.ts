@@ -339,7 +339,9 @@ export const orders = pgTable(
     // Shipping snapshot — captured at order time, nullable for existing orders
     shippingName: varchar("shipping_name", { length: 200 }),
     shippingEmail: varchar("shipping_email", { length: 320 }),
-    shippingPhone: varchar("shipping_phone", { length: 20 }),
+    // text, not varchar: when ENCRYPTION_KEY is set this holds an AES-256-GCM
+    // envelope (~60 chars for a 10-digit number), well past any phone-length cap.
+    shippingPhone: text("shipping_phone"),
     shippingAddress: text("shipping_address"), // JSON: {line1,line2?,city,state,pincode}
     razorpayOrderId: varchar("razorpay_order_id", { length: 100 }),
     razorpayPaymentId: varchar("razorpay_payment_id", { length: 100 }),
@@ -466,7 +468,9 @@ export const checkoutIntents = pgTable(
     // Phone/address are encrypted at rest exactly as on `orders`.
     shippingName: varchar("shipping_name", { length: 200 }),
     shippingEmail: varchar("shipping_email", { length: 320 }),
-    shippingPhone: varchar("shipping_phone", { length: 20 }),
+    // text, not varchar: when ENCRYPTION_KEY is set this holds an AES-256-GCM
+    // envelope (~60 chars for a 10-digit number), well past any phone-length cap.
+    shippingPhone: text("shipping_phone"),
     shippingAddress: text("shipping_address"),
     status: checkoutIntentStatusEnum("status").notNull().default("created"),
     // Set when the intent is spent. The conditional UPDATE that flips
