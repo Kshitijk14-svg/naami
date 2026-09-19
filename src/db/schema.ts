@@ -563,6 +563,15 @@ export const invoiceCounters = pgTable("invoice_counters", {
   counter: integer("counter").notNull(),
 });
 
+// ─── 9d. order_id_counters ────────────────────────────────────────────────────
+// Per-day sequential counter for order ids (ORD-NM<DDMMYY>-<seq>), IST calendar
+// day. Incremented via atomic upsert; orders' primary key is the backstop.
+
+export const orderIdCounters = pgTable("order_id_counters", {
+  dateKey: varchar("date_key", { length: 6 }).primaryKey(), // DDMMYY, IST
+  counter: integer("counter").notNull(),
+});
+
 // ─── 10. otp_codes ────────────────────────────────────────────────────────────
 
 export const otpCodes = pgTable("otp_codes", {

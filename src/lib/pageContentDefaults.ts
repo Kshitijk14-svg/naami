@@ -180,6 +180,7 @@ export const PAGE_CONTENT_DEFAULTS: Record<string, string> = {
 
   // ─── Order confirmation ───────────────────────────────────────────────────
   order_confirmed_kicker: "NAAMI // ORDER CONFIRMED",
+  order_confirmed_success_label: "Order Placed Successfully",
   order_confirmed_thankyou: "Thank you",
   order_confirmed_tagline: "If found Wear again",
   order_confirmed_body: "Your order has been received. A confirmation has been sent",

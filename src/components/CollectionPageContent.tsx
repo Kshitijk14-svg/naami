@@ -43,7 +43,15 @@ export default function CollectionPageContent() {
   const [allProducts, setAllProducts] = useState<CarouselProduct[]>([]);
   const [expandedProduct, setExpandedProduct] = useState<CarouselProduct | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [sizeError, setSizeError] = useState(false);
+  // Distinct reasons rather than one boolean — "no size chosen" and "not
+  // enough stock" need different messages, or a shopper who picked a valid
+  // size but hit a stock limit sees the misleading "please select a size".
+  const [sizeIssue, setSizeIssue] = useState<"none-selected" | "out-of-stock" | "stock-limit" | null>(null);
+  const sizeIssueMessage: Record<Exclude<typeof sizeIssue, null>, string> = {
+    "none-selected": "Please select a size",
+    "out-of-stock": "This size is out of stock",
+    "stock-limit": "You already have the max available quantity in your cart",
+  };
   const gridRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((s) => s.addItem);
@@ -99,7 +107,7 @@ export default function CollectionPageContent() {
   const openProduct = (product: CarouselProduct) => {
     setExpandedProduct(product);
     setSelectedSize("");
-    setSizeError(false);
+    setSizeIssue(null);
     if (overlayRef.current) {
       gsap.fromTo(
         overlayRef.current,
@@ -332,9 +340,9 @@ export default function CollectionPageContent() {
                 <div className="mb-6">
                   <span
                     className="font-sans font-bold uppercase tracking-[0.2em] mb-2 block"
-                    style={{ fontSize: "9px", color: sizeError ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
+                    style={{ fontSize: "9px", color: sizeIssue ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
                   >
-                    {sizeError ? "Please select a size" : cms.collection_select_size_label}
+                    {sizeIssue ? sizeIssueMessage[sizeIssue] : cms.collection_select_size_label}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {expandedProduct.sizes!.map(({ size: sz, stock }) => {
@@ -343,7 +351,7 @@ export default function CollectionPageContent() {
                         <button
                           key={sz}
                           disabled={outOfStock}
-                          onClick={() => { if (outOfStock) return; setSelectedSize(sz); setSizeError(false); }}
+                          onClick={() => { if (outOfStock) return; setSelectedSize(sz); setSizeIssue(null); }}
                           className="font-sans font-bold uppercase tracking-[0.15em] transition-all cursor-pointer disabled:cursor-not-allowed"
                           style={{
                             fontSize: "10px",
@@ -367,21 +375,21 @@ export default function CollectionPageContent() {
                 onClick={() => {
                   const sizes = expandedProduct.sizes ?? [];
                   if (sizes.length > 1 && !selectedSize) {
-                    setSizeError(true);
-                    setTimeout(() => setSizeError(false), 2000);
+                    setSizeIssue("none-selected");
+                    setTimeout(() => setSizeIssue(null), 2000);
                     return;
                   }
                   const size = selectedSize || sizes[0]?.size || "One Size";
                   const sizeStock = sizes.find((s) => s.size === size)?.stock;
                   if (sizes.length > 0 && sizeStock === 0) {
-                    setSizeError(true);
-                    setTimeout(() => setSizeError(false), 2000);
+                    setSizeIssue("out-of-stock");
+                    setTimeout(() => setSizeIssue(null), 2000);
                     return;
                   }
                   const existingQty = cartItems.find((i) => i.productId === expandedProduct.id && i.size === size)?.quantity ?? 0;
                   if (sizeStock !== undefined && existingQty + 1 > sizeStock) {
-                    setSizeError(true);
-                    setTimeout(() => setSizeError(false), 2000);
+                    setSizeIssue("stock-limit");
+                    setTimeout(() => setSizeIssue(null), 2000);
                     return;
                   }
                   addItem({

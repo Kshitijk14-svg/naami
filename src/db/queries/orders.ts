@@ -7,9 +7,9 @@ import {
   productSizes,
   couponRedemptions,
   orderStatusHistory,
+  orderIdCounters,
 } from "@/db/schema";
 import { eq, and, or, sql, desc, isNull, inArray, gte, lte, ilike } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
 import { enqueueJob } from "@/lib/jobs";
 import {
   lockStockRows,
@@ -55,24 +55,30 @@ const VALID_STATUSES: OrderStatus[] = [
   "cancelled",
 ];
 
-const ORDER_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no I/O/0/1
-const MAX_ORDER_ID_ATTEMPTS = 5;
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
- * Random, non-sequential order id. The old scheme took the low six base-36
- * digits of Date.now(), which collided for orders in the same millisecond and
- * let anyone guess neighbouring ids.
+ * Next order id: ORD-NM<DDMMYY>-<seq>, sequence resetting each IST calendar
+ * day. The per-day counter row is bumped with an atomic upsert (same pattern
+ * as invoiceCounters), so two orders created in the same millisecond still
+ * get distinct, non-colliding sequence numbers without a retry loop.
  */
-function makeOrderId(): string {
-  const bytes = randomBytes(8);
-  let out = "";
-  for (let i = 0; i < 8; i++) {
-    out += ORDER_ID_ALPHABET[bytes[i] % ORDER_ID_ALPHABET.length];
-  }
-  return `ORD-${out}`;
-}
+async function makeOrderId(tx: Tx): Promise<string> {
+  const dateKey = new Date()
+    .toLocaleDateString("en-GB", { timeZone: "Asia/Kolkata" })
+    .replace(/\//g, ""); // en-GB gives DD/MM/YY
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+  const [row] = await tx
+    .insert(orderIdCounters)
+    .values({ dateKey, counter: 1 })
+    .onConflictDoUpdate({
+      target: orderIdCounters.dateKey,
+      set: { counter: sql`${orderIdCounters.counter} + 1` },
+    })
+    .returning({ counter: orderIdCounters.counter });
+
+  return `ORD-NM${dateKey}-${String(row.counter).padStart(4, "0")}`;
+}
 
 // Re-exported so existing callers keep importing it from here.
 export { InsufficientStockError };
@@ -239,12 +245,11 @@ export async function createOrder(input: CreateOrderInput) {
 }
 
 /**
- * Insert the order row, retrying on an id collision.
+ * Insert the order row under its next sequential id.
  *
- * Order ids are random rather than time-derived: the previous scheme kept only
- * the low digits of the millisecond clock, so two orders in the same
- * millisecond collided outright — and a collision here means a primary-key
- * violation on a transaction that already has a captured payment behind it.
+ * The id comes from makeOrderId()'s atomic per-day counter, so it's unique by
+ * construction — no collision-retry loop needed (a real conflict here would
+ * mean the counter itself is broken, not bad luck on a random id).
  */
 async function insertOrderRow(
   tx: Tx,
@@ -267,15 +272,9 @@ async function insertOrderRow(
     razorpayPaymentId: input.razorpayPaymentId ?? null,
   };
 
-  for (let attempt = 0; attempt < MAX_ORDER_ID_ATTEMPTS; attempt++) {
-    const [row] = await tx
-      .insert(orders)
-      .values({ id: makeOrderId(), ...values })
-      .onConflictDoNothing({ target: orders.id })
-      .returning({ id: orders.id });
-    if (row) return row.id;
-  }
-  throw new Error("Could not allocate a unique order id.");
+  const id = await makeOrderId(tx);
+  const [row] = await tx.insert(orders).values({ id, ...values }).returning({ id: orders.id });
+  return row.id;
 }
 
 /**

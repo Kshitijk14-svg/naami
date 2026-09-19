@@ -551,7 +551,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
             ref={sheetRef}
             className="absolute left-0 right-0 bottom-0 flex flex-col select-none"
             style={{
-              maxHeight: "88vh",
+              maxHeight: "92vh",
               backgroundColor: "#FFF9EF",
               boxShadow: "0 -20px 60px rgba(17,17,17,0.28)",
               pointerEvents: "auto",
@@ -564,6 +564,18 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
             </div>
             <div className="overflow-y-auto scrollbar-none" style={{ flex: 1, minHeight: 0 }}>
               <ProductDetailContent key={expandedProduct.id} product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
+              {/* Sticky bottom fade — hints that content scrolls, since the
+                  scrollbar is hidden app-wide (mirrors the desktop hint). */}
+              <div
+                className="pointer-events-none"
+                style={{
+                  position: "sticky",
+                  bottom: 0,
+                  height: "40px",
+                  marginTop: "-40px",
+                  background: "linear-gradient(to top, #FFF9EF, rgba(255,249,239,0))",
+                }}
+              />
             </div>
           </div>
         ))}
@@ -799,9 +811,17 @@ function ProductDetailContent({
   // Callers key this component on product.id, so this state naturally resets
   // when a different product is opened rather than needing a sync effect.
   const [selectedSize, setSelectedSize] = useState("");
-  const [sizeError, setSizeError] = useState(false);
+  // Distinct reasons rather than one boolean — "no size chosen" and "not
+  // enough stock" need different messages, or a shopper who picked a valid
+  // size but hit a stock limit sees the misleading "please select a size".
+  const [sizeIssue, setSizeIssue] = useState<"none-selected" | "out-of-stock" | "stock-limit" | null>(null);
 
   const sizes = product.sizes ?? [];
+  const sizeIssueMessage: Record<Exclude<typeof sizeIssue, null>, string> = {
+    "none-selected": "Please select a size",
+    "out-of-stock": "This size is out of stock",
+    "stock-limit": "You already have the max available quantity in your cart",
+  };
 
   return (
     <div
@@ -905,12 +925,12 @@ function ProductDetailContent({
 
         {/* Size selection */}
         {sizes.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-4">
             <span
               className="font-sans font-bold uppercase tracking-[0.2em] mb-2 block"
-              style={{ fontSize: "9px", color: sizeError ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
+              style={{ fontSize: "9px", color: sizeIssue ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
             >
-              {sizeError ? "Please select a size" : cms.collection_select_size_label}
+              {sizeIssue ? sizeIssueMessage[sizeIssue] : cms.collection_select_size_label}
             </span>
             <div className="flex flex-wrap gap-2">
               {sizes.map(({ size: sz, stock }) => {
@@ -924,7 +944,7 @@ function ProductDetailContent({
                       e.stopPropagation();
                       if (outOfStock) return;
                       setSelectedSize(sz);
-                      setSizeError(false);
+                      setSizeIssue(null);
                     }}
                     className="font-sans font-bold uppercase tracking-[0.15em] transition-all cursor-pointer disabled:cursor-not-allowed"
                     style={{
@@ -951,21 +971,21 @@ function ProductDetailContent({
             e.stopPropagation();
             if (product.available === false) return;
             if (sizes.length > 1 && !selectedSize) {
-              setSizeError(true);
-              setTimeout(() => setSizeError(false), 2000);
+              setSizeIssue("none-selected");
+              setTimeout(() => setSizeIssue(null), 2000);
               return;
             }
             const size = selectedSize || sizes[0]?.size || "One Size";
             const sizeStock = sizes.find((s) => s.size === size)?.stock;
             if (sizes.length > 0 && sizeStock === 0) {
-              setSizeError(true);
-              setTimeout(() => setSizeError(false), 2000);
+              setSizeIssue("out-of-stock");
+              setTimeout(() => setSizeIssue(null), 2000);
               return;
             }
             const existingQty = cartItems.find((i) => i.productId === product.id && i.size === size)?.quantity ?? 0;
             if (sizeStock !== undefined && existingQty + 1 > sizeStock) {
-              setSizeError(true);
-              setTimeout(() => setSizeError(false), 2000);
+              setSizeIssue("stock-limit");
+              setTimeout(() => setSizeIssue(null), 2000);
               return;
             }
             addItem({

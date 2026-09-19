@@ -112,6 +112,18 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
         {/* Confirmation header */}
         <div className="mb-12 text-center">
           <div className="w-[3px] h-12 bg-[#5B1C1C] opacity-70 mx-auto mb-6" />
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 mb-5"
+            style={{ backgroundColor: "#F8F1E5", borderLeft: "3px solid #3a6b3a" }}
+          >
+            <span style={{ color: "#3a6b3a", fontSize: "16px", lineHeight: 1 }}>✓</span>
+            <span
+              className="font-sans font-bold uppercase tracking-[0.2em]"
+              style={{ fontSize: "10px", color: "#1A1212" }}
+            >
+              {cms.order_confirmed_success_label}
+            </span>
+          </div>
           <p className="font-sans font-bold uppercase tracking-[0.3em] mb-3" style={{ fontSize: "9px", color: "#5B1C1C" }}>
             {cms.order_confirmed_kicker}
           </p>

@@ -53,6 +53,7 @@ export function CheckoutFlowSection({ settings, update, checkoutError, checkoutS
 
         <ContentGroup title="Order Confirmation">
           {f("order_confirmed_kicker", "Kicker")}
+          {f("order_confirmed_success_label", "Success Badge Label")}
           {f("order_confirmed_thankyou", "Thank-You Heading (name appended automatically)")}
           {f("order_confirmed_tagline", "Tagline")}
           {f("order_confirmed_body", "Body (email appended automatically)")}

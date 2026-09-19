@@ -1,7 +1,7 @@
 import PDFDocument from "pdfkit";
 import { db } from "@/lib/db";
-import { orders, invoiceCounters, coupons } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { orders, coupons } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import type { OrderRow, OrderItemRow } from "@/db/queries/orders";
 
 const BRAND = "#5B1C1C";
@@ -23,15 +23,18 @@ function formatIstDate(d: Date): string {
 }
 
 /**
- * Assign (or return the existing) sequential invoice number for an order.
- * Race-safe: the order row is locked FOR UPDATE so two concurrent calls can't
- * both see "no number yet", and the per-year counter is bumped with an atomic
- * upsert. The partial unique index on orders.invoice_number is the backstop.
+ * Assign (or return the existing) invoice number for an order.
+ *
+ * The invoice number is just the order's own id with its prefix swapped
+ * (ORD-NM190926-0001 -> INV-NM190926-0001) — the order id already carries a
+ * unique date+sequence, so there's no need for a separate counter. Race-safe
+ * via the order row lock, same as before; the partial unique index on
+ * orders.invoice_number remains the backstop.
  */
 export async function ensureInvoiceNumber(orderId: string): Promise<string> {
   return db.transaction(async (tx) => {
     const [order] = await tx
-      .select({ invoiceNumber: orders.invoiceNumber, createdAt: orders.createdAt })
+      .select({ id: orders.id, invoiceNumber: orders.invoiceNumber })
       .from(orders)
       .where(eq(orders.id, orderId))
       .for("update")
@@ -40,21 +43,7 @@ export async function ensureInvoiceNumber(orderId: string): Promise<string> {
     if (!order) throw new Error(`Order ${orderId} not found`);
     if (order.invoiceNumber) return order.invoiceNumber;
 
-    // Invoice year follows the order date in IST.
-    const year = Number(
-      order.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", year: "numeric" })
-    );
-
-    const [counter] = await tx
-      .insert(invoiceCounters)
-      .values({ year, counter: 1 })
-      .onConflictDoUpdate({
-        target: invoiceCounters.year,
-        set: { counter: sql`${invoiceCounters.counter} + 1` },
-      })
-      .returning({ counter: invoiceCounters.counter });
-
-    const invoiceNumber = `NAAMI-INV-${year}-${String(counter.counter).padStart(4, "0")}`;
+    const invoiceNumber = order.id.replace(/^ORD-/, "INV-");
     await tx.update(orders).set({ invoiceNumber }).where(eq(orders.id, orderId));
     return invoiceNumber;
   });
