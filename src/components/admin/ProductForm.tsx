@@ -86,6 +86,10 @@ export function ProductForm({ productId }: { productId?: number }) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm);
+  // Snapshot of stock/sizes exactly as loaded, kept separate from `form` (which
+  // the admin edits) so a stale save can be told apart from a fresh one — see
+  // the expectedStock/expectedSizes conflict check on the server.
+  const [original, setOriginal] = useState<{ stock: number; sizes: SizeStockDraft[] } | null>(null);
   const [loading, setLoading] = useState(!!productId);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -123,6 +127,7 @@ export function ProductForm({ productId }: { productId?: number }) {
           videoUrl: p.videoUrl ?? "",
           videoThumbnailImage: p.videoThumbnailImage ?? "",
         });
+        setOriginal({ stock: p.stock, sizes: p.sizes ?? [] });
         setLoading(false);
       })
       .catch(() => {
@@ -168,6 +173,7 @@ export function ProductForm({ productId }: { productId?: number }) {
       })),
       videoUrl: form.videoUrl || null,
       videoThumbnailImage: form.videoThumbnailImage || null,
+      ...(original ? { expectedStock: original.stock, expectedSizes: original.sizes } : {}),
     };
 
     const url = productId ? `/api/admin/products/${productId}` : "/api/admin/products";

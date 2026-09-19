@@ -1,10 +1,11 @@
 import { db } from "@/lib/db";
 import { checkoutIntents, coupons, couponRedemptions, paymentIncidents } from "@/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { createLogger } from "@/lib/logger";
 import { computeDiscount, validateCouponWindow, checkRedemptionLimits } from "@/lib/coupons";
 import {
   reserveStock,
+  releaseReservations,
   RESERVATION_TTL_MINUTES,
   type ReservableItem,
 } from "@/db/queries/reservations";
@@ -211,6 +212,15 @@ export async function unclaimIntent(intentId: number): Promise<void> {
     .where(and(eq(checkoutIntents.id, intentId), eq(checkoutIntents.status, "consumed")));
 }
 
+/** Every intent this user still has an open payment window on. */
+export async function getActiveIntentIdsForUser(userId: number): Promise<number[]> {
+  const rows = await db
+    .select({ id: checkoutIntents.id })
+    .from(checkoutIntents)
+    .where(and(eq(checkoutIntents.userId, userId), eq(checkoutIntents.status, "created")));
+  return rows.map((r) => r.id);
+}
+
 export async function getIntentByRazorpayOrderId(
   razorpayOrderId: string
 ): Promise<CheckoutIntentRow | null> {
@@ -230,6 +240,56 @@ export async function markIntentFulfilled(
     .update(checkoutIntents)
     .set({ orderId, updatedAt: new Date() })
     .where(eq(checkoutIntents.id, intentId));
+}
+
+/**
+ * Cancel an intent the shopper walked away from (e.g. dismissed the payment
+ * popup) — releases its stock holds and coupon use immediately instead of
+ * waiting out the reservation TTL. Mirrors releaseExpiredReservations()'s
+ * per-intent transaction, but for a single intent on request rather than a
+ * sweep of stale ones.
+ *
+ * Re-checks status under the row lock so this can never undo a payment that
+ * completed in the gap between the client's dismiss event and this call.
+ * Returns false when there was nothing to cancel (already consumed/expired/
+ * failed), so the caller can respond idempotently either way.
+ */
+export async function cancelIntent(intentId: number): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const [current] = await tx
+      .select({ id: checkoutIntents.id, status: checkoutIntents.status })
+      .from(checkoutIntents)
+      .where(eq(checkoutIntents.id, intentId))
+      .for("update")
+      .limit(1);
+    if (!current || current.status !== "created") return false;
+
+    await releaseReservations(tx, intentId);
+
+    // Hand back the coupon use this intent was holding, same as the expiry sweep.
+    const heldRedemptions = await tx
+      .delete(couponRedemptions)
+      .where(and(eq(couponRedemptions.intentId, intentId), isNull(couponRedemptions.orderId)))
+      .returning({ couponId: couponRedemptions.couponId });
+
+    for (const r of heldRedemptions) {
+      await tx
+        .update(coupons)
+        .set({ usedCount: sql`GREATEST(${coupons.usedCount} - 1, 0)` })
+        .where(eq(coupons.id, r.couponId));
+    }
+
+    await tx
+      .update(checkoutIntents)
+      .set({
+        status: "failed",
+        failureReason: "Cancelled by shopper (payment popup dismissed)",
+        updatedAt: new Date(),
+      })
+      .where(eq(checkoutIntents.id, intentId));
+
+    return true;
+  });
 }
 
 export async function markIntentFailed(

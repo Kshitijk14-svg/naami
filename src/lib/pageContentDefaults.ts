@@ -83,21 +83,15 @@ const ABOUT_TEAM: AboutTeamMember[] = [
 
 const FOOTER_COLUMNS: FooterColumn[] = [
   {
-    title: "Collections",
-    links: [
-      { label: "Full Collection", href: "/collection" },
-      { label: "Shirts", href: "/collection?filter=SHIRTS" },
-      { label: "Accessories", href: "/collection?filter=ACCESSORIES" },
-      { label: "Limited Editions", href: "/collection?filter=LIMITED" },
-    ],
-  },
-  {
     title: "Philosophy",
     links: [{ label: "Our Story", href: "/about" }],
   },
   {
     title: "Customer Care",
-    links: [{ label: "My Orders", href: "/profile" }],
+    links: [
+      { label: "My Orders", href: "/profile" },
+      { label: "Contact Us", href: "/contact" },
+    ],
   },
   {
     title: "Naami Universe",

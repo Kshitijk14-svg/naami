@@ -7,6 +7,8 @@ import { priceCart, CheckoutPricingError, type CartItemInput } from "@/lib/check
 import {
   prepareIntent,
   attachRazorpayOrder,
+  getActiveIntentIdsForUser,
+  cancelIntent,
   CouponHoldError,
 } from "@/db/queries/checkoutIntents";
 import { InsufficientStockError } from "@/db/queries/reservations";
@@ -62,6 +64,13 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: err.message }, { status: 400 });
       }
       throw err;
+    }
+
+    // Free any hold this user left open in another tab before taking a new
+    // one — otherwise a stale abandoned tab keeps stock/coupon locked for the
+    // full reservation TTL for no reason once they've moved on to this one.
+    for (const staleIntentId of await getActiveIntentIdsForUser(user.id)) {
+      await cancelIntent(staleIntentId);
     }
 
     // Hold stock and the coupon, and record what this checkout is allowed to

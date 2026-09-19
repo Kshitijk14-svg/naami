@@ -13,6 +13,7 @@ import {
   setProductMetafields,
   getProductImages,
   setProductImages,
+  StockConflictError,
   type ProductMetafield,
   type ProductSize,
   type SetProductImagesInput,
@@ -121,6 +122,9 @@ export async function PUT(
       { status: 400 }
     );
   }
+  if (body.expectedSizes !== undefined && !validateSizes(body.expectedSizes)) {
+    return Response.json({ error: "Malformed expectedSizes." }, { status: 400 });
+  }
   if (
     body.compareAtPriceInr !== undefined &&
     body.compareAtPriceInr !== null &&
@@ -157,7 +161,21 @@ export async function PUT(
     (body.videoUrl !== undefined || body.videoThumbnailImage !== undefined);
   const prev = videoChanging ? await getProductById(Number(id)) : null;
 
-  const updated = await updateProduct(Number(id), updateData);
+  const expectedStock: number | undefined =
+    typeof body.expectedStock === "number" ? body.expectedStock : undefined;
+  const expectedSizes: ProductSize[] | undefined = validateSizes(body.expectedSizes)
+    ? body.expectedSizes
+    : undefined;
+
+  let updated;
+  try {
+    updated = await updateProduct(Number(id), updateData, { expectedStock });
+  } catch (err) {
+    if (err instanceof StockConflictError) {
+      return Response.json({ error: err.message }, { status: 409 });
+    }
+    throw err;
+  }
   if (!updated) return Response.json({ error: "Not found" }, { status: 404 });
 
   if (prev) {
@@ -180,17 +198,25 @@ export async function PUT(
   // setProductSizes/setProductMetafields/setProductImages), so Postgres
   // still executes their critical sections one at a time -- this isn't true
   // DB-side parallelism, just removing the JS-side serialization on top of it.
-  const [, , removedImages] = await Promise.all([
-    body.sizes !== undefined && Array.isArray(body.sizes)
-      ? setProductSizes(Number(id), body.sizes)
-      : Promise.resolve(undefined),
-    body.metafields !== undefined
-      ? setProductMetafields(Number(id), body.metafields)
-      : Promise.resolve(undefined),
-    body.images !== undefined
-      ? setProductImages(Number(id), body.images)
-      : Promise.resolve(undefined),
-  ]);
+  let removedImages;
+  try {
+    [, , removedImages] = await Promise.all([
+      body.sizes !== undefined && Array.isArray(body.sizes)
+        ? setProductSizes(Number(id), body.sizes, expectedSizes)
+        : Promise.resolve(undefined),
+      body.metafields !== undefined
+        ? setProductMetafields(Number(id), body.metafields)
+        : Promise.resolve(undefined),
+      body.images !== undefined
+        ? setProductImages(Number(id), body.images)
+        : Promise.resolve(undefined),
+    ]);
+  } catch (err) {
+    if (err instanceof StockConflictError) {
+      return Response.json({ error: err.message }, { status: 409 });
+    }
+    throw err;
+  }
   if (removedImages) {
     await Promise.all(
       removedImages.flatMap((img) => [unlinkProductImage(img.url), unlinkProductImage(img.thumbnailUrl)])

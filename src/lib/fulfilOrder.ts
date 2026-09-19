@@ -76,6 +76,17 @@ export async function fulfilOrder(input: FulfilInput): Promise<FulfilResult> {
     }
     if (known.status === "consumed") {
       // Another request is mid-flight; it will finish or hand the intent back.
+      // Log it too — if the other request crashes without ever unclaiming,
+      // this is the only record that a payment arrived for it at all.
+      await recordPaymentIncident({
+        razorpayOrderId,
+        razorpayPaymentId,
+        intentId: known.id,
+        userId: known.userId,
+        amountInr: known.payableInr,
+        reason: "Payment arrived while intent was already being fulfilled by another request.",
+        source,
+      });
       return { ok: false, status: 409, error: "This payment is already being processed." };
     }
     // Expired or failed: the holds are gone, so we cannot safely ship.
@@ -146,6 +157,18 @@ async function fulfilClaimedIntent(
     // Gateway unreachable — hand the intent back so a retry or the webhook can
     // pick it up. Failing closed here is the point: never assume payment.
     await unclaimIntent(intent.id);
+    // Record it even though this may self-heal on retry: if it doesn't (the
+    // TTL sweep would otherwise silently release a hold for a payment that
+    // may already be captured), this is the only trace of what happened.
+    await recordPaymentIncident({
+      razorpayOrderId: intent.razorpayOrderId,
+      razorpayPaymentId,
+      intentId: intent.id,
+      userId: intent.userId,
+      amountInr: intent.payableInr,
+      reason: "Could not confirm payment with gateway; intent handed back for retry.",
+      source,
+    });
     log.error("could not reach gateway to confirm payment", { intentId: intent.id, err });
     return {
       ok: false,

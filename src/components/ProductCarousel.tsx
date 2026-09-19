@@ -394,7 +394,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
               zIndex: -1,
             }}
           >
-            <ProductDetailContent product={expandedProduct} onClose={() => {}} addItem={addItem} />
+            <ProductDetailContent key={expandedProduct.id} product={expandedProduct} onClose={() => {}} addItem={addItem} />
           </div>
         )}
         <div
@@ -484,7 +484,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
                     />
                   </div>
                 ) : (
-                  <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
+                  <ProductDetailContent key={expandedProduct.id} product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
                 )}
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
                     backgroundColor: "rgba(17, 17, 17, 0.08)",
                   }}
                 />
-                <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} />
+                <ProductDetailContent key={expandedProduct.id} product={expandedProduct} onClose={closeProduct} addItem={addItem} />
               </div>
             )}
 
@@ -563,7 +563,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
               <div style={{ width: 36, height: 4, borderRadius: 999, backgroundColor: "rgba(17,17,17,0.2)" }} />
             </div>
             <div className="overflow-y-auto scrollbar-none" style={{ flex: 1, minHeight: 0 }}>
-              <ProductDetailContent product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
+              <ProductDetailContent key={expandedProduct.id} product={expandedProduct} onClose={closeProduct} addItem={addItem} isMobile />
             </div>
           </div>
         ))}
@@ -795,6 +795,14 @@ function ProductDetailContent({
   isMobile?: boolean;
 }) {
   const cms = useDesignSettings();
+  const cartItems = useCartStore((s) => s.items);
+  // Callers key this component on product.id, so this state naturally resets
+  // when a different product is opened rather than needing a sync effect.
+  const [selectedSize, setSelectedSize] = useState("");
+  const [sizeError, setSizeError] = useState(false);
+
+  const sizes = product.sizes ?? [];
+
   return (
     <div
       className={`relative w-full flex flex-col ${
@@ -895,17 +903,77 @@ function ProductDetailContent({
           </span>
         </div>
 
+        {/* Size selection */}
+        {sizes.length > 0 && (
+          <div className="mb-6">
+            <span
+              className="font-sans font-bold uppercase tracking-[0.2em] mb-2 block"
+              style={{ fontSize: "9px", color: sizeError ? "#5B1C1C" : "rgba(17,17,17,0.5)" }}
+            >
+              {sizeError ? "Please select a size" : cms.collection_select_size_label}
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {sizes.map(({ size: sz, stock }) => {
+                const outOfStock = stock === 0;
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    disabled={outOfStock}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (outOfStock) return;
+                      setSelectedSize(sz);
+                      setSizeError(false);
+                    }}
+                    className="font-sans font-bold uppercase tracking-[0.15em] transition-all cursor-pointer disabled:cursor-not-allowed"
+                    style={{
+                      fontSize: "10px",
+                      padding: "7px 12px",
+                      border: selectedSize === sz ? "1.5px solid #5B1C1C" : "1.5px solid rgba(17,17,17,0.15)",
+                      color: outOfStock ? "rgba(17,17,17,0.3)" : selectedSize === sz ? "#5B1C1C" : "#111",
+                      backgroundColor: selectedSize === sz ? "rgba(139,26,26,0.05)" : "transparent",
+                      textDecoration: outOfStock ? "line-through" : "none",
+                    }}
+                    title={outOfStock ? "Out of stock" : undefined}
+                  >
+                    {sz}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Add button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             if (product.available === false) return;
+            if (sizes.length > 1 && !selectedSize) {
+              setSizeError(true);
+              setTimeout(() => setSizeError(false), 2000);
+              return;
+            }
+            const size = selectedSize || sizes[0]?.size || "One Size";
+            const sizeStock = sizes.find((s) => s.size === size)?.stock;
+            if (sizes.length > 0 && sizeStock === 0) {
+              setSizeError(true);
+              setTimeout(() => setSizeError(false), 2000);
+              return;
+            }
+            const existingQty = cartItems.find((i) => i.productId === product.id && i.size === size)?.quantity ?? 0;
+            if (sizeStock !== undefined && existingQty + 1 > sizeStock) {
+              setSizeError(true);
+              setTimeout(() => setSizeError(false), 2000);
+              return;
+            }
             addItem({
               productId: product.id,
               name: product.name,
               priceInr: product.priceInr,
               image: product.image,
-              size: product.sizes?.[0]?.size ?? "One Size",
+              size,
             });
             onClose();
           }}

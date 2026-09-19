@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import gsap from "gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { PRODUCT_NAME_CLASS } from "@/lib/typography";
@@ -66,8 +66,10 @@ export default function CollectionsShowcase({
   backgroundImageFit,
 }: Props) {
   const items = collections && collections.length > 0 ? collections : FALLBACK_COLLECTIONS;
-  const portraitItems = items.slice(0, 2);
-  const landscapeItems = items.slice(2);
+  // Repeat the bento pattern (2 portrait tiles + 1 full-width landscape tile)
+  // in groups of 3 so any number of homepage collections lays out cleanly.
+  const groups: CollectionItem[][] = [];
+  for (let i = 0; i < items.length; i += 3) groups.push(items.slice(i, i + 3));
 
   const headerKicker = kicker || DEFAULT_KICKER;
   const headerTitle = title || DEFAULT_TITLE;
@@ -116,37 +118,40 @@ export default function CollectionsShowcase({
         ))}
       </div>
 
-      {/* Desktop: asymmetric editorial grid */}
+      {/* Desktop: asymmetric editorial grid — bento pattern repeats per group of 3 */}
       <div className="hidden md:grid md:grid-cols-12 gap-12 items-stretch reveal-stagger-container">
-
-        {/* ROW 1: Portrait Cards */}
-        {portraitItems.map((item) => (
-          <div key={item.number} className="md:col-span-6 flex flex-col reveal-stagger-item">
-            <PortraitCollectionCard
-              id={item.id}
-              number={item.number}
-              name={item.name}
-              tag={item.tag}
-              description={item.description}
-              image={item.image}
-            />
-          </div>
-        ))}
-
-        {/* ROW 2: Landscape Cards */}
-        {landscapeItems.map((item) => (
-          <div key={item.number} className="md:col-span-12 mt-3 md:mt-6 reveal-stagger-item">
-            <LandscapeCollectionCard
-              id={item.id}
-              number={item.number}
-              name={item.name}
-              tag={item.tag}
-              description={item.description}
-              image={item.image}
-            />
-          </div>
-        ))}
-
+        {groups.map((group, groupIdx) => {
+          const portraitItems = group.slice(0, 2);
+          const landscapeItem = group[2];
+          return (
+            <Fragment key={group[0].number}>
+              {portraitItems.map((item) => (
+                <div key={item.number} className={`md:col-span-6 flex flex-col reveal-stagger-item ${groupIdx > 0 ? "mt-3 md:mt-6" : ""}`}>
+                  <PortraitCollectionCard
+                    id={item.id}
+                    number={item.number}
+                    name={item.name}
+                    tag={item.tag}
+                    description={item.description}
+                    image={item.image}
+                  />
+                </div>
+              ))}
+              {landscapeItem && (
+                <div className="md:col-span-12 mt-3 md:mt-6 reveal-stagger-item">
+                  <LandscapeCollectionCard
+                    id={landscapeItem.id}
+                    number={landscapeItem.number}
+                    name={landscapeItem.name}
+                    tag={landscapeItem.tag}
+                    description={landscapeItem.description}
+                    image={landscapeItem.image}
+                  />
+                </div>
+              )}
+            </Fragment>
+          );
+        })}
       </div>
     </section>
   );

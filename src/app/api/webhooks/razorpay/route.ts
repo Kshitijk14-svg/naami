@@ -83,18 +83,22 @@ export async function POST(request: NextRequest) {
         orderId: result.orderId,
         alreadyExisted: result.alreadyExisted,
       });
-    } else {
-      log.error("webhook could not fulfil payment", {
-        event,
-        razorpayPaymentId,
-        reason: result.error,
-      });
+      return Response.json({ received: true, handled: true, event, orderId: result.orderId });
     }
 
-    // Always 2xx once the signature is valid and we have recorded the outcome.
-    // Retrying would not change anything — fulfilOrder already logged an
-    // incident for whatever needs a human.
-    return Response.json({ received: true, handled: true, event });
+    log.error("webhook could not fulfil payment", {
+      event,
+      razorpayPaymentId,
+      reason: result.error,
+    });
+    // Non-2xx on anything that didn't succeed, so Razorpay actually retries —
+    // a transient gateway blip (fulfilOrder's 503 case) needs that retry to
+    // ever recover; a terminal outcome (404/400/409) just fails the same way
+    // again until Razorpay's own retry budget gives up, which is harmless.
+    return Response.json(
+      { received: true, handled: false, event, error: result.error },
+      { status: result.status }
+    );
   } catch (err) {
     // An unexpected fault: record it, then let Razorpay retry.
     log.error("webhook handler threw", { event, razorpayPaymentId, err });

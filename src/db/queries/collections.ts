@@ -25,7 +25,7 @@ export async function getHomepageCollections() {
         )
       )
       .orderBy(asc(collections.homeSortOrder))
-      .limit(3)
+      .limit(12)
   );
 }
 

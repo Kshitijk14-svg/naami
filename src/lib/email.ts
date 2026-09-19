@@ -412,3 +412,52 @@ export async function sendLowStockAlert(
     throw err; // surface to the jobs worker so it retries with backoff
   }
 }
+
+// ─── Contact form ──────────────────────────────────────────────────────────
+
+export interface ContactSubmission {
+  name: string;
+  email: string;
+  message: string;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendContactFormNotification(submission: ContactSubmission): Promise<void> {
+  if (!ADMIN_EMAIL) return;
+
+  // submission.name/email/message are untrusted, publicly-submitted text —
+  // escape before interpolating into HTML, and strip CR/LF from the subject
+  // line so a crafted name can't inject extra mail headers.
+  const name = escapeHtml(submission.name);
+  const email = escapeHtml(submission.email);
+  const message = escapeHtml(submission.message);
+  const subjectName = submission.name.replace(/[\r\n]+/g, " ");
+
+  const html = `
+<!DOCTYPE html><html><body style="font-family:sans-serif;padding:32px;">
+  <h2 style="color:#5B1C1C;">New Contact Form Submission — NAAMI</h2>
+  <p style="font-size:13px;color:#555;"><strong>From:</strong> ${name} &lt;${email}&gt;</p>
+  <p style="margin-top:16px;font-size:13px;color:#111;white-space:pre-wrap;line-height:1.6;">${message}</p>
+</body></html>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: ADMIN_EMAIL,
+      replyTo: submission.email,
+      subject: `[NAAMI Contact] ${subjectName}`,
+      html,
+    });
+  } catch (err) {
+    log.error("sendContactFormNotification failed", { err });
+    throw err;
+  }
+}

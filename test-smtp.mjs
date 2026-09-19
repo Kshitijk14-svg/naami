@@ -2,10 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import nodemailer from 'nodemailer';
 
-// Parse .env.local manually
-const envPath = path.join(process.cwd(), '.env.local');
+// Parse the given env file manually (defaults to .env.local; pass a path to
+// test a different one, e.g. `node test-smtp.mjs .env.production`).
+const envPath = path.join(process.cwd(), process.argv[2] || '.env.local');
 if (!fs.existsSync(envPath)) {
-  console.error('Error: .env.local file not found in current directory.');
+  console.error(`Error: ${envPath} not found.`);
   process.exit(1);
 }
 

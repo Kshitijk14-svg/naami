@@ -492,8 +492,11 @@ export async function updateOrderStatus(
 
     // Cancelling returns the goods to the shelf and the coupon to its pool.
     // Without this, cancelled orders burned inventory permanently.
+    //
+    // Coupon lock before stock locks, matching prepareIntent's acquisition
+    // order (checkoutIntents.ts) — reversing it here would let a concurrent
+    // checkout and a concurrent cancellation deadlock on the same two rows.
     if (toStatus === "cancelled") {
-      await restoreOrderInventory(tx, id);
       if (order.couponId !== null) {
         await tx
           .update(coupons)
@@ -501,6 +504,7 @@ export async function updateOrderStatus(
           .where(eq(coupons.id, order.couponId));
         await tx.delete(couponRedemptions).where(eq(couponRedemptions.orderId, id));
       }
+      await restoreOrderInventory(tx, id);
     }
 
     if (order.shippingEmail) {

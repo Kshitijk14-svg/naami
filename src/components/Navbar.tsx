@@ -26,15 +26,15 @@ export default function Navbar() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Fetch auth state once on mount. We skip re-fetching on every pathname
-  // change — the signout handler already updates state directly, and signing
-  // in navigates to a new page which re-mounts the Navbar.
+  // Refetch on every pathname change — Navbar is mounted once in the root
+  // layout and never remounts on client-side navigation, so this is what
+  // picks up a session change right after login's router.push().
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => (res.ok ? res.json() : { authenticated: false }))
       .then((data: SessionData) => setSession(data))
       .catch(() => setSession({ authenticated: false }));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -132,6 +132,14 @@ export default function Navbar() {
           data-cursor-text="READ"
         >
           Our Journey
+        </Link>
+        <Link
+          href="/contact"
+          className="hidden md:block hover:opacity-50 transition-opacity font-sans font-bold uppercase tracking-[0.2em] text-[10px]"
+          style={{ color: "#1A1212" }}
+          data-cursor-text="READ"
+        >
+          Contact
         </Link>
 
         {/* Auth: profile dropdown when signed in, sign-in link when not */}

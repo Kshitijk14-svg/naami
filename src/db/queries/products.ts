@@ -11,6 +11,9 @@ export type ProductMetafield = { name: string; description: string };
 export type ProductImage = { url: string; thumbnailUrl: string | null };
 export type ProductSize = { size: string; stock: number };
 
+/** Thrown when an admin save's stock snapshot no longer matches the DB. */
+export class StockConflictError extends Error {}
+
 /**
  * Admin-only formatting: spreads the full row (stock, thresholds, publish/
  * featured flags, timestamps). Never expose this to public storefront routes
@@ -128,7 +131,8 @@ export async function createProduct(
 
 export async function updateProduct(
   id: number,
-  data: Partial<Omit<ProductRow, "id" | "createdAt" | "updatedAt" | "deletedAt">>
+  data: Partial<Omit<ProductRow, "id" | "createdAt" | "updatedAt" | "deletedAt">>,
+  options?: { expectedStock?: number }
 ) {
   const updated = await db.transaction(async (tx) => {
     // Lock the row first so a concurrent edit can't race the threshold check below.
@@ -142,6 +146,19 @@ export async function updateProduct(
       .where(eq(products.id, id))
       .for("update")
       .limit(1);
+
+    // The admin form's stock field reflects whatever it loaded on GET, not
+    // necessarily the current DB value — a completed order can have
+    // decremented it since. Reject rather than silently overwrite that sale.
+    if (
+      options?.expectedStock !== undefined &&
+      old &&
+      old.stock !== options.expectedStock
+    ) {
+      throw new StockConflictError(
+        "Stock changed since this page was loaded (likely a completed order) — refresh and try again."
+      );
+    }
 
     const [row] = await tx
       .update(products)
@@ -270,7 +287,11 @@ export async function getProductSizesBatch(
  * Sizeless products are untouched here; their stock is set directly via the
  * product form's Stock field.
  */
-export async function setProductSizes(productId: number, sizes: ProductSize[]) {
+export async function setProductSizes(
+  productId: number,
+  sizes: ProductSize[],
+  expectedSizes?: ProductSize[]
+) {
   // Wrap in a transaction and lock the product row first so two concurrent
   // calls for the same product can't interleave their DELETE + INSERT, which
   // would leave duplicate or missing sizes.
@@ -281,6 +302,24 @@ export async function setProductSizes(productId: number, sizes: ProductSize[]) {
       .where(eq(products.id, productId))
       .for("update")
       .limit(1);
+
+    // Same staleness check as updateProduct's expectedStock, per size: an
+    // order can have decremented one of these since the admin form loaded.
+    if (expectedSizes !== undefined) {
+      const current = await tx
+        .select({ size: productSizes.size, stock: productSizes.stock })
+        .from(productSizes)
+        .where(eq(productSizes.productId, productId));
+      const currentBySize = new Map(current.map((s) => [s.size, s.stock]));
+      for (const expected of expectedSizes) {
+        const actual = currentBySize.get(expected.size);
+        if (actual !== undefined && actual !== expected.stock) {
+          throw new StockConflictError(
+            "Stock changed since this page was loaded (likely a completed order) — refresh and try again."
+          );
+        }
+      }
+    }
 
     await tx.delete(productSizes).where(eq(productSizes.productId, productId));
     if (sizes.length > 0) {

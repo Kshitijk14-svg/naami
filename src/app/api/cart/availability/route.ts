@@ -4,6 +4,7 @@ import { products, productSizes } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/redis";
 import { rateLimitKey } from "@/lib/requestIp";
+import { availableStock } from "@/db/queries/reservations";
 
 interface CartLineInput {
   productId: number;
@@ -68,8 +69,13 @@ export async function POST(request: NextRequest) {
   ]);
 
   const productMap = new Map(productRows.map((p) => [p.id, p]));
-  const sizeStockMap = new Map(sizeRows.map((s) => [`${s.productId}::${s.size}`, s.stock]));
   const productsWithSizes = new Set(sizeRows.map((s) => s.productId));
+
+  // Stock net of everyone's active checkout holds — same numbers reserveStock()
+  // will actually honor, so this doesn't advertise units someone else already
+  // has an in-flight checkout on.
+  const tracked = productRows.filter((p) => p.trackStock).map((p) => p.id);
+  const available = await availableStock(tracked);
 
   const results: AvailabilityResult[] = lines.map((line) => {
     const product = productMap.get(line.productId);
@@ -80,11 +86,11 @@ export async function POST(request: NextRequest) {
     if (!product.trackStock) {
       return { productId: line.productId, size: line.size, stock: null, available: true };
     }
-    if (productsWithSizes.has(line.productId)) {
-      const stock = sizeStockMap.get(`${line.productId}::${line.size}`) ?? 0;
-      return { productId: line.productId, size: line.size, stock, available: stock > 0 };
-    }
-    return { productId: line.productId, size: line.size, stock: product.stock, available: product.stock > 0 };
+    const key = productsWithSizes.has(line.productId)
+      ? `${line.productId}::${line.size}`
+      : `${line.productId}::`;
+    const stock = available.get(key) ?? 0;
+    return { productId: line.productId, size: line.size, stock, available: stock > 0 };
   });
 
   return Response.json(

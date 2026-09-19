@@ -176,7 +176,15 @@ export default function CheckoutPage() {
         }),
       });
       const createData = await createRes.json();
-      if (!createRes.ok) { setError(createData.error ?? "Could not create order."); setProcessing(false); return; }
+      if (!createRes.ok) {
+        setError(
+          createRes.status === 401
+            ? "You're not logged in. Please sign in to complete your purchase."
+            : createData.error ?? "Could not create order."
+        );
+        setProcessing(false);
+        return;
+      }
 
       // 2. Open Razorpay checkout
       const rzp = new window.Razorpay({
@@ -227,7 +235,20 @@ export default function CheckoutPage() {
             setProcessing(false);
           }
         },
-        modal: { ondismiss: () => setProcessing(false) },
+        modal: {
+          ondismiss: () => {
+            // Best-effort: free the stock/coupon hold now instead of making
+            // the next buyer wait out the reservation TTL. Fire-and-forget —
+            // the TTL is the backstop if this request never lands.
+            fetch("/api/checkout/cancel-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ razorpayOrderId: createData.razorpayOrderId }),
+              keepalive: true,
+            }).catch(() => {});
+            setProcessing(false);
+          },
+        },
       });
       rzp.open();
     } catch (err) {

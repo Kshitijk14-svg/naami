@@ -47,6 +47,7 @@ export default function CollectionPageContent() {
   const gridRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((s) => s.addItem);
+  const cartItems = useCartStore((s) => s.items);
 
   useEffect(() => {
     fetch("/api/products")
@@ -373,6 +374,12 @@ export default function CollectionPageContent() {
                   const size = selectedSize || sizes[0]?.size || "One Size";
                   const sizeStock = sizes.find((s) => s.size === size)?.stock;
                   if (sizes.length > 0 && sizeStock === 0) {
+                    setSizeError(true);
+                    setTimeout(() => setSizeError(false), 2000);
+                    return;
+                  }
+                  const existingQty = cartItems.find((i) => i.productId === expandedProduct.id && i.size === size)?.quantity ?? 0;
+                  if (sizeStock !== undefined && existingQty + 1 > sizeStock) {
                     setSizeError(true);
                     setTimeout(() => setSizeError(false), 2000);
                     return;

@@ -39,6 +39,20 @@ export default function AuthForm() {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
 
+  // Bounce an already-authenticated visitor straight to their destination —
+  // covers cases like a stale Sign In link sending a logged-in user here.
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : { authenticated: false }))
+      .then((data: { authenticated: boolean; role?: Role }) => {
+        if (data.authenticated && data.role) {
+          router.replace(safeFrom ?? ROLE_REDIRECT[data.role]);
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Entrance animation
   useEffect(() => {
     if (containerRef.current) {

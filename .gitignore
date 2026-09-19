@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# manual QA testing guide (local deliverable, not part of the app)
+/qa-testing

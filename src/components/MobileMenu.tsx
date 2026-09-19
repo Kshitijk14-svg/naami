@@ -155,6 +155,9 @@ export default function MobileMenu({ open, onClose, session, onSignOut, cartItem
             <Link href="/our-journey" onClick={onClose} className={LINK_CLASS} style={{ color: "#1A1212", borderBottom: "1px solid rgba(17,17,17,0.08)" }}>
               Our Journey
             </Link>
+            <Link href="/contact" onClick={onClose} className={LINK_CLASS} style={{ color: "#1A1212", borderBottom: "1px solid rgba(17,17,17,0.08)" }}>
+              Contact
+            </Link>
             <Link href="/cart" onClick={onClose} className={LINK_CLASS} style={{ color: "#1A1212", borderBottom: "1px solid rgba(17,17,17,0.08)" }}>
               <span>Cart</span>
               {cartItemsCount > 0 && (

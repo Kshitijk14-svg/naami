@@ -171,7 +171,10 @@ export default function CartPage() {
             </div>
 
             {items.map((item) => {
-              const isUnavailable = availability[lineKey(item.productId, item.size)]?.available === false;
+              const lineAvailability = availability[lineKey(item.productId, item.size)];
+              const isUnavailable = lineAvailability?.available === false;
+              const atStockLimit =
+                lineAvailability?.stock != null && item.quantity >= lineAvailability.stock;
               return (
                 <div
                   key={`${item.productId}-${item.size}`}
@@ -224,7 +227,8 @@ export default function CartPage() {
                     </span>
                     <button
                       onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
-                      disabled={isUnavailable}
+                      disabled={isUnavailable || atStockLimit}
+                      title={atStockLimit ? "No more stock available" : undefined}
                       className="font-bold hover:opacity-60 transition-opacity cursor-pointer disabled:cursor-not-allowed"
                       style={{ width: 24, height: 24, fontSize: "16px", color: "#111", backgroundColor: "rgba(17,17,17,0.06)", border: "none", lineHeight: 1 }}
                     >
