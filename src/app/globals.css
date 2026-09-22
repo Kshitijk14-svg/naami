@@ -163,10 +163,15 @@ body,
   display: none;
 }
 
-/* ─── Custom Cursor: hide native cursor while the dot cursor is active ─── */
-html.naami-cursor-active,
-html.naami-cursor-active * {
-  cursor: none !important;
+/* ─── Custom Cursor: hide native cursor while the dot cursor is active ───
+   Scoped to the same 768px breakpoint as the replacement cursor's own
+   `md:block` visibility (CustomCursor.tsx) so the two can never disagree —
+   below 768px the native cursor stays visible since no replacement renders. */
+@media (min-width: 768px) {
+  html.naami-cursor-active,
+  html.naami-cursor-active * {
+    cursor: none !important;
+  }
 }
 
 /* ─── Scrapbook / tape-frame primitive (Shared Moments carousel) ────────── */
