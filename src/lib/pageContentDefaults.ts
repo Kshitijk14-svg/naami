@@ -97,6 +97,10 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     title: "Naami Universe",
     links: [{ label: "Our Journey", href: "/our-journey" }],
   },
+  {
+    title: "Legal",
+    links: [{ label: "Privacy Policy", href: "/privacy-policy" }],
+  },
 ];
 
 const ABOUT_FOUNDING_BODY = [

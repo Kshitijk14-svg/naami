@@ -76,7 +76,7 @@ export default function BrandLoader() {
       >
         <div
           ref={logoIconRef}
-          style={{ opacity: 0, width: "clamp(120px, 18vw, 200px)", height: "auto" }}
+          style={{ opacity: 0, width: "clamp(60px, 9vw, 100px)", height: "auto" }}
         >
           <Image
             src="/images/naami-logo-mark.png"

@@ -28,7 +28,7 @@ export const TITLE_ACCENT_STYLE = {
   letterSpacing: "0.35em",
   display: "inline-block",
   lineHeight: 1,
-  marginTop: "-1.1em",
+  marginTop: "-1.6em",
 } as const;
 
 /** Title metrics. Pass `color` only for headings on dark or photographic backgrounds. */
