@@ -43,12 +43,9 @@ export default function SectionTitle({
       <Tag className={TITLE_CLASS} style={titleStyle(size, color)}>
         {title}
         {accent != null && accent !== "" && (
-          <>
-            <br />
-            <span className={TITLE_ACCENT_CLASS} style={{ ...TITLE_ACCENT_STYLE, color }}>
-              {accent}
-            </span>
-          </>
+          <span className={TITLE_ACCENT_CLASS} style={{ ...TITLE_ACCENT_STYLE, color }}>
+            {accent}
+          </span>
         )}
       </Tag>
     </div>

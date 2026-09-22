@@ -156,7 +156,6 @@ export default function CollectionPageContent() {
           ) : (
             <>
               {cms.collection_fallback_title}
-              <br />
               <span className={TITLE_ACCENT_CLASS} style={TITLE_ACCENT_STYLE}>{cms.collection_fallback_title_accent}</span>
             </>
           )}
