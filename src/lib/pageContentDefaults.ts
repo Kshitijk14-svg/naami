@@ -98,7 +98,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     links: [{ label: "Our Journey", href: "/our-journey" }],
   },
   {
-    title: "Legal",
+    title: "Our Policies",
     links: [{ label: "Privacy Policy", href: "/privacy-policy" }],
   },
 ];
