@@ -10,6 +10,7 @@ import { Role } from "@/models/roles";
 import NavSearch from "@/components/NavSearch";
 import ProfileDropdown from "@/components/ProfileDropdown";
 import MobileMenu from "@/components/MobileMenu";
+import { useWishlistStore } from "@/models/wishlistStore";
 
 interface SessionData {
   authenticated: boolean;
@@ -24,6 +25,7 @@ export default function Navbar() {
   const navbarRef = useRef<HTMLElement>(null);
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
   const [session, setSession] = useState<SessionData | null>(null);
+  const resetWishlist = useWishlistStore((s) => s.reset);
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Refetch on every pathname change — Navbar is mounted once in the root
@@ -61,8 +63,16 @@ export default function Navbar() {
   }
 
   const handleSignOut = async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
+    try {
+      const res = await fetch("/api/auth/signout", { method: "POST" });
+      // Showing "signed out" while the cookie is still live is worse than
+      // saying nothing happened, so only tear down the UI if it really did.
+      if (!res.ok) return;
+    } catch {
+      return;
+    }
     setSession({ authenticated: false });
+    resetWishlist();
     router.push("/");
     router.refresh();
   };

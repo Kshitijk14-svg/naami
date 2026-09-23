@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useWishlistStore } from "@/models/wishlistStore";
+import { useWishlistStore, WishlistAuthError } from "@/models/wishlistStore";
 
 interface Props {
   productId: number;
@@ -12,7 +12,7 @@ interface Props {
 
 export default function WishlistButton({ productId, className = "" }: Props) {
   const router = useRouter();
-  const { ids, loaded, load, toggle } = useWishlistStore();
+  const { ids, load, toggle } = useWishlistStore();
 
   // Load once per session — idempotent
   useEffect(() => {
@@ -25,17 +25,16 @@ export default function WishlistButton({ productId, className = "" }: Props) {
     e.stopPropagation();
     e.preventDefault();
 
-    // If not loaded yet, we're unauthenticated — redirect to auth
-    if (!loaded) {
-      router.push("/auth");
-      return;
-    }
-
-    // If the toggle call comes back 401, redirect to auth
+    // No pre-check on load state. This used to bail out to /auth whenever the
+    // initial GET had not resolved yet, which threw signed-in users off a
+    // freshly-loaded product page purely for clicking quickly. The server's
+    // answer to the toggle is the only reliable signal, so ask it and react.
     try {
       await toggle(productId);
-    } catch {
-      router.push("/auth");
+    } catch (err) {
+      // Only a real 401 means "sign in" — a network blip must not evict the
+      // shopper from the page they are on.
+      if (err instanceof WishlistAuthError) router.push("/auth");
     }
   };
 

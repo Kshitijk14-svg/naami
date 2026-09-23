@@ -9,6 +9,8 @@ import { formatINR } from "@/lib/format";
 import EvanliteFooter from "@/components/EvanliteFooter";
 import { PRICE_CLASS, PRODUCT_NAME_CLASS, TITLE_CLASS, titleStyle } from "@/lib/typography";
 import { useDesignSettings } from "@/lib/useDesignSettings";
+import { useWishlistStore } from "@/models/wishlistStore";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 type Tab = "profile" | "orders" | "wishlist";
 
@@ -44,6 +46,9 @@ export default function ProfilePage() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistError, setWishlistError] = useState<string | null>(null);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
+  const removeLocalWishlistId = useWishlistStore((s) => s.removeLocal);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -61,23 +66,49 @@ export default function ProfilePage() {
   useEffect(() => {
     if (activeTab === "orders" && orders.length === 0) {
       setOrdersLoading(true);
-      fetch("/api/orders")
-        .then((r) => r.json())
-        .then((data: Order[]) => { setOrders(data); setOrdersLoading(false); })
-        .catch(() => setOrdersLoading(false));
+      setOrdersError(null);
+      fetchJson<Order[]>("/api/orders")
+        .then((data) => { setOrders(data); setOrdersLoading(false); })
+        .catch((e) => {
+          // Previously this just stopped the spinner, so a failed load was
+          // indistinguishable from genuinely having no orders.
+          setOrdersError(errorMessage(e, "Could not load your orders."));
+          setOrdersLoading(false);
+        });
     }
     if (activeTab === "wishlist" && wishlist.length === 0) {
       setWishlistLoading(true);
-      fetch("/api/wishlist")
-        .then((r) => r.json())
-        .then((data: WishlistItem[]) => { setWishlist(data); setWishlistLoading(false); })
-        .catch(() => setWishlistLoading(false));
+      setWishlistError(null);
+      fetchJson<WishlistItem[]>("/api/wishlist")
+        .then((data) => { setWishlist(data); setWishlistLoading(false); })
+        .catch((e) => {
+          setWishlistError(errorMessage(e, "Could not load your wishlist."));
+          setWishlistLoading(false);
+        });
     }
   }, [activeTab, orders.length, wishlist.length]);
 
   const removeFromWishlist = async (productId: number) => {
-    await fetch(`/api/wishlist/${productId}`, { method: "DELETE" });
-    setWishlist((prev) => prev.filter((i) => i.productId !== productId));
+    setWishlistError(null);
+    try {
+      const res = await fetch(`/api/wishlist/${productId}`, { method: "DELETE" });
+      if (!res.ok) {
+        // Previously the card vanished whatever the server said, so a failed
+        // delete looked exactly like a successful one until the next reload.
+        setWishlistError(
+          res.status === 401
+            ? "Your session expired. Please sign in again."
+            : "Could not remove that item. Please try again."
+        );
+        return;
+      }
+      setWishlist((prev) => prev.filter((i) => i.productId !== productId));
+      // Keep the shared store in step, or the heart on the product page stays
+      // filled until a hard reload.
+      removeLocalWishlistId(productId);
+    } catch {
+      setWishlistError("Could not remove that item. Please check your connection.");
+    }
   };
 
   if (!session) {
@@ -194,7 +225,16 @@ export default function ProfilePage() {
                   <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5B1C1C" }} />
                 </div>
               )}
-              {!ordersLoading && orders.length === 0 && (
+              {ordersError && (
+                <p
+                  className="font-sans mb-5"
+                  style={{ fontSize: "12px", color: "#5B1C1C", lineHeight: 1.6 }}
+                  role="alert"
+                >
+                  {ordersError}
+                </p>
+              )}
+              {!ordersLoading && !ordersError && orders.length === 0 && (
                 <div className="py-12 text-center">
                   <p className="font-serif font-light" style={{ fontSize: "1.25rem", color: "rgba(17,17,17,0.5)" }}>
                     {cms.profile_empty_orders}
@@ -264,6 +304,15 @@ export default function ProfilePage() {
                     Discover the Atelier →
                   </Link>
                 </div>
+              )}
+              {wishlistError && (
+                <p
+                  className="font-sans mb-5"
+                  style={{ fontSize: "12px", color: "#5B1C1C", lineHeight: 1.6 }}
+                  role="alert"
+                >
+                  {wishlistError}
+                </p>
               )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {wishlist.map((item) => (
