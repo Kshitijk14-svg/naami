@@ -66,6 +66,7 @@ function LabeledInput({
   onChange,
   type = "text",
   placeholder = "",
+  autoComplete,
 }: {
   label: string;
   field: keyof AddressForm;
@@ -73,6 +74,7 @@ function LabeledInput({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   type?: string;
   placeholder?: string;
+  autoComplete?: string;
 }) {
   return (
     <div>
@@ -85,6 +87,8 @@ function LabeledInput({
       </label>
       <input
         id={`checkout-${field}`}
+        name={field}
+        autoComplete={autoComplete}
         type={type}
         value={value}
         onChange={onChange}
@@ -106,6 +110,11 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<AddressForm>(EMPTY_FORM);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set when the failure was "you are not signed in", so the error panel can
+  // offer a way out. Telling someone to sign in after they have filled an
+  // eight-field address form, with no link and no way back to this page, is
+  // where checkouts get abandoned.
+  const [authRequired, setAuthRequired] = useState(false);
   const [discountInr, setDiscountInr] = useState(0);
 
   const subtotal = items.reduce((sum, i) => sum + i.priceInr * i.quantity, 0);
@@ -177,9 +186,10 @@ export default function CheckoutPage() {
       });
       const createData = await createRes.json();
       if (!createRes.ok) {
+        setAuthRequired(createRes.status === 401);
         setError(
           createRes.status === 401
-            ? "You're not logged in. Please sign in to complete your purchase."
+            ? "You're not signed in. Sign in to complete your purchase — your cart is saved."
             : createData.error ?? "Could not create order."
         );
         setProcessing(false);
@@ -201,16 +211,22 @@ export default function CheckoutPage() {
           // Only the three gateway ids. What is being bought, and for how
           // much, comes from the checkout intent the server stored before
           // payment — never from this request.
-          const verifyRes = await fetch("/api/checkout/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            }),
-          });
+          // The fetch belongs inside the try. A network drop between "payment
+          // captured" and this request — the common case on mobile, right after
+          // returning from a UPI/banking app — used to reject out here, where
+          // nothing catches it: the reassuring message below never rendered and
+          // setProcessing(false) never ran, so an already-charged customer sat
+          // on a spinning button forever.
           try {
+            const verifyRes = await fetch("/api/checkout/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) {
               setError(verifyData.error ?? "Payment verification failed.");
@@ -283,23 +299,32 @@ export default function CheckoutPage() {
             </p>
 
             <div className="flex flex-col gap-4">
-              <LabeledInput label="Full Name *" field="name" value={form.name} onChange={update("name")} placeholder="As on courier" />
+              <LabeledInput label="Full Name *" field="name" autoComplete="name" value={form.name} onChange={update("name")} placeholder="As on courier" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <LabeledInput label="Email *" field="email" type="email" value={form.email} onChange={update("email")} placeholder="For receipt" />
-                <LabeledInput label="Phone *" field="phone" type="tel" value={form.phone} onChange={update("phone")} placeholder="10-digit mobile" />
+                <LabeledInput label="Email *" field="email" type="email" autoComplete="email" value={form.email} onChange={update("email")} placeholder="For receipt" />
+                <LabeledInput label="Phone *" field="phone" type="tel" autoComplete="tel" value={form.phone} onChange={update("phone")} placeholder="10-digit mobile" />
               </div>
-              <LabeledInput label="Address Line 1 *" field="line1" value={form.line1} onChange={update("line1")} placeholder="Building, street" />
-              <LabeledInput label="Address Line 2" field="line2" value={form.line2} onChange={update("line2")} placeholder="Landmark, area (optional)" />
+              <LabeledInput label="Address Line 1 *" field="line1" autoComplete="address-line1" value={form.line1} onChange={update("line1")} placeholder="Building, street" />
+              <LabeledInput label="Address Line 2" field="line2" autoComplete="address-line2" value={form.line2} onChange={update("line2")} placeholder="Landmark, area (optional)" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <LabeledInput label="City *" field="city" value={form.city} onChange={update("city")} />
-                <LabeledInput label="State *" field="state" value={form.state} onChange={update("state")} />
-                <LabeledInput label="PIN Code *" field="pincode" value={form.pincode} onChange={update("pincode")} placeholder="6-digit" />
+                <LabeledInput label="City *" field="city" autoComplete="address-level2" value={form.city} onChange={update("city")} />
+                <LabeledInput label="State *" field="state" autoComplete="address-level1" value={form.state} onChange={update("state")} />
+                <LabeledInput label="PIN Code *" field="pincode" autoComplete="postal-code" value={form.pincode} onChange={update("pincode")} placeholder="6-digit" />
               </div>
             </div>
 
             {error && (
               <div className="mt-6 px-4 py-3" style={{ backgroundColor: "rgba(139,26,26,0.08)", border: "1px solid rgba(139,26,26,0.2)" }}>
                 <p className="font-sans" style={{ fontSize: "12px", color: "#5B1C1C" }}>{error}</p>
+                {authRequired && (
+                  <Link
+                    href="/auth?from=/checkout"
+                    className="inline-block mt-2 font-sans font-bold uppercase tracking-[0.2em] border-b pb-0.5"
+                    style={{ fontSize: "9px", color: "#5B1C1C", borderColor: "#5B1C1C" }}
+                  >
+                    Sign in →
+                  </Link>
+                )}
               </div>
             )}
 
