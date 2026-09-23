@@ -55,13 +55,18 @@ export function CategoryForm({ categoryId }: { categoryId?: number }) {
     setError("");
     const url = categoryId ? `/api/admin/categories/${categoryId}` : "/api/admin/categories";
     const method = categoryId ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    setSubmitting(false);
-    if (res.ok) {
-      router.push("/admin/categories");
-    } else {
+    try {
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      if (res.ok) {
+        router.push("/admin/categories");
+        return;
+      }
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Save failed");
+    } catch {
+      setError("Could not reach the server. Your changes were not saved.");
+    } finally {
+      setSubmitting(false);
     }
   };
 

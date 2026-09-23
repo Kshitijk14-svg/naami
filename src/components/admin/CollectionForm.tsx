@@ -91,13 +91,18 @@ export function CollectionForm({ collectionId }: { collectionId?: number }) {
     };
     const url = collectionId ? `/api/admin/collections/${collectionId}` : "/api/admin/collections";
     const method = collectionId ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    setSubmitting(false);
-    if (res.ok) {
-      router.push("/admin/collections");
-    } else {
+    try {
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (res.ok) {
+        router.push("/admin/collections");
+        return;
+      }
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Save failed");
+    } catch {
+      setError("Could not reach the server. Your changes were not saved.");
+    } finally {
+      setSubmitting(false);
     }
   };
 

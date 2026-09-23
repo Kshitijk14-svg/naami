@@ -178,14 +178,18 @@ export function ProductForm({ productId }: { productId?: number }) {
 
     const url = productId ? `/api/admin/products/${productId}` : "/api/admin/products";
     const method = productId ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    setSubmitting(false);
-
-    if (res.ok) {
-      router.push("/admin/products");
-    } else {
+    try {
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (res.ok) {
+        router.push("/admin/products");
+        return;
+      }
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Save failed");
+    } catch {
+      setError("Could not reach the server. Your changes were not saved.");
+    } finally {
+      setSubmitting(false);
     }
   };
 

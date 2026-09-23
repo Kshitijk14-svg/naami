@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CrudTable } from "@/components/admin/CrudTable";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 type Category = { id: number; name: string; slug: string; description: string | null; createdAt: string };
 
@@ -14,15 +15,25 @@ export default function CategoriesPage() {
 
   const load = () => {
     setIsLoading(true);
-    fetch("/api/admin/categories")
-      .then((r) => r.json())
+    fetchJson<Category[]>("/api/admin/categories")
       .then((d) => { setRows(d); setIsLoading(false); })
-      .catch(() => { setError("Failed to load"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load")); setIsLoading(false); });
   };
   useEffect(() => { load(); }, []);
 
   const handleDelete = async (c: Category) => {
-    await fetch(`/api/admin/categories/${c.id}`, { method: "DELETE" });
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/categories/${c.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Could not delete that category (${res.status}).`);
+        return;
+      }
+    } catch {
+      setError("Could not reach the server. Please try again.");
+      return;
+    }
     load();
   };
 

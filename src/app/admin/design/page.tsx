@@ -59,6 +59,10 @@ export default function AdminDesignPage() {
   // ── Hero settings (existing) ──────────────────────────────────────────────
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  // A failed load must not fall through to an editor full of empty fields:
+  // every save writes `settings[key] ?? ""` and the API accepts "", so one
+  // click of Save on a silently-empty form blanked the whole section.
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("hero");
 
   const [heroSaving, setHeroSaving] = useState(false);
@@ -144,11 +148,17 @@ export default function AdminDesignPage() {
 
   const loadAll = () => {
     setLoading(true);
+    setLoadError(null);
+    const get = async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${url} returned ${res.status}`);
+      return res.json();
+    };
     Promise.all([
-      fetch("/api/admin/design").then((r) => r.json()),
-      fetch("/api/admin/homepage-banner-hotspots").then((r) => r.json()),
-      fetch("/api/admin/homepage-look-cards").then((r) => r.json()),
-      fetch("/api/admin/homepage-shared-moments").then((r) => r.json()),
+      get("/api/admin/design"),
+      get("/api/admin/homepage-banner-hotspots"),
+      get("/api/admin/homepage-look-cards"),
+      get("/api/admin/homepage-shared-moments"),
     ])
       .then(
         ([designSettings, banner, cards, videos]: [
@@ -184,7 +194,11 @@ export default function AdminDesignPage() {
           setDeletedVideoIds([]);
         }
       )
-      .catch(() => {})
+      .catch((err: unknown) => {
+        setLoadError(
+          err instanceof Error ? err.message : "Could not load design settings."
+        );
+      })
       .finally(() => setLoading(false));
   };
 
@@ -212,7 +226,7 @@ export default function AdminDesignPage() {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         setHeroError(data.error ?? "Failed to save.");
         return;
       }
@@ -266,7 +280,7 @@ export default function AdminDesignPage() {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       throw new Error(data.error ?? "Failed to save.");
     }
   };
@@ -462,7 +476,11 @@ export default function AdminDesignPage() {
     setVideosSaved(false);
     try {
       for (const videoId of deletedVideoIds) {
-        await fetch(`/api/admin/homepage-shared-moments/${videoId}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/homepage-shared-moments/${videoId}`, { method: "DELETE" });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? `Could not remove a video (${res.status}).`);
+        }
       }
       for (const video of sharedMomentVideos) {
         if (!video.videoUrl) continue;
@@ -480,7 +498,7 @@ export default function AdminDesignPage() {
           body: JSON.stringify(body),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           setVideosError(data.error ?? "Failed to save videos.");
           return;
         }
@@ -522,7 +540,11 @@ export default function AdminDesignPage() {
     setCardsSaved(false);
     try {
       for (const cardId of deletedCardIds) {
-        await fetch(`/api/admin/homepage-look-cards/${cardId}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/homepage-look-cards/${cardId}`, { method: "DELETE" });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? `Could not remove a look card (${res.status}).`);
+        }
       }
       for (const card of lookCards) {
         const body = {
@@ -542,7 +564,7 @@ export default function AdminDesignPage() {
           body: JSON.stringify(body),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           setCardsError(data.error ?? "Failed to save look cards.");
           return;
         }
@@ -573,6 +595,25 @@ export default function AdminDesignPage() {
 
       {loading ? (
         <p className="font-sans" style={{ fontSize: "13px", color: "rgba(17,17,17,0.5)" }}>Loading settings…</p>
+      ) : loadError ? (
+        <div style={{ border: "1px solid rgba(139,26,26,0.3)", background: "rgba(139,26,26,0.04)", padding: "24px" }}>
+          <p className="font-sans font-bold uppercase tracking-[0.2em] mb-3" style={{ fontSize: "10px", color: "#5B1C1C" }}>
+            Could not load settings
+          </p>
+          <p className="font-sans mb-5" style={{ fontSize: "13px", color: "rgba(17,17,17,0.7)", lineHeight: 1.6 }}>
+            {loadError}. The editor is hidden on purpose — saving now would overwrite
+            your live content with empty values. Retry, and if it keeps failing check
+            that you are still signed in.
+          </p>
+          <button
+            type="button"
+            onClick={loadAll}
+            className="font-sans font-bold uppercase tracking-[0.2em] cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ fontSize: "9px", padding: "12px 20px", backgroundColor: "#5B1C1C", color: "#FFF9EF", border: "none" }}
+          >
+            Retry
+          </button>
+        </div>
       ) : (
         <>
           <div

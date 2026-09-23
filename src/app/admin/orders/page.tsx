@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { type OrderStatus } from "@/lib/orderStatus";
 import { formatIst } from "@/lib/istTime";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 interface Order {
   id: string;
@@ -64,10 +65,9 @@ export default function OrdersPage() {
     if (debouncedSearch.trim()) params.set("q", debouncedSearch.trim());
     if (fromDate) params.set("from", fromDate);
     if (toDate) params.set("to", toDate);
-    fetch(`/api/admin/orders${params.size ? `?${params}` : ""}`)
-      .then((r) => r.json())
+    fetchJson<Order[]>(`/api/admin/orders${params.size ? `?${params}` : ""}`)
       .then((d) => { setRows(d); setIsLoading(false); })
-      .catch(() => { setError("Failed to load"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load")); setIsLoading(false); });
   };
   useEffect(() => { load(); }, [statusFilter, debouncedSearch, fromDate, toDate]); // eslint-disable-line react-hooks/exhaustive-deps
 

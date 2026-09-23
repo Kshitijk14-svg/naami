@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CrudTable } from "@/components/admin/CrudTable";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 type Collection = {
   id: number;
@@ -22,15 +23,25 @@ export default function CollectionsPage() {
 
   const load = () => {
     setIsLoading(true);
-    fetch("/api/admin/collections")
-      .then((r) => r.json())
+    fetchJson<Collection[]>("/api/admin/collections")
       .then((d) => { setRows(d); setIsLoading(false); })
-      .catch(() => { setError("Failed to load"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load")); setIsLoading(false); });
   };
   useEffect(() => { load(); }, []);
 
   const handleDelete = async (c: Collection) => {
-    await fetch(`/api/admin/collections/${c.id}`, { method: "DELETE" });
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/collections/${c.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Could not delete that collection (${res.status}).`);
+        return;
+      }
+    } catch {
+      setError("Could not reach the server. Please try again.");
+      return;
+    }
     load();
   };
 

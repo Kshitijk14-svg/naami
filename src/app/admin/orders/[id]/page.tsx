@@ -120,29 +120,42 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       body.status = newStatus;
       if (note.trim()) body.note = note.trim();
     }
-    const res = await fetch(`/api/admin/orders/${id}`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    });
-    setSubmitting(false);
-    if (res.ok) {
-      load();
-    } else {
-      const d = await res.json();
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        load();
+        return;
+      }
+      // .catch here matters: a non-JSON 500/502 used to throw out of this
+      // handler, so the error message never rendered and the button stayed
+      // stuck at "Saving…".
+      const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Save failed");
+    } catch {
+      setError("Could not reach the server. Your changes were not saved.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const sendInvoice = async () => {
     if (!order) return;
     setInvoiceState("sending");
-    const res = await fetch(`/api/admin/orders/${order.id}/send-invoice`, { method: "POST" });
-    if (res.ok) {
-      const d = await res.json();
-      setInvoiceState("sent");
-      setOrder((prev) => (prev ? { ...prev, invoiceNumber: d.invoiceNumber } : prev));
-    } else {
+    try {
+      const res = await fetch(`/api/admin/orders/${order.id}/send-invoice`, { method: "POST" });
+      if (res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setInvoiceState("sent");
+        setOrder((prev) => (prev ? { ...prev, invoiceNumber: d.invoiceNumber } : prev));
+        return;
+      }
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Failed to queue invoice");
+      setInvoiceState("idle");
+    } catch {
+      setError("Could not reach the server. The invoice was not queued.");
       setInvoiceState("idle");
     }
   };

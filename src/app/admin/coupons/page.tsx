@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
 import { CrudModal } from "@/components/admin/CrudModal";
 import { utcToIstInput, istInputToUtc, formatIst } from "@/lib/istTime";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 // Matches the coupons DB row as serialized by /api/admin/coupons.
 interface Coupon {
@@ -82,10 +83,9 @@ export default function CouponsPage() {
 
   const load = () => {
     setIsLoading(true);
-    fetch("/api/admin/coupons")
-      .then((r) => r.json())
+    fetchJson<Coupon[]>("/api/admin/coupons")
       .then((d) => { setRows(d); setIsLoading(false); })
-      .catch(() => { setError("Failed to load"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load")); setIsLoading(false); });
   };
   useEffect(() => { load(); }, []);
 
@@ -110,8 +110,7 @@ export default function CouponsPage() {
   const openRedemptions = (c: Coupon) => {
     setRedemptionsFor(c);
     setRedemptions(null);
-    fetch(`/api/admin/coupons/${c.id}/redemptions`)
-      .then((r) => r.json())
+    fetchJson<Redemption[]>(`/api/admin/coupons/${c.id}/redemptions`)
       .then(setRedemptions)
       .catch(() => setRedemptions([]));
   };
@@ -139,15 +138,36 @@ export default function CouponsPage() {
     };
     const url = editing ? `/api/admin/coupons/${editing.id}` : "/api/admin/coupons";
     const method = editing ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    setSubmitting(false);
-    if (res.ok) { setModalOpen(false); setEditing(null); load(); } else {
-      const d = await res.json(); setError(d.error ?? "Save failed");
+    try {
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (res.ok) {
+        setModalOpen(false);
+        setEditing(null);
+        load();
+        return;
+      }
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "Save failed");
+    } catch {
+      setError("Could not reach the server. Your changes were not saved.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleDelete = async (c: Coupon) => {
-    await fetch(`/api/admin/coupons/${c.id}`, { method: "DELETE" });
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/coupons/${c.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Could not delete that coupon (${res.status}).`);
+        return;
+      }
+    } catch {
+      setError("Could not reach the server. Please try again.");
+      return;
+    }
     load();
   };
 

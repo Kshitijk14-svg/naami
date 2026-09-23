@@ -26,6 +26,7 @@ const TILES: Tile[] = [
   { label: "Orders",      href: "/admin/orders",      description: "View and update the status of all customer orders.",           roles: ["staff", "admin", "super_admin"] },
   { label: "Our Journey", href: "/admin/our-journey", description: "Add the images and captions for the Our Journey page.",             roles: ["admin", "super_admin"] },
   { label: "Design",      href: "/admin/design",      description: "Update hero images, titles, and tags on the home page.",          roles: ["admin", "super_admin"] },
+  { label: "Feedback",    href: "/admin/feedback",    description: "Review and approve customer feedback on delivered orders.",    roles: ["admin", "super_admin"] },
 ];
 
 export default function AdminPage() {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CrudTable } from "@/components/admin/CrudTable";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 type Feedback = {
   id: number;
@@ -29,10 +30,9 @@ export default function FeedbackPage() {
 
   const load = () => {
     setIsLoading(true);
-    fetch("/api/admin/feedback")
-      .then((r) => r.json())
+    fetchJson<Feedback[]>("/api/admin/feedback")
       .then((d) => { setRows(d); setIsLoading(false); })
-      .catch(() => { setError("Failed to load"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load")); setIsLoading(false); });
   };
   useEffect(() => { load(); }, []);
 

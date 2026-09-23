@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CrudTable } from "@/components/admin/CrudTable";
+import { fetchJson, errorMessage } from "@/lib/fetchJson";
 
 type Product = {
   id: number;
@@ -33,16 +34,14 @@ export default function ProductsPage() {
 
   const load = () => {
     setIsLoading(true);
-    fetch("/api/admin/products")
-      .then((r) => r.json())
+    fetchJson<Product[]>("/api/admin/products")
       .then((data) => { setProducts(data); setIsLoading(false); })
-      .catch(() => { setError("Failed to load products"); setIsLoading(false); });
+      .catch((e) => { setError(errorMessage(e, "Failed to load products")); setIsLoading(false); });
   };
 
   useEffect(() => {
     load();
-    fetch("/api/admin/categories")
-      .then((r) => r.json())
+    fetchJson<Category[]>("/api/admin/categories")
       .then((data) => setCategories(data))
       .catch(() => {});
   }, []);

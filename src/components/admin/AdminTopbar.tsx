@@ -17,7 +17,18 @@ export function AdminTopbar({ email, name, role }: Props) {
 
   const handleSignOut = async () => {
     setSigningOut(true);
-    await fetch("/api/auth/signout", { method: "POST" });
+    try {
+      const res = await fetch("/api/auth/signout", { method: "POST" });
+      if (!res.ok) {
+        // Leave the session alone and re-enable the button rather than
+        // pretending the sign-out worked.
+        setSigningOut(false);
+        return;
+      }
+    } catch {
+      setSigningOut(false);
+      return;
+    }
     router.push("/");
     router.refresh();
   };
