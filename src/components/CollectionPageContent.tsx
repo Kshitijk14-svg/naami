@@ -197,7 +197,16 @@ export default function CollectionPageContent() {
             key={product.id}
             className="collection-card flex flex-col cursor-pointer group"
             style={{ opacity: 0 }}
+            role="button"
+            tabIndex={0}
+            aria-label={`View ${product.name}`}
             onClick={() => openProduct(product)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openProduct(product);
+              }
+            }}
           >
             {/* Image */}
             <div
@@ -371,7 +380,19 @@ export default function CollectionPageContent() {
               )}
 
               <button
+                disabled={expandedProduct.available === false}
                 onClick={() => {
+                  // The product-level availability flag, which this button used
+                  // to ignore entirely. A tracked product that is out of stock
+                  // and has no size rows leaves sizeStock undefined, so the
+                  // per-size guards below were both skipped and the item went
+                  // into the cart — the shopper only found out at the Pay
+                  // button, where the server refuses it.
+                  if (expandedProduct.available === false) {
+                    setSizeIssue("out-of-stock");
+                    setTimeout(() => setSizeIssue(null), 2000);
+                    return;
+                  }
                   const sizes = expandedProduct.sizes ?? [];
                   if (sizes.length > 1 && !selectedSize) {
                     setSizeIssue("none-selected");
@@ -400,10 +421,16 @@ export default function CollectionPageContent() {
                   });
                   closeProduct();
                 }}
-                className="mt-6 w-full py-4 font-sans font-bold uppercase tracking-[0.25em] hover:opacity-80 transition-opacity"
-                style={{ fontSize: "10px", backgroundColor: "#5B1C1C", color: "#FFF9EF" }}
+                className="mt-6 w-full py-4 font-sans font-bold uppercase tracking-[0.25em] transition-opacity disabled:cursor-not-allowed enabled:hover:opacity-80"
+                style={{
+                  fontSize: "10px",
+                  backgroundColor: expandedProduct.available === false ? "rgba(17,17,17,0.25)" : "#5B1C1C",
+                  color: "#FFF9EF",
+                }}
               >
-                {cms.collection_add_to_wardrobe_label}
+                {expandedProduct.available === false
+                  ? "Out of Stock"
+                  : cms.collection_add_to_wardrobe_label}
               </button>
             </div>
           </div>

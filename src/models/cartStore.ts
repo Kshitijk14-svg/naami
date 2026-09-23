@@ -13,15 +13,10 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   cartItemsCount: number;
-  isOpen: boolean;
   addItem: (item: Omit<CartItem, "quantity">, qty?: number) => void;
   removeItem: (productId: number, size: string) => void;
   updateQuantity: (productId: number, size: string, qty: number) => void;
   clearCart: () => void;
-  toggleCart: () => void;
-  // Legacy compat — kept so existing components don't break during migration
-  incrementItems: () => void;
-  resetCart: () => void;
 }
 
 function computeCount(items: CartItem[]): number {
@@ -33,7 +28,6 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       cartItemsCount: 0,
-      isOpen: false,
 
       addItem: (item, qty = 1) =>
         set((state) => {
@@ -74,17 +68,11 @@ export const useCartStore = create<CartState>()(
         }),
 
       clearCart: () => set({ items: [], cartItemsCount: 0 }),
-
-      toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
-
-      // Legacy: no-op — product page now calls addItem directly
-      incrementItems: () => {},
-      resetCart: () => set({ items: [], cartItemsCount: 0 }),
     }),
     {
       name: "naami_cart",
       storage: createJSONStorage(() => localStorage),
-      // Only persist cart items and count — do not persist isOpen
+      // Only persist cart items and count
       partialize: (state) => ({ items: state.items, cartItemsCount: state.cartItemsCount }),
     }
   )

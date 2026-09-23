@@ -92,6 +92,12 @@ export default function EvanliteFooter() {
               {/* Collapsible trigger / heading */}
               <div
                 onClick={() => toggleAccordion(col.title)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleAccordion(col.title);
+                  }
+                }}
                 className="flex items-center justify-between cursor-pointer py-3 md:py-2"
                 role="button"
                 tabIndex={0}

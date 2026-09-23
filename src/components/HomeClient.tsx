@@ -181,7 +181,6 @@ export default function HomeClient({
   }, []);
 
   const cartItemsCount = useCartStore((state) => state.cartItemsCount);
-  const incrementItems = useCartStore((state) => state.incrementItems);
   const cms = useDesignSettings();
 
   const [currentSlide, setCurrentSlide] = useState(0);

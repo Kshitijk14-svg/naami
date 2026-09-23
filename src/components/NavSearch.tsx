@@ -26,6 +26,7 @@ export default function NavSearch({ variant = "bar" }: NavSearchProps) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -36,13 +37,24 @@ export default function NavSearch({ variant = "bar" }: NavSearchProps) {
       return;
     }
     setLoading(true);
+    setError(false);
     fetch(`/api/search?q=${encodeURIComponent(q)}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Search failed (${r.status})`);
+        return r.json();
+      })
       .then((data: SearchResult[]) => {
-        setResults(data);
+        setResults(Array.isArray(data) ? data : []);
         setIsOpen(true);
       })
-      .catch(() => setResults([]))
+      .catch(() => {
+        // Open the dropdown and say so. Previously this set results to [] and
+        // left isOpen false, so a failed search was indistinguishable from not
+        // having typed anything — the user got no feedback at all.
+        setResults([]);
+        setError(true);
+        setIsOpen(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -51,6 +63,18 @@ export default function NavSearch({ variant = "bar" }: NavSearchProps) {
     setQuery(val);
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => search(val), 300);
+  };
+
+  // Enter used to do nothing at all: the input is not inside a <form> and had
+  // no key handler, so the debounce was the only way to ever see results.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      clearTimeout(timerRef.current);
+      search(query);
+    } else if (e.key === "Escape") {
+      close();
+    }
   };
 
   useEffect(() => {
@@ -99,6 +123,7 @@ export default function NavSearch({ variant = "bar" }: NavSearchProps) {
           type="text"
           value={query}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           onFocus={() => { if (results.length > 0) setIsOpen(true); }}
           placeholder="Search the Atelier…"
           className="bg-transparent outline-none w-full font-sans"
@@ -132,7 +157,15 @@ export default function NavSearch({ variant = "bar" }: NavSearchProps) {
             overflowY: "auto",
           }}
         >
-          {results.length === 0 ? (
+          {error ? (
+            <div
+              className="font-sans px-4 py-3"
+              style={{ fontSize: "10px", color: "#5B1C1C", letterSpacing: "0.08em" }}
+              role="alert"
+            >
+              Search is unavailable right now. Please try again.
+            </div>
+          ) : results.length === 0 ? (
             <div
               className="font-sans px-4 py-3"
               style={{ fontSize: "10px", color: "rgba(17,17,17,0.45)", letterSpacing: "0.08em" }}
