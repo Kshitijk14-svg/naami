@@ -31,6 +31,25 @@ const REDACT_KEYS = new Set([
 function redact(value: unknown, depth = 0): unknown {
   if (depth > 6 || value === null || typeof value !== "object") return value;
   if (Array.isArray(value)) return value.map((v) => redact(v, depth + 1));
+
+  // Errors must be unwrapped here, before the generic object walk below.
+  // message and stack are non-enumerable own properties, so Object.entries()
+  // returns [] for an Error and rebuilds it as {} — and because redact() runs
+  // before the JSON.stringify replacer in emit(), that replacer never sees an
+  // Error to serialise either. The result was that every
+  // log.error("...", { err }) emitted "err":{}: a failed payment recorded that
+  // it failed and nothing whatsoever about why.
+  if (value instanceof Error) {
+    const out = serializeError(value) as Record<string, unknown>;
+    if (value.cause !== undefined) out.cause = redact(value.cause, depth + 1);
+    // Enumerable extras the caller hung on the error (e.g. err.status) still
+    // go through the key redaction.
+    for (const [k, v] of Object.entries(value as unknown as Record<string, unknown>)) {
+      out[k] = REDACT_KEYS.has(k.toLowerCase()) ? "[redacted]" : redact(v, depth + 1);
+    }
+    return out;
+  }
+
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
     out[k] = REDACT_KEYS.has(k.toLowerCase()) ? "[redacted]" : redact(v, depth + 1);
