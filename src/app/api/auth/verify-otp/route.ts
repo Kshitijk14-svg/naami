@@ -7,6 +7,7 @@ import { hashPassword, isPasswordStrongEnough } from "@/lib/password";
 import { getJwtSecret } from "@/lib/jwt";
 import { createLogger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/redis";
+import { rateLimitKey } from "@/lib/requestIp";
 
 const log = createLogger("verify-otp");
 
@@ -25,7 +26,10 @@ function safeEqual(a: string, b: string): boolean {
 export async function POST(request: Request) {
   try {
     // Throttle verification attempts per IP (complements the per-OTP 3-try lock).
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    // Keyed via rateLimitKey() — see the note in lib/requestIp.ts. Reading
+    // X-Forwarded-For[0] directly let a caller rotate one header to mint fresh
+    // buckets and brute-force the OTP past the 3-try lock.
+    const ip = rateLimitKey(request);
     const rl = await checkRateLimit(`otp-verify:${ip}`, { requests: 10, window: "5 m" });
     if (rl?.limited) {
       return Response.json(

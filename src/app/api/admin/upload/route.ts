@@ -10,12 +10,27 @@ import {
   generateThumbnail,
   uniqueFilename,
 } from "@/lib/imageProcessing";
+import { checkRateLimit } from "@/lib/redis";
 
 const ALLOWED_TYPES = new Set(["product", "collection", "lookcard", "banner", "blog", "section", "journey"]);
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
+
+  // Each call re-encodes up to 15MB with sharp and writes two files. An admin
+  // cookie is not a reason to leave that unbounded — one stolen session was
+  // otherwise enough to saturate CPU and fill the disk.
+  const rate = await checkRateLimit(`admin-upload:${auth.email}`, {
+    requests: 60,
+    window: "5 m",
+  });
+  if (rate?.limited) {
+    return Response.json(
+      { error: "Too many uploads. Please wait a moment." },
+      { status: 429 }
+    );
+  }
 
   const formData = await request.formData();
   const file = formData.get("file");

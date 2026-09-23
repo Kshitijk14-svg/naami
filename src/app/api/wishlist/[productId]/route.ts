@@ -19,6 +19,9 @@ export async function DELETE(
   if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
   const { productId } = await params;
+  if (!Number.isInteger(Number(productId))) {
+    return Response.json({ error: "Invalid product id." }, { status: 400 });
+  }
   await removeFromWishlist(user.id, Number(productId));
   const ids = await getWishlistProductIds(user.id);
   return Response.json({ ok: true, ids });

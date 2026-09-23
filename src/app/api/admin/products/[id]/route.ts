@@ -83,6 +83,9 @@ export async function GET(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid product id." }, { status: 400 });
+  }
   const product = await getProductById(Number(id));
   if (!product) return Response.json({ error: "Not found" }, { status: 404 });
 
@@ -102,6 +105,9 @@ export async function PUT(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid product id." }, { status: 400 });
+  }
   const body = await request.json();
 
   if (body.metafields !== undefined && !validateMetafields(body.metafields)) {
@@ -241,6 +247,9 @@ export async function DELETE(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid product id." }, { status: 400 });
+  }
   const deleted = await deleteProduct(Number(id));
   if (!deleted) return Response.json({ error: "Not found" }, { status: 404 });
   return new Response(null, { status: 204 });

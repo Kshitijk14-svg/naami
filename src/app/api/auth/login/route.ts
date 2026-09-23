@@ -1,10 +1,11 @@
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { getUserByEmail } from "@/db/queries/users";
-import { verifyPassword } from "@/lib/password";
+import { verifyPassword, DUMMY_PASSWORD_HASH } from "@/lib/password";
 import { getJwtSecret } from "@/lib/jwt";
 import { createLogger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/redis";
+import { rateLimitKey } from "@/lib/requestIp";
 
 const log = createLogger("login");
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,7 +24,13 @@ export async function POST(request: Request) {
     }
 
     // Throttle password attempts per IP to blunt brute-force (fail-open).
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    //
+    // The key MUST come from rateLimitKey(). Reading X-Forwarded-For[0] here
+    // let the caller pick their own bucket: nginx uses proxy_add_x_forwarded_for,
+    // which appends the real peer rather than replacing the header, so the first
+    // entry is whatever the client sent. Rotating it bought an unlimited number
+    // of fresh buckets — i.e. unmetered password guessing.
+    const ip = rateLimitKey(request, email);
     const rl = await checkRateLimit(`login:${ip}`, { requests: 10, window: "5 m" });
     if (rl?.limited) {
       return Response.json(
@@ -37,8 +44,13 @@ export async function POST(request: Request) {
     // Single generic failure for every case — wrong password, no such account,
     // or a legacy/passwordless account — so login never reveals which emails
     // exist. The "Forgot password" flow is how passwordless accounts recover.
-    // The hash compare runs even when the user is missing to keep timing uniform.
-    const ok = await verifyPassword(password, user?.passwordHash);
+    //
+    // Falling back to DUMMY_PASSWORD_HASH is what actually keeps the timing
+    // uniform: verifyPassword() returns early on an absent hash, so passing
+    // user?.passwordHash straight through skipped scrypt entirely for unknown
+    // accounts and answered ~95ms faster than for a real one. The generic
+    // message said nothing; the clock said everything.
+    const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
     if (!user || !user.passwordHash || !ok) {
       return Response.json(
         { error: "Incorrect email or password." },

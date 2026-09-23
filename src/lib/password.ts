@@ -24,6 +24,17 @@ const SALT_BYTES = 16;
 const PARAMS = { N: 32768, r: 8, p: 1, maxmem: 128 * 1024 * 1024 } as const;
 const MIN_PASSWORD_LENGTH = 8;
 
+/**
+ * A well-formed hash of a random value nobody holds. Verify a candidate against
+ * this when the account does not exist, so the ~100ms scrypt cost is paid on
+ * every login attempt. verifyPassword() returns early on a null/absent hash, so
+ * without this an unregistered email answers measurably faster than a
+ * registered one — a user-enumeration oracle no matter how generic the error
+ * message is. Never matches any real password.
+ */
+export const DUMMY_PASSWORD_HASH =
+  "scrypt$32768$8$1$cIV3hfFlpub4MzDtYKSp7g==$BTH9MeYxLf+Urf02Btg0SZ6WJ+58xYxpghD1m+VPEx7239f34UU/4N8PqdfAVCmUCcHsHnTLf2rQitYVzhlp/Q==";
+
 export function isPasswordStrongEnough(password: string): boolean {
   return typeof password === "string" && password.length >= MIN_PASSWORD_LENGTH;
 }

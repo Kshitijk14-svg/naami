@@ -57,6 +57,22 @@ interface OrderAddress {
   pincode: string;
 }
 
+/**
+ * Only render http(s) tracking links. The API now rejects anything else on the
+ * way in, but rows written before that validation existed are still in the
+ * database — and React does not block a javascript: href, so an unchecked value
+ * here would execute in the customer's own session.
+ */
+function safeTrackingHref(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function OrderConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const cms = useDesignSettings();
@@ -196,9 +212,9 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
             {order.trackingCarrier && (
               <p className="font-sans mt-1" style={{ fontSize: "11px", color: "rgba(17,17,17,0.5)" }}>via {order.trackingCarrier}</p>
             )}
-            {order.trackingUrl && (
+            {safeTrackingHref(order.trackingUrl) && (
               <a
-                href={order.trackingUrl}
+                href={safeTrackingHref(order.trackingUrl)!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block mt-3 font-sans font-bold uppercase tracking-[0.2em] py-3 px-6 hover:opacity-80 transition-opacity"

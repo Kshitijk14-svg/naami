@@ -15,13 +15,26 @@ const MIN_PASSWORD = 8;
 export default function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Only honour same-origin relative paths — never an absolute/protocol-relative
-  // URL — so a crafted ?from= can't turn login into an open redirect.
+  // Only honour same-origin destinations, so a crafted ?from= can't turn login
+  // into an open redirect.
+  //
+  // Resolve and compare origins rather than pattern-matching the string. The
+  // previous prefix check (startsWith("/") && !startsWith("//")) let
+  // "/\evil.com" through — it satisfies both tests, but the URL parser
+  // normalises the backslash and it resolves to https://evil.com. That fired a
+  // redirect off-site the instant a login succeeded, the moment a user is least
+  // likely to question where they landed.
   const fromParam = searchParams.get("from");
-  const safeFrom =
-    fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
-      ? fromParam
-      : null;
+  const resolveSafeFrom = (): string | null => {
+    if (!fromParam) return null;
+    try {
+      const url = new URL(fromParam, window.location.origin);
+      if (url.origin !== window.location.origin) return null;
+      return url.pathname + url.search + url.hash;
+    } catch {
+      return null;
+    }
+  };
 
   const [mode, setMode] = useState<AuthMode>("signin");
   const [step, setStep] = useState<AuthStep>("form");
@@ -46,7 +59,7 @@ export default function AuthForm() {
       .then((res) => (res.ok ? res.json() : { authenticated: false }))
       .then((data: { authenticated: boolean; role?: Role }) => {
         if (data.authenticated && data.role) {
-          router.replace(safeFrom ?? ROLE_REDIRECT[data.role]);
+          router.replace(resolveSafeFrom() ?? ROLE_REDIRECT[data.role]);
         }
       })
       .catch(() => {});
@@ -98,7 +111,7 @@ export default function AuthForm() {
 
   const finishSignIn = (role: Role) => {
     setStep("success");
-    const destination = safeFrom ?? ROLE_REDIRECT[role];
+    const destination = resolveSafeFrom() ?? ROLE_REDIRECT[role];
     setTimeout(() => {
       router.push(destination);
       router.refresh();
@@ -229,9 +242,11 @@ export default function AuthForm() {
   const handleResend = async () => {
     if (resendCooldown > 0 || mode === "signin") return;
     setErrorMsg("");
-    setResendCooldown(60);
     try {
       await sendOtp(mode);
+      // Only start the cooldown once a code has actually gone out — starting it
+      // first meant a failed resend locked the button for a minute for nothing.
+      setResendCooldown(60);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to resend.");
     }

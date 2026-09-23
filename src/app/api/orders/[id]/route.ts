@@ -3,6 +3,14 @@ import { verifyAdminRequest } from "@/lib/adminAuth";
 import { getOrderById, getOrderStatusHistory } from "@/db/queries/orders";
 import { getUserByEmail } from "@/db/queries/users";
 
+// Roles allowed to read an order they do not own. The ownership check below
+// is written against this list rather than against the literal "customer",
+// so it fails safe: any role not named here is treated as a customer and
+// scoped to its own orders. The previous shape — `if (auth.role === "customer")`
+// — protected by naming the one role that must be restricted, which would have
+// silently granted every order to any new role added to the allow-list.
+const CROSS_ORDER_ROLES = new Set(["staff", "admin", "super_admin"]);
+
 // Customer-facing order read. Any authenticated user may call it, but a customer
 // may only read their OWN order — ownership is checked against the session user's
 // id. Staff and above can read any order. Prevents the IDOR where changing the
@@ -24,7 +32,7 @@ export async function GET(
   // Use 404 (not 403) so we never confirm the existence of someone else's order.
   if (!order) return Response.json({ error: "Not found" }, { status: 404 });
 
-  if (auth.role === "customer") {
+  if (!CROSS_ORDER_ROLES.has(auth.role)) {
     const user = await getUserByEmail(auth.email);
     if (!user || order.userId !== user.id) {
       return Response.json({ error: "Not found" }, { status: 404 });

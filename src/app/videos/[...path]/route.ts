@@ -1,4 +1,6 @@
+import { createReadStream } from "fs";
 import { promises as fs } from "fs";
+import { Readable } from "stream";
 import path from "path";
 
 /**
@@ -15,9 +17,14 @@ import path from "path";
  *
  * Unlike the image route, this one implements HTTP Range requests: <video>
  * elements request `Range: bytes=0-` and Safari/iOS refuse to play a resource
- * that answers 200 instead of 206. Clips are capped at 60MB
- * (MAX_VIDEO_UPLOAD_BYTES) so reading the whole file per request and slicing is
- * acceptable -- no streaming needed.
+ * that answers 200 instead of 206.
+ *
+ * Bytes are streamed, not buffered. This used to fs.readFile() the whole clip
+ * and slice it, including for ranged requests -- so every one of the several
+ * range requests a `<video>` element makes pulled up to 60MB
+ * (MAX_VIDEO_UPLOAD_BYTES) into memory at once, on a route that is
+ * unauthenticated and unthrottled. A handful of concurrent viewers was enough
+ * to put real memory pressure on the VPS.
  */
 
 // Matches the extensions VideoUploadField accepts (video/mp4, video/webm,
@@ -105,21 +112,24 @@ export async function GET(
     });
   }
 
-  const data = await fs.readFile(filePath);
+  // createReadStream with start/end reads only the requested window off disk.
+  const toWebStream = (start?: number, end?: number) =>
+    Readable.toWeb(
+      createReadStream(filePath, start !== undefined ? { start, end } : undefined)
+    ) as ReadableStream<Uint8Array>;
 
   if (!range) {
-    return new Response(new Uint8Array(data), {
+    return new Response(toWebStream(), {
       headers: { ...baseHeaders, "Content-Length": String(size) },
     });
   }
 
-  const chunk = data.subarray(range.start, range.end + 1);
-  return new Response(new Uint8Array(chunk), {
+  return new Response(toWebStream(range.start, range.end), {
     status: 206,
     headers: {
       ...baseHeaders,
       "Content-Range": `bytes ${range.start}-${range.end}/${size}`,
-      "Content-Length": String(chunk.byteLength),
+      "Content-Length": String(range.end - range.start + 1),
     },
   });
 }

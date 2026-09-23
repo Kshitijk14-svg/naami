@@ -9,6 +9,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid category id." }, { status: 400 });
+  }
   const category = await getCategoryById(Number(id));
   if (!category) return Response.json({ error: 'Not found' }, { status: 404 });
   return Response.json(category);
@@ -19,6 +22,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid category id." }, { status: 400 });
+  }
   const body = await request.json();
 
   const patch: Partial<{ name: string; slug: string; description: string }> = {};
@@ -46,6 +52,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid category id." }, { status: 400 });
+  }
   const deleted = await deleteCategory(Number(id));
   if (!deleted) return Response.json({ error: 'Not found' }, { status: 404 });
   return new Response(null, { status: 204 });

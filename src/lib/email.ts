@@ -33,7 +33,7 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
       (item) => `
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid rgba(139,26,26,0.08);font-family:Georgia,serif;font-size:14px;color:#111;">
-          ${item.productName}${item.size ? ` <span style="font-size:11px;color:#888;">(${item.size})</span>` : ""}
+          ${escapeHtml(item.productName)}${item.size ? ` <span style="font-size:11px;color:#888;">(${escapeHtml(item.size)})</span>` : ""}
         </td>
         <td style="padding:8px 0;border-bottom:1px solid rgba(139,26,26,0.08);text-align:center;font-family:sans-serif;font-size:13px;color:#555;">
           ${item.quantity}
@@ -51,8 +51,8 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
       const addr = JSON.parse(order.shippingAddress);
       addressBlock = `
         <p style="margin:4px 0;font-family:sans-serif;font-size:13px;color:#555;">
-          ${addr.line1}${addr.line2 ? `, ${addr.line2}` : ""}<br/>
-          ${addr.city}, ${addr.state} — ${addr.pincode}
+          ${escapeHtml(String(addr.line1 ?? ""))}${addr.line2 ? `, ${escapeHtml(String(addr.line2))}` : ""}<br/>
+          ${escapeHtml(String(addr.city ?? ""))}, ${escapeHtml(String(addr.state ?? ""))} — ${escapeHtml(String(addr.pincode ?? ""))}
         </p>`;
     } catch {
       addressBlock = "";
@@ -80,14 +80,14 @@ function buildOrderHtml(order: OrderSummary, items: OrderItem[]): string {
         <!-- Body -->
         <tr><td style="padding:8px 40px 32px;">
           <p style="font-family:sans-serif;font-size:13px;color:#555;line-height:1.6;">
-            Dear ${order.shippingName ?? "Valued Customer"},<br/>
+            Dear ${escapeHtml(order.shippingName ?? "Valued Customer")},<br/>
             Thank you for your order. We will begin crafting your pieces shortly.
           </p>
 
           <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
             Order Reference
           </p>
-          <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0 0 20px;">${order.id}</p>
+          <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0 0 20px;">${escapeHtml(order.id)}</p>
 
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
@@ -152,7 +152,7 @@ export async function sendAbandonedCartReminder(
   items: OrderItem[]
 ): Promise<void> {
   const itemList = items
-    .map((i) => `<li style="margin:4px 0;font-family:sans-serif;font-size:13px;color:#555;">${i.productName}${i.size ? ` (${i.size})` : ""} × ${i.quantity}</li>`)
+    .map((i) => `<li style="margin:4px 0;font-family:sans-serif;font-size:13px;color:#555;">${escapeHtml(i.productName)}${i.size ? ` (${escapeHtml(i.size)})` : ""} × ${i.quantity}</li>`)
     .join("");
 
   const html = `
@@ -248,10 +248,10 @@ export async function sendOrderStatusUpdate(
         <p style="font-family:sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:0 0 8px;">
           Shipment Tracking
         </p>
-        <p style="font-family:Georgia,serif;font-size:16px;color:#111;margin:0 0 4px;">${t.number}</p>
-        ${t.carrier ? `<p style="font-family:sans-serif;font-size:12px;color:#555;margin:0;">via ${t.carrier}</p>` : ""}
-        ${t.url ? `
-        <a href="${t.url}"
+        <p style="font-family:Georgia,serif;font-size:16px;color:#111;margin:0 0 4px;">${escapeHtml(t.number)}</p>
+        ${t.carrier ? `<p style="font-family:sans-serif;font-size:12px;color:#555;margin:0;">via ${escapeHtml(t.carrier)}</p>` : ""}
+        ${safeHref(t.url) ? `
+        <a href="${safeHref(t.url)}"
            style="display:inline-block;margin-top:14px;padding:12px 24px;background:#5B1C1C;color:#FFF9EF;font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
           Track Shipment →
         </a>` : ""}
@@ -269,13 +269,13 @@ export async function sendOrderStatusUpdate(
       </td></tr>
       <tr><td style="padding:8px 40px 32px;">
         <p style="font-family:sans-serif;font-size:13px;color:#555;line-height:1.6;">
-          Dear ${update.shippingName ?? "Valued Customer"},<br/>
+          Dear ${escapeHtml(update.shippingName ?? "Valued Customer")},<br/>
           ${copy.body}
         </p>
         <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
           Order Reference
         </p>
-        <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0;">${update.orderId}</p>
+        <p style="font-family:Georgia,serif;font-size:18px;color:#111;margin:0;">${escapeHtml(update.orderId)}</p>
         ${trackingBlock}
         <p style="margin-top:32px;font-family:sans-serif;font-size:12px;color:#888;line-height:1.7;">
           Questions? Reply to this email or contact us at
@@ -322,8 +322,8 @@ export async function sendInvoiceEmail(
       </td></tr>
       <tr><td style="padding:8px 40px 32px;">
         <p style="font-family:sans-serif;font-size:13px;color:#555;line-height:1.6;">
-          Dear ${invoice.shippingName ?? "Valued Customer"},<br/>
-          Please find your invoice attached for order <strong>${invoice.orderId}</strong>.
+          Dear ${escapeHtml(invoice.shippingName ?? "Valued Customer")},<br/>
+          Please find your invoice attached for order <strong>${escapeHtml(invoice.orderId)}</strong>.
         </p>
         <p style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#5B1C1C;margin:24px 0 8px;">
           Invoice Number
@@ -421,6 +421,12 @@ export interface ContactSubmission {
   message: string;
 }
 
+/**
+ * Escape a value for interpolation into email HTML. Hoisted, so every template
+ * above can use it — for a long time only sendContactFormNotification did, and
+ * the order/invoice/abandoned-cart templates interpolated customer- and
+ * staff-supplied text raw.
+ */
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -428,6 +434,23 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * A URL safe to put in an href. Only http(s) survives — anything else (notably
+ * javascript:) becomes null so the caller can omit the link entirely. Escaping
+ * alone is not enough for an href: a well-formed "javascript:..." contains no
+ * character escapeHtml touches.
+ */
+function safeHref(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return escapeHtml(url.href);
+  } catch {
+    return null;
+  }
 }
 
 export async function sendContactFormNotification(submission: ContactSubmission): Promise<void> {

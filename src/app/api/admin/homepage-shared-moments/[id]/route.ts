@@ -10,6 +10,9 @@ export async function PUT(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid video id." }, { status: 400 });
+  }
   const body = await request.json();
 
   const updateData: Record<string, unknown> = {};
@@ -32,6 +35,9 @@ export async function DELETE(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid video id." }, { status: 400 });
+  }
   const deleted = await deleteSharedMomentVideo(Number(id));
   if (!deleted) return Response.json({ error: "Not found" }, { status: 404 });
   return new Response(null, { status: 204 });

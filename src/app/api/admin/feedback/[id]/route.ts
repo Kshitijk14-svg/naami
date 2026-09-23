@@ -10,6 +10,9 @@ export async function PATCH(
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  if (!Number.isInteger(Number(id))) {
+    return Response.json({ error: "Invalid feedback id." }, { status: 400 });
+  }
   const body = await request.json().catch(() => null);
   if (typeof body?.isApproved !== "boolean") {
     return Response.json({ error: "isApproved (boolean) is required." }, { status: 400 });

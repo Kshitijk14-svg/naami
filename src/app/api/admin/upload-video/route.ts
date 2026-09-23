@@ -10,6 +10,7 @@ import {
   generateVideoThumbnail,
   compressVideo,
 } from "@/lib/videoProcessing";
+import { checkRateLimit } from "@/lib/redis";
 
 // Which feature is uploading -> which public/ subdir the files land in.
 // "products" clips are re-encoded to a web-friendly MP4 before storage;
@@ -17,9 +18,31 @@ import {
 const UPLOAD_TYPES = ["moments", "products"] as const;
 type UploadType = (typeof UPLOAD_TYPES)[number];
 
+// Extensions we are willing to write to disk. "moments" clips keep their
+// original container, so without this the extension came straight from
+// file.name: uniqueFilename() slugifies only the stem, so "clip.html" was
+// stored as "clip-<hex>.html". Nothing serves it today — videos/[...path]
+// allow-lists these same three and nginx proxies rather than serving public/
+// from disk — but writing an arbitrary extension is a foothold waiting for the
+// day someone adds a static location block.
+const ALLOWED_VIDEO_EXTS = new Set([".mp4", ".webm", ".mov"]);
+
 export async function POST(request: NextRequest) {
   const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);
   if (auth instanceof Response) return auth;
+
+  // ffmpeg transcoding is the most expensive thing this app does; 60MB in and
+  // an unbounded call rate is a trivial way to pin the VPS's CPU.
+  const rate = await checkRateLimit(`admin-upload-video:${auth.email}`, {
+    requests: 20,
+    window: "10 m",
+  });
+  if (rate?.limited) {
+    return Response.json(
+      { error: "Too many video uploads. Please wait a moment." },
+      { status: 429 }
+    );
+  }
 
   const formData = await request.formData();
   const file = formData.get("file");
@@ -70,7 +93,13 @@ export async function POST(request: NextRequest) {
   // storefront's floating player streams progressively; the output is always
   // an .mp4 regardless of the source container.
   let videoBuffer: Buffer = buffer;
-  let ext = path.extname(file.name) || ".mp4";
+  let ext = (path.extname(file.name) || ".mp4").toLowerCase();
+  if (!ALLOWED_VIDEO_EXTS.has(ext)) {
+    return Response.json(
+      { error: "Unsupported video format. Use .mp4, .webm or .mov." },
+      { status: 400 }
+    );
+  }
   if (type === "products") {
     try {
       videoBuffer = await compressVideo(buffer);
