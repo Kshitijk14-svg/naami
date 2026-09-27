@@ -24,7 +24,7 @@ export function LookbookBannerSection({
       <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <ImageUploadField
           type="banner"
-          hint="Upload at whatever ratio you like — the banner section resizes to match, so there's no crop to plan hotspots around."
+          hint="Upload at whatever ratio you like — the full image is always shown, never cropped. If it doesn't match the section's shape you'll see the background color on the sides or top/bottom; hotspots stay pinned to the image either way."
           image={settings.lookbook_banner_image ?? ""}
           onUploaded={(image, _thumb, width, height) => {
             update("lookbook_banner_image", image);
@@ -47,9 +47,11 @@ export function LookbookBannerSection({
             Hotspots
           </p>
           {/*
-            The public banner's section now resizes to the uploaded image's own aspect
-            ratio (no more viewport-driven crop), so previewing at that same ratio keeps
-            hotspot placement accurate on every device.
+            The public banner keeps a fixed viewport-height section and letterboxes the
+            image at its own aspect ratio (no crop). Previewing at that same ratio here
+            keeps hotspot placement — stored as % of the image — accurate; the public
+            page maps those percentages onto the letterboxed image's actual on-screen
+            rectangle (src/lib/useFitBox.ts), so they track correctly on every device.
           */}
           <HotspotListEditor
             hotspots={bannerHotspots}

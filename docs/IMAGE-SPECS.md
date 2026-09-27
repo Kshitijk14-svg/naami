@@ -20,22 +20,24 @@ Input limit is **15MB**. Anything `sharp` can decode is accepted (JPEG, PNG, Web
 TIFF, AVIF); prefer **PNG or high-quality JPEG** as the source since it gets
 re-encoded anyway.
 
-**2. Fixed-ratio slots vs. variable-crop slots vs. shape-matched slots.**
+**2. Fixed-ratio slots vs. variable-crop slots vs. letterboxed slots.**
 Most slots have a CSS `aspect-ratio`, so the crop is identical on every device —
 just match the ratio (§B). The loom panels and journal cover are sized in a way
 that still varies by device or by placement, so a single file is cropped
 differently in different spots — those get a **safe zone** (§A).
 
-The hero slider and lookbook banner used to work the same way (sized in
-**viewport height**: `h-[65vh] md:h-[75vh]`, `height: 90vh`), which cropped any
-upload — even one matching the "deliver" size exactly — differently on every
-screen. That's now fixed: those two sections read the uploaded image's own
-width/height (captured at upload time) and set their `aspect-ratio` to match it,
-so **whatever you upload renders in full, uncropped, at its own shape** (§A2).
-There's no "required size" for these two slots anymore, only a recommendation
-(4:3-ish for the hero, square-ish for the lookbook banner) to keep the layout
-looking intentional — and the 3 hero slides must all share the same ratio, since
-they crossfade in one shared box.
+The hero slider and lookbook banner used to crop with plain `object-cover` on a
+viewport-height box — the original bug: even an upload matching the "deliver"
+size exactly still got cropped, since the box's ratio depends on the visitor's
+screen, not the image. Fixed by **letterboxing** instead of cropping: the
+sections still stay at their fixed viewport height (`h-[65vh] md:h-[75vh]`,
+`height: 90vh`, unchanged, so the page's cinematic full-height look is
+preserved), but now center the image at its true aspect ratio inside that
+fixed-height box, showing the section's background color in the bars on
+whichever axis doesn't match (§A2). There's no "required size" for these two
+slots anymore, only a recommendation (4:3-ish for the hero, square-ish for the
+lookbook banner) to minimise how much bar shows — and the 3 hero slides must
+all share the same ratio, since they crossfade in one shared box.
 
 **3. How the loom/journal safe-zone numbers were derived.**
 Under `object-cover`, the visible fraction of a source image is
@@ -69,26 +71,37 @@ here.
 
 ---
 
-## A2. Shape-matched slots — section resizes to whatever you upload
+## A2. Letterboxed slots — fixed-height section, full image always shown
 
 | Slot | CMS key | Suggested ratio | Notes |
 | --- | --- | --- | --- |
-| Hero slides **x3** | `hero_image_1/2/3` | ~4:3 | All 3 slides must share the same ratio — they crossfade in one shared box, so mismatched ratios would jump the layout between slides. |
-| Lookbook / hotspot banner | `lookbook_banner_image` | ~1:1 | Hotspots are positioned by `top%`/`left%` against the same box the image now fills exactly, so placement no longer drifts between viewports. |
+| Hero slides **x3** | `hero_image_1/2/3` | ~4:3 | All 3 slides must share the same ratio — they crossfade in one shared box, so mismatched ratios would jump the letterboxed frame between slides. |
+| Lookbook / hotspot banner | `lookbook_banner_image` | ~1:1 | Hotspots are stored as `top%`/`left%` of the *image*, not the section — see below. |
 
 Upload width/height are captured at upload time (`src/app/api/admin/upload/route.ts`)
 and stored alongside the image URL as `${key}_w` / `${key}_h` design settings. The
-public page (`src/app/page.tsx`) reads them and sets the section's CSS
-`aspect-ratio` to match, so nothing is ever cropped — the "suggested ratio" above is
-just for a look consistent with the rest of the page, not a hard requirement.
+public page (`src/app/page.tsx`) reads them and passes them to `useFitBox`
+(`src/lib/useFitBox.ts`), a small hook that computes — via `ResizeObserver` — the
+pixel rectangle an `object-fit: contain` image of that ratio would occupy inside
+the fixed-height section (the same math the browser uses for `object-fit`, exposed
+so other elements can be positioned against it). The image renders inside that
+rectangle; the section's own background color fills the rest. Nothing is ever
+cropped, and the "suggested ratio" above only affects how much bar shows, not
+whether the image displays.
 
 **Hero slides** — text overlays render bottom-left (`bottom-8 left-8 md:bottom-12
-md:left-12` in `src/components/HomeClient.tsx`). Keep that corner visually quiet.
+md:left-12` in `src/components/HomeClient.tsx`), anchored to the section corner
+(not the letterboxed image), same as before. Keep that corner visually quiet.
 Slide 1 is `priority`-loaded, so it's the largest single contributor to LCP.
 
-**Lookbook banner** — GSAP parallax scales the image to **1.06** at scroll end
-(`src/components/HotspotBanner.tsx`), so it renders ~6% larger than the box. It is
-also full-bleed (no horizontal padding, unlike the hero).
+**Lookbook banner** — hotspots are positioned by `top%`/`left%` of the *image*
+(matching what the admin's hotspot editor previews), then mapped onto the
+letterboxed image's actual on-screen rectangle from `useFitBox` — so placement
+stays accurate on every device, letterboxed or not. This replaces the old
+crop-based "safe zone" approach, which only guaranteed accuracy in the region
+visible on every viewport. GSAP parallax scales the image to **1.06** at scroll
+end (`src/components/HotspotBanner.tsx`), so it renders ~6% larger than its
+letterboxed frame. It is also full-bleed (no horizontal padding, unlike the hero).
 
 ---
 
