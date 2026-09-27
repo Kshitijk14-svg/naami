@@ -53,6 +53,9 @@ const DEFAULT_HERO_SLIDES = [
   },
 ];
 
+const DEFAULT_HERO_RATIO = { width: 1920, height: 1440 };
+const DEFAULT_LOOKBOOK_RATIO = { width: 1600, height: 1600 };
+
 export default async function Home() {
   const [content, designSettings, extras, sharedMoments] = await Promise.all([
     getHomeContent(),
@@ -66,6 +69,8 @@ export default async function Home() {
     title: designSettings[`hero_title_${n}`] || DEFAULT_HERO_SLIDES[i].title,
     subtitle: designSettings[`hero_subtitle_${n}`] || DEFAULT_HERO_SLIDES[i].subtitle,
     tag: designSettings[`hero_tag_${n}`] || DEFAULT_HERO_SLIDES[i].tag,
+    width: Number(designSettings[`hero_image_${n}_w`]) || DEFAULT_HERO_RATIO.width,
+    height: Number(designSettings[`hero_image_${n}_h`]) || DEFAULT_HERO_RATIO.height,
   }));
 
   const loomContent = {
@@ -162,6 +167,8 @@ export default async function Home() {
         image: designSettings.lookbook_banner_image,
         label: designSettings.lookbook_banner_label,
         hotspots: extras.bannerHotspots,
+        imageWidth: Number(designSettings.lookbook_banner_image_w) || DEFAULT_LOOKBOOK_RATIO.width,
+        imageHeight: Number(designSettings.lookbook_banner_image_h) || DEFAULT_LOOKBOOK_RATIO.height,
       }}
       loomContent={loomContent}
       coinPocketContent={coinPocketContent}

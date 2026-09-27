@@ -50,14 +50,22 @@ interface HotspotBannerProps {
   image?: string;
   label?: string;
   hotspots?: HotspotData[];
+  imageWidth?: number;
+  imageHeight?: number;
   backgroundImage?: string;
   backgroundImageFit?: SectionBackgroundFit;
 }
 
-export default function HotspotBanner({ image, label, hotspots, backgroundImage, backgroundImageFit }: HotspotBannerProps) {
+// Matches the seeded fallback banner's own dimensions.
+const FALLBACK_WIDTH = 1600;
+const FALLBACK_HEIGHT = 1600;
+
+export default function HotspotBanner({ image, label, hotspots, imageWidth, imageHeight, backgroundImage, backgroundImageFit }: HotspotBannerProps) {
   const bannerImage = image || FALLBACK_IMAGE;
   const bannerLabel = label || FALLBACK_LABEL;
   const bannerHotspots = hotspots && hotspots.length > 0 ? hotspots : FALLBACK_HOTSPOTS;
+  const bannerWidth = imageWidth || FALLBACK_WIDTH;
+  const bannerHeight = imageHeight || FALLBACK_HEIGHT;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
@@ -82,7 +90,7 @@ export default function HotspotBanner({ image, label, hotspots, backgroundImage,
     <section
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ height: "90vh", backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
+      style={{ aspectRatio: `${bannerWidth} / ${bannerHeight}`, backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Parallax Image Container */}
       <div

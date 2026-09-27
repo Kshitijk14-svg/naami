@@ -24,9 +24,13 @@ export function LookbookBannerSection({
       <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <ImageUploadField
           type="banner"
-          hint="1600 × 1600 (square) — keep hotspot targets inside the centered 816 × 816 area."
+          hint="Upload at whatever ratio you like — the banner section resizes to match, so there's no crop to plan hotspots around."
           image={settings.lookbook_banner_image ?? ""}
-          onUploaded={(image) => update("lookbook_banner_image", image)}
+          onUploaded={(image, _thumb, width, height) => {
+            update("lookbook_banner_image", image);
+            update("lookbook_banner_image_w", String(width));
+            update("lookbook_banner_image_h", String(height));
+          }}
         />
         <div>
           <label className="font-sans font-bold uppercase tracking-[0.18em] block mb-1.5" style={fieldLabelStyle}>
@@ -43,17 +47,15 @@ export function LookbookBannerSection({
             Hotspots
           </p>
           {/*
-            The public banner is a full-width 90vh section with object-cover, so its
-            crop swings from ~2:1 on desktop to ~0.5:1 on mobile. Previewing at either
-            extreme puts placements off-target on the other. We preview at 1:1 to match
-            the square source spec (docs/IMAGE-SPECS.md §A) — the midpoint of both crops,
-            and the region guaranteed visible on every viewport.
+            The public banner's section now resizes to the uploaded image's own aspect
+            ratio (no more viewport-driven crop), so previewing at that same ratio keeps
+            hotspot placement accurate on every device.
           */}
           <HotspotListEditor
             hotspots={bannerHotspots}
             onChange={setBannerHotspots}
             image={settings.lookbook_banner_image ?? ""}
-            aspectRatio="1 / 1"
+            aspectRatio={`${settings.lookbook_banner_image_w ?? "1600"} / ${settings.lookbook_banner_image_h ?? "1600"}`}
           />
         </div>
         <SaveControl saving={bannerSaving} saved={bannerSaved} error={bannerError} onSave={onSave} label="Save Lookbook Banner" />

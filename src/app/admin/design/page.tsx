@@ -215,7 +215,8 @@ export default function AdminDesignPage() {
     setHeroSaved(false);
     try {
       const heroKeys = [1, 2, 3].flatMap((n) => [
-        `hero_image_${n}`, `hero_title_${n}`, `hero_subtitle_${n}`, `hero_tag_${n}`,
+        `hero_image_${n}`, `hero_image_${n}_w`, `hero_image_${n}_h`,
+        `hero_title_${n}`, `hero_subtitle_${n}`, `hero_tag_${n}`,
       ]);
       const body: Record<string, string> = {};
       for (const key of heroKeys) body[key] = settings[key] ?? "";
@@ -249,6 +250,8 @@ export default function AdminDesignPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lookbook_banner_image: settings.lookbook_banner_image ?? "",
+          lookbook_banner_image_w: settings.lookbook_banner_image_w ?? "",
+          lookbook_banner_image_h: settings.lookbook_banner_image_h ?? "",
           lookbook_banner_label: settings.lookbook_banner_label ?? "",
         }),
       });

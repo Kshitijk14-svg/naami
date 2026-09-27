@@ -16,7 +16,7 @@ const inputStyle: React.CSSProperties = {
 interface ImageUploadFieldProps {
   type: "product" | "collection" | "lookcard" | "banner" | "blog" | "section" | "journey";
   image: string;
-  onUploaded: (image: string, thumbnailImage: string) => void;
+  onUploaded: (image: string, thumbnailImage: string, width: number, height: number) => void;
   label?: string;
   /** Recommended dimensions for this slot. See docs/IMAGE-SPECS.md. */
   hint?: string;
@@ -46,7 +46,7 @@ export function ImageUploadField({ type, image, onUploaded, label = "Image", hin
       if (!res.ok) {
         setError(data.error ?? "Upload failed");
       } else {
-        onUploaded(data.image, data.thumbnailImage);
+        onUploaded(data.image, data.thumbnailImage, data.width, data.height);
         setSizeInfo(`${Math.round(data.sizeBytes / 1024)}KB (thumbnail ${Math.round(data.thumbnailSizeBytes / 1024)}KB)`);
       }
     } catch {

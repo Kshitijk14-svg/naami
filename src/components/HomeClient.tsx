@@ -56,6 +56,8 @@ type HeroSlide = {
   title: string;
   subtitle: string;
   tag: string;
+  width: number;
+  height: number;
 };
 
 type ResolvedProduct = { id: number; name: string; priceInr: number; image: string };
@@ -74,6 +76,8 @@ type LookbookBanner = {
   image?: string;
   label?: string;
   hotspots: HotspotData[];
+  imageWidth?: number;
+  imageHeight?: number;
 };
 
 type Manifesto = {
@@ -295,8 +299,8 @@ export default function HomeClient({
       >
         <div
           ref={heroTitleRef}
-          className="relative w-full h-[65vh] md:h-[75vh] overflow-hidden border border-black/5"
-          style={{ opacity: 0 }}
+          className="relative w-full overflow-hidden border border-black/5"
+          style={{ opacity: 0, aspectRatio: `${heroSlides[0].width} / ${heroSlides[0].height}` }}
         >
           {heroSlides.map((slide, idx) => (
             <div
@@ -443,6 +447,8 @@ export default function HomeClient({
             image={lookbookBanner.image}
             label={lookbookBanner.label}
             hotspots={lookbookBanner.hotspots}
+            imageWidth={lookbookBanner.imageWidth}
+            imageHeight={lookbookBanner.imageHeight}
             backgroundImage={sectionBackgrounds.lookbookBanner?.image}
             backgroundImageFit={sectionBackgrounds.lookbookBanner?.fit}
           />

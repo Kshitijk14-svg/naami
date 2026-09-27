@@ -26,9 +26,13 @@ export function HeroBannerSection({ settings, update, heroError, heroSaving, her
             </p>
             <ImageUploadField
               type="banner"
-              hint="1920 × 1440 (4:3) — keep the subject inside the centered 900 × 850 area; avoid the bottom-left corner (text overlay)."
+              hint="Upload at whatever ratio you like — the hero section resizes to match. Keep all 3 slides the same size so the slideshow doesn't jump between them. Avoid the bottom-left corner (text overlay)."
               image={settings[`hero_image_${n}`] ?? ""}
-              onUploaded={(image) => update(`hero_image_${n}`, image)}
+              onUploaded={(image, _thumb, width, height) => {
+                update(`hero_image_${n}`, image);
+                update(`hero_image_${n}_w`, String(width));
+                update(`hero_image_${n}_h`, String(height));
+              }}
             />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               {[

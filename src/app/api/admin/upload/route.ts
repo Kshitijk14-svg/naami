@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import sharp from "sharp";
 import { verifyAdminRequest } from "@/lib/adminAuth";
 import {
   MAX_UPLOAD_BYTES,
@@ -64,6 +65,8 @@ export async function POST(request: NextRequest) {
     generateThumbnail(buffer),
   ]);
 
+  const { width, height } = await sharp(fullBuffer).metadata();
+
   const baseName = uniqueFilename(
     path.basename(file.name, path.extname(file.name)) || "image"
   );
@@ -79,5 +82,7 @@ export async function POST(request: NextRequest) {
     thumbnailImage: `/images/${type}s/${thumbName}`,
     sizeBytes: fullBuffer.byteLength,
     thumbnailSizeBytes: thumbBuffer.byteLength,
+    width,
+    height,
   });
 }

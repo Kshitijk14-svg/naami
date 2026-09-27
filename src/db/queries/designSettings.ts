@@ -10,8 +10,14 @@ export type DesignSetting = typeof designSettings.$inferSelect;
 // Default hero slide configuration seeded on first use
 export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   hero_image_1: "/images/hero-1.png",
+  hero_image_1_w: "1920",
+  hero_image_1_h: "1440",
   hero_image_2: "/images/hero-2.png",
+  hero_image_2_w: "1920",
+  hero_image_2_h: "1440",
   hero_image_3: "/images/hero-3.png",
+  hero_image_3_w: "1920",
+  hero_image_3_h: "1440",
   hero_title_1: "OXFORD STRIPE SHIRT",
   hero_title_2: "LINEN NATURAL CAMP",
   hero_title_3: "SASHIKO BORO OVERSHIRT",
@@ -22,6 +28,8 @@ export const DEFAULT_DESIGN_SETTINGS: Record<string, string> = {
   hero_tag_2: "Naami // AW26 Collection — 002",
   hero_tag_3: "Naami // AW26 Collection — 003",
   lookbook_banner_image: "/images/campaign-new.png",
+  lookbook_banner_image_w: "1600",
+  lookbook_banner_image_h: "1600",
   lookbook_banner_label: "NAAMI // INTERACTIVE LOOKBOOK",
 
   loom_panel1_image: "/images/hero-2.png",
