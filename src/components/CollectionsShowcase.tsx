@@ -17,30 +17,6 @@ type CollectionItem = {
   image: string;
 };
 
-const FALLBACK_COLLECTIONS: CollectionItem[] = [
-  {
-    number: "01",
-    name: "OXFORD WHITES",
-    tag: "THE CLEAN SLATE",
-    description: "100% Egyptian cotton Oxford cloth woven on heritage shuttle looms. Each shirt builds to a unique softness through careful long-term wear.",
-    image: "/images/hero-1.png",
-  },
-  {
-    number: "02",
-    name: "LINEN NATURALS",
-    tag: "THE WOVEN LIGHT",
-    description: "European flax spun into 8oz linen, garment-dyed in natural earth pigments. The fabric breathes and softens with every wash cycle.",
-    image: "/images/hero-3.png",
-  },
-  {
-    number: "03",
-    name: "CHAMBRAY BLUES",
-    tag: "THE WORKWEAR ROOT",
-    description: "Cone Mills chambray woven in the American South. Heavy-duty utility with mother-of-pearl shell buttons, felled seams, and box-pleat back for unrestricted movement.",
-    image: "/images/product-hardware.png",
-  },
-];
-
 interface Props {
   collections?: CollectionItem[];
   kicker?: string;
@@ -65,7 +41,7 @@ export default function CollectionsShowcase({
   backgroundImage,
   backgroundImageFit,
 }: Props) {
-  const items = collections && collections.length > 0 ? collections : FALLBACK_COLLECTIONS;
+  const items = collections ?? [];
   // Repeat the bento pattern (2 portrait tiles + 1 full-width landscape tile)
   // in groups of 3 so any number of homepage collections lays out cleanly.
   const groups: CollectionItem[][] = [];

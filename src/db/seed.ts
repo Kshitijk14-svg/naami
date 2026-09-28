@@ -103,6 +103,7 @@ async function main() {
         description: "Egyptian cotton in its purest form — undyed, uncompromised.",
         image: "/images/product-jacket.png",
         isPublished: true,
+        showOnHomepage: true,
       },
       {
         number: "02",
@@ -111,6 +112,7 @@ async function main() {
         description: "European flax grown slow, woven loose, worn forever.",
         image: "/images/product-jeans.png",
         isPublished: true,
+        showOnHomepage: true,
       },
     ])
     .onConflictDoNothing()
