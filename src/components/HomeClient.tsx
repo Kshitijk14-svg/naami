@@ -316,6 +316,7 @@ export default function HomeClient({
                 style={{ filter: "brightness(0.9)" }}
                 priority={idx === 0}
                 sizes="100vw"
+                quality={90}
               />
               {/* Denim texture overlay */}
               <div
@@ -522,6 +523,7 @@ export default function HomeClient({
               className="object-cover"
               style={{ filter: "brightness(0.92)" }}
               sizes="(max-width: 768px) 100vw, 50vw"
+              quality={90}
             />
             {/* Denim texture overlay */}
             <div

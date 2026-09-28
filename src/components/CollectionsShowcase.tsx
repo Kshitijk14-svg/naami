@@ -189,6 +189,7 @@ function PortraitCollectionCard({ id, name, tag, description, image }: PortraitC
             className="object-cover"
             style={{ filter: "brightness(0.94)" }}
             sizes="(max-width: 768px) 100vw, 50vw"
+            quality={90}
           />
         </div>
       </div>
@@ -312,6 +313,7 @@ function LandscapeCollectionCard({ id, name, tag, description, image }: Landscap
             className="object-cover"
             style={{ filter: "brightness(0.94)" }}
             sizes="(max-width: 768px) 100vw, 60vw"
+            quality={90}
           />
         </div>
       </div>

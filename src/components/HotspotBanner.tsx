@@ -109,6 +109,7 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
           className="object-cover"
           style={{ filter: "brightness(0.92)" }}
           sizes="100vw"
+          quality={90}
         />
 
       </div>

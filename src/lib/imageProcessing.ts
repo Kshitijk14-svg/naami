@@ -5,13 +5,13 @@ export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 
 export const FULL_IMAGE_MAX_EDGE = 1920;
 export const FULL_IMAGE_MIN_BYTES = 400 * 1024;
-export const FULL_IMAGE_MAX_BYTES = 1200 * 1024;
+export const FULL_IMAGE_MAX_BYTES = 2000 * 1024;
 export const FULL_IMAGE_MAX_ITERATIONS = 8;
-export const FULL_IMAGE_QUALITY_FLOOR = 65;
+export const FULL_IMAGE_QUALITY_FLOOR = 75;
 export const FULL_IMAGE_QUALITY_CEIL = 100;
 
-export const THUMBNAIL_WIDTH = 480;
-export const THUMBNAIL_QUALITY = 60;
+export const THUMBNAIL_WIDTH = 960;
+export const THUMBNAIL_QUALITY = 75;
 
 export class InvalidImageError extends Error {}
 

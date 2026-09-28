@@ -295,6 +295,7 @@ export default function CollectionPageContent() {
                 fill
                 className="object-cover"
                 sizes="400px"
+                quality={90}
               />
             </div>
 

@@ -453,6 +453,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
                   fill
                   className="object-cover pointer-events-none"
                   style={{ filter: "brightness(0.94)" }}
+                  quality={90}
                 />
                 {/* No gradient overlay */}
               </div>
@@ -475,6 +476,7 @@ export default function ProductCarousel({ title, tag, products, gatewayLabel, ba
                       fill
                       className="object-cover pointer-events-none"
                       style={{ filter: "brightness(0.95)" }}
+                      quality={90}
                     />
                     <div
                       className="absolute top-0 right-0 bottom-0 w-px pointer-events-none"

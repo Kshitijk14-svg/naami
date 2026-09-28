@@ -208,6 +208,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     style={{ filter: "brightness(0.94)" }}
                     priority={index === 0}
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={90}
                   />
                 </div>
               ))}

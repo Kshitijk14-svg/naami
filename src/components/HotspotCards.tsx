@@ -218,6 +218,7 @@ export default function HotspotCards({ lookCards, kicker, title, backgroundImage
                   className="object-cover pointer-events-none"
                   style={{ filter: "brightness(0.94)" }}
                   sizes="(max-width: 768px) 300px, 400px"
+                  quality={90}
                 />
 
                 {/* Selvedge red edge line */}

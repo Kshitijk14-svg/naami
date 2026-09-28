@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [400, 640, 750, 828, 1080, 1280, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 280, 320, 400, 480],
+    qualities: [75, 90],
   },
   // pdfkit reads .afm font metrics from its package dir at runtime, and the
   // ffmpeg/ffprobe installers ship platform binaries — keep both out of the
