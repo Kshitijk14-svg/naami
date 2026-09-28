@@ -8,7 +8,7 @@ import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { PRICE_CLASS } from "@/lib/typography";
-import { useFitBox, isFitBoxMeasured, type FitBox } from "@/lib/useFitBox";
+import { useCoverCrop, mapPctToCoverCrop, type CoverCrop } from "@/lib/useCoverCrop";
 
 interface ResolvedProduct {
   id: number;
@@ -72,8 +72,7 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
   const imageRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((state) => state.addItem);
 
-  const fitBox = useFitBox(containerRef, bannerWidth / bannerHeight);
-  const measured = isFitBoxMeasured(fitBox);
+  const coverCrop = useCoverCrop(containerRef, bannerWidth / bannerHeight);
 
   useEffect(() => {
     if (!containerRef.current || !imageRef.current) return;
@@ -96,16 +95,12 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
       className="relative w-full overflow-hidden"
       style={{ height: "90vh", backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
-      {/* Parallax Image Container — sized to the letterboxed "contain" rect so the
-          full image is always visible; the section's own background fills the bars. */}
+      {/* Parallax Image Container — full-bleed; the image itself is object-fit: cover,
+          cropped and centered to fill the section with no letterbox bars. */}
       <div
         ref={imageRef}
-        className="absolute hw-accelerate"
-        style={
-          measured
-            ? { top: fitBox.top, left: fitBox.left, width: fitBox.width, height: fitBox.height, scale: 1, transformOrigin: "center center" }
-            : { inset: 0, scale: 1, transformOrigin: "center center" }
-        }
+        className="absolute inset-0 hw-accelerate"
+        style={{ scale: 1, transformOrigin: "center center" }}
       >
         <Image
           src={bannerImage}
@@ -126,10 +121,10 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
         {bannerLabel}
       </div>
 
-      {/* Hotspot nodes — positioned against the fit box, not the outer section, so
-          topPct/leftPct stay "percent of the image" regardless of letterbox bars. */}
+      {/* Hotspot nodes — topPct/leftPct are stored as percent of the original image,
+          remapped onto the visible (cropped) portion so they track the cover-cropped image. */}
       {bannerHotspots.map((spot, idx) => (
-        <HotspotNode key={spot.id} data={spot} number={String(idx + 1).padStart(2, "0")} onAdd={addItem} fitBox={fitBox} measured={measured} />
+        <HotspotNode key={spot.id} data={spot} number={String(idx + 1).padStart(2, "0")} onAdd={addItem} coverCrop={coverCrop} />
       ))}
     </section>
   );
@@ -139,14 +134,12 @@ function HotspotNode({
   data,
   number,
   onAdd,
-  fitBox,
-  measured,
+  coverCrop,
 }: {
   data: HotspotData;
   number: string;
   onAdd: (item: { productId: number; name: string; priceInr: number; image: string; size: string }) => void;
-  fitBox: FitBox;
-  measured: boolean;
+  coverCrop: CoverCrop;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dotRef = useRef<HTMLDivElement>(null);
@@ -201,11 +194,11 @@ function HotspotNode({
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer"
-      style={
-        measured
-          ? { top: fitBox.top + (data.topPct / 100) * fitBox.height, left: fitBox.left + (data.leftPct / 100) * fitBox.width, zIndex: 10 }
-          : { top: `${data.topPct}%`, left: `${data.leftPct}%`, zIndex: 10 }
-      }
+      style={{
+        top: `${mapPctToCoverCrop(data.topPct, coverCrop.offsetYPct, coverCrop.visibleHeightPct)}%`,
+        left: `${mapPctToCoverCrop(data.leftPct, coverCrop.offsetXPct, coverCrop.visibleWidthPct)}%`,
+        zIndex: 10,
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

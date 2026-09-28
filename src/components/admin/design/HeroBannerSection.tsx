@@ -26,7 +26,7 @@ export function HeroBannerSection({ settings, update, heroError, heroSaving, her
             </p>
             <ImageUploadField
               type="banner"
-              hint="Upload at whatever ratio you like — the full image is always shown, never cropped. If it doesn't match the section's shape you'll see the background color on the sides or top/bottom. Keep all 3 slides the same size so the slideshow doesn't jump between them. Avoid the bottom-left corner (text overlay)."
+              hint="Upload at whatever ratio you like — the image fills the section edge-to-edge, cropped and centered as needed. Keep all 3 slides the same size so the slideshow doesn't jump between them. Avoid the bottom-left corner (text overlay), and keep the subject centered since the sides/top/bottom may be trimmed."
               image={settings[`hero_image_${n}`] ?? ""}
               onUploaded={(image, _thumb, width, height) => {
                 update(`hero_image_${n}`, image);

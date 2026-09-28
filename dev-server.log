@@ -1,0 +1,1105 @@
+
+> naami@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.41.212.12:3000
+- Environments: .env.local
+✓ Ready in 1069ms
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\kshit\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\kshit\OneDrive\Documents\Freelancing-projects\naami\package-lock.json
+
+
+○ Compiling / ...
+
+
+
+
+
+
+#
+
+<--- Last few GCs --->
+
+
+
+
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+
+#
+#
+#
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+
+# Fatal error in , line 0
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+----- Native stack trace -----
+<--- JS stacktrace --->
+# Out of memory: HashMap::Initialize
+#
+
+#
+
+#
+----- Native stack trace -----
+#
+----- Native stack trace -----
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+#
+
+----- Native stack trace -----
+
+#
+
+
+#FailureMessage Object: 00000078083FB650
+ 1: 00007FF6C5593A37 
+----- Native stack trace -----
+ 2: 00007FF6C54F3C8B 
+
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5F48EB0 
+ 6: 00007FF6C5F00C5D 
+ 7: 00007FF6C5F520B3 
+ 8: 00007FF6C5F41F7D 
+ 9: 00007FF6C5F3DB35 
+10: 00007FF6C58C5C6D 
+ 1: 00007FF6C5593A37 
+
+<--- Last few GCs --->
+ 2: 00007FF6C546489F 
+
+ 3: 00007FF6C67676C6 
+
+ 4: 00007FF6C60FFDE3 
+<--- JS stacktrace --->
+ 5: 00007FF6C60EC846 
+
+ 6: 00007FF6C5F48EB0 
+
+ 7: 00007FF6C5F10021 
+ 1: 00007FF6C5593A37 
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+
+ 8: 00007FF6C5F10640 
+ 2: 00007FF6C546489F 
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+#
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 3: 00007FF6C6767A65 
+ 9: 00007FF6C5F10346 
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+10: 00007FF6C5EFFE2B 
+ 4: 00007FF6C60DE163 
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+11: 00007FF6C5EFF45A 
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+#
+ 5: 00007FF6C60DDBF6 
+----- Native stack trace -----
+12: 00007FF6C5F56CB0 
+ 6: 00007FF6C60DDE9C 
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+
+13: 00007FF6C5FBADF3 
+ 7: 00007FF6C60DDD38 
+14: 00007FF6C5BED983 
+ 1: 00007FF6C5593A37 
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 8: 00007FF6C5CA6E40 
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+15: 00007FF6C60F5971 
+ 9: 00007FF6C5CDF879 
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+ 2: 00007FF6C546489F 
+16: 00007FF6C55D1EAD 
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+17: 00007FF6C53A9361 
+10: 00007FF6C5CDD149 
+ 3: 00007FF6C67676C6 
+11: 00007FF6C5CD1974 
+ 4: 00007FF6C60FFDE3 
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+18: 00007FF6C53AF64D 
+12: 00007FF6C5CDEEE4 
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+19: 00007FF6C53A2DC5 
+ 5: 00007FF6C60EC846 
+13: 00007FF6C5CDE51A 
+ 6: 00007FF6C5F48EB0 
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+20: 00007FF6C55F2DB3 
+14: 00007FF6C5CDE121 
+21: 00007FF6C6E7FC5B 
+ 7: 00007FF6C5F10021 
+15: 00007FF6C5CDFA5A 
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+ 8: 00007FF6C5F10640 
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+22: 00007FFE2054E957 
+16: 00007FF6C5CDD149 
+ 9: 00007FF6C5F10346 
+23: 00007FFE21A8427C 
+17: 00007FF6C5CD1974 
+16: 00007FF6C55D1EAD node::NewContext+397
+10: 00007FF6C5EF5F8C 
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+18: 00007FF6C5CDEEE4 
+11: 00007FF6C5F369E6 
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+19: 00007FF6C5CDE51A 
+12: 00007FF6C5F36670 
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+20: 00007FF6C5CDE121 
+13: 00007FF6C5F35D58 
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+14: 00007FF6C5F354D1 
+21: 00007FF6C5CDFA5A 
+21: 00007FF6C6E7FC5B inflateValidate+186203
+22: 00007FF6C5CDD149 
+15: 00007FF6C5C08532 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+16: 00007FF6C5C09E22 
+23: 00007FF6C5CD1974 
+23: 00007FFE21A8427C RtlUserThreadStart+44
+24: 00007FF6C5CE4EB9 
+17: 00007FF6C5C049E9 
+25: 00007FF6C5CE5215 
+18: 00007FF6C5C096FC 
+26: 00007FF6C5CDA6C8 
+19: 00007FF6C5C09F32 
+27: 00007FF6C5CD99C7 
+20: 00007FF6C5C049E9 
+28: 00007FF6C5CDB0EA 
+21: 00007FF6C5C096FC 
+29: 00007FF6C5CCC58D 
+22: 00007FF6C5C09F32 
+30: 00007FF6C5CE00DD 
+23: 00007FF6C5C049E9 
+31: 00007FF6C5CC55FC 
+24: 00007FF6C5C096FC 
+32: 00007FF6C6067CE0 
+25: 00007FF6C5C09F32 
+33: 00007FF6C606D804 
+26: 00007FF6C5C05915 
+34: 00007FF6C60E73CD 
+27: 00007FF6C5C0A4BF 
+35: 00007FF6C60E7124 
+28: 00007FF6C5F4EE78 
+36: 00007FF6C550169D 
+29: 00007FF6C5BE5A90 
+37: 00007FF6C5501BD4 
+30: 00007FF6C5FBB245 
+38: 00007FF6660CFA64 
+31: 00007FF6C5BED983 
+32: 00007FF6C60F5971 
+33: 00007FF6C55D1EAD 
+34: 00007FF6C53A9361 
+35: 00007FF6C53AF64D 
+36: 00007FF6C53A2DC5 
+37: 00007FF6C55F2DB3 
+38: 00007FF6C6E7FC5B 
+39: 00007FFE2054E957 BaseThreadInitThunk+23
+40: 00007FFE21A8427C RtlUserThreadStart+44
+
+<--- Last few GCs --->
+
+[26508:0000024E3447B000]     1243 ms: Scavenge 6.6 (8.1) -> 6.5 (10.6) MB, pooled: 0 MB, 1.31 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5BCEAAB 
+ 6: 00007FF6C60D16F3 
+ 7: 00007FF6C60CE54C 
+ 8: 00007FF6C60CE0DA 
+ 9: 00007FF6C5CCE83D 
+10: 00007FF6C5CDFBC0 
+11: 00007FF6C5CDD149 
+12: 00007FF6C5CD1974 
+13: 00007FF6C5CDEEE4 
+14: 00007FF6C5CDE51A 
+15: 00007FF6C5CDE121 
+16: 00007FF6C5CDFA5A 
+17: 00007FF6C5CDD149 
+18: 00007FF6C5CD1974 
+19: 00007FF6C5CE4EB9 
+20: 00007FF6C5CE5215 
+21: 00007FF6C5CDA6C8 
+22: 00007FF6C5CD99C7 
+23: 00007FF6C5CDB0EA 
+24: 00007FF6C5CCC58D 
+25: 00007FF6C5CE00DD 
+26: 00007FF6C5CC55FC 
+27: 00007FF6C6067CE0 
+28: 00007FF6C606D804 
+29: 00007FF6C60E73CD 
+30: 00007FF6C60E7124 
+31: 00007FF6C550169D 
+32: 00007FF6C5501BD4 
+33: 00007FF6660CFA64 
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+16: 00007FF6C55D1EAD node::NewContext+397
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+21: 00007FF6C6E7FC5B inflateValidate+186203
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+16: 00007FF6C55D1EAD node::NewContext+397
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+21: 00007FF6C6E7FC5B inflateValidate+186203
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C546489F 
+ 3: 00007FF6C67676C6 
+ 4: 00007FF6C60FFDE3 
+ 5: 00007FF6C60EC846 
+ 6: 00007FF6C5F48EB0 
+ 7: 00007FF6C5F10021 
+ 8: 00007FF6C5F10640 
+ 9: 00007FF6C5F10346 
+10: 00007FF6C5EFFE2B 
+11: 00007FF6C5EFF45A 
+12: 00007FF6C5F56CB0 
+13: 00007FF6C5FBADF3 
+14: 00007FF6C5BED983 
+15: 00007FF6C60F5971 
+16: 00007FF6C55D1EAD 
+17: 00007FF6C53A9361 
+18: 00007FF6C53AF64D 
+19: 00007FF6C53A2DC5 
+20: 00007FF6C55F2DB3 
+21: 00007FF6C6E7FC5B 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+
+thread '<unnamed>' (24600) panicked at C:\Users\runneradmin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rayon-core-1.12.1\src\registry.rs:168:10:
+The global thread pool has not been initialized.: ThreadPoolBuildError { kind: IOError(Os { code: 1450, kind: Uncategorized, message: "Insufficient system resources exist to complete the requested service." }) }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5F48EB0 
+ 6: 00007FF6C5F00C5D 
+ 7: 00007FF6C5F520B3 
+ 8: 00007FF6C5F41F7D 
+ 9: 00007FF6C5F3DB35 
+10: 00007FF6C58C5C6D 
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+
+<--- Last few GCs --->
+ 2: 00007FF6C546489F 
+
+ 3: 00007FF6C67676C6 
+[26180:0000021CDB8CF000]     1158 ms: Scavenge 6.6 (8.1) -> 6.6 (10.6) MB, pooled: 0 MB, 1008.84 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+ 4: 00007FF6C60FFDE3 
+
+ 5: 00007FF6C60EC846 
+
+ 6: 00007FF6C5F48EB0 
+<--- JS stacktrace --->
+ 7: 00007FF6C5F10021 
+
+ 8: 00007FF6C5F10640 
+FATAL ERROR: Zone Allocation failed - process out of memory
+ 9: 00007FF6C5F10346 
+----- Native stack trace -----
+10: 00007FF6C5EF5F8C 
+
+11: 00007FF6C5F369E6 
+12: 00007FF6C5F36670 
+13: 00007FF6C5F35D58 
+14: 00007FF6C5F354D1 
+15: 00007FF6C5F5BA14 
+16: 00007FF6C5F5C35A 
+17: 00007FF6C5C085AF 
+18: 00007FF6C5C09E22 
+19: 00007FF6C5C05915 
+20: 00007FF6C5C0A4BF 
+21: 00007FF6C5F4EE78 
+22: 00007FF6C5BE5A90 
+23: 00007FF6C5FBB245 
+24: 00007FF6C5BED983 
+25: 00007FF6C60F5971 
+26: 00007FF6C55D1EAD 
+27: 00007FF6C53A9361 
+28: 00007FF6C53AF64D 
+29: 00007FF6C53A2DC5 
+30: 00007FF6C55F2DB3 
+31: 00007FF6C6E7FC5B 
+32: 00007FFE2054E957 
+33: 00007FFE21A8427C 
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C54F3C8B v8::base::CPU::num_virtual_address_bits+102587
+ 3: 00007FF6C60FFD91 v8::Isolate::ReportExternalAllocationLimitReached+65
+ 4: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 5: 00007FF6C5BCEAAB v8::SnapshotCreator::GetIsolate+50059
+ 6: 00007FF6C5C79434 v8::base::CPU::has_idiva+16452
+ 7: 00007FF6C5C79939 v8::base::CPU::has_idiva+17737
+ 8: 00007FF6C5C684B7 v8::base::CPU::family+37639
+ 9: 00007FF6C5C66E7A v8::base::CPU::family+31946
+10: 00007FF6C5C66379 v8::base::CPU::family+29129
+11: 00007FF6C5C67D81 v8::base::CPU::family+35793
+12: 00007FF6C5C66DA6 v8::base::CPU::family+31734
+13: 00007FF6C5C66379 v8::base::CPU::family+29129
+14: 00007FF6C5C664F8 v8::base::CPU::family+29512
+15: 00007FF6C5C67D81 v8::base::CPU::family+35793
+16: 00007FF6C5C66DA6 v8::base::CPU::family+31734
+17: 00007FF6C5C6A4DA v8::base::CPU::family+45866
+18: 00007FF6C5C66471 v8::base::CPU::family+29377
+19: 00007FF6C5C66379 v8::base::CPU::family+29129
+20: 00007FF6C5C669B2 v8::base::CPU::family+30722
+21: 00007FF6C5C67D81 v8::base::CPU::family+35793
+22: 00007FF6C5C66DA6 v8::base::CPU::family+31734
+23: 00007FF6C5C66379 v8::base::CPU::family+29129
+24: 00007FF6C5C66379 v8::base::CPU::family+29129
+25: 00007FF6C5C67D81 v8::base::CPU::family+35793
+26: 00007FF6C5C66DA6 v8::base::CPU::family+31734
+27: 00007FF6C5C64C84 v8::base::CPU::family+23252
+28: 00007FF6C5C4B1FD v8::PropertyDescriptor::value+6237
+29: 00007FF6C5C4B661 v8::PropertyDescriptor::value+7361
+30: 00007FF6C5C4BCDA v8::PropertyDescriptor::value+9018
+31: 00007FF6C5C4CD8E v8::PropertyDescriptor::value+13294
+32: 00007FF6C5C4C8A1 v8::PropertyDescriptor::value+12033
+33: 00007FF6C5C4C1B6 v8::PropertyDescriptor::value+10262
+34: 00007FF6C5C29942 v8::base::AddressSpaceReservation::AddressSpaceReservation+257762
+35: 00007FF66616DAFA 
+
+<--- Last few GCs --->
+
+[2272:0000021CD4358000]     2209 ms: Scavenge 6.6 (8.1) -> 6.5 (10.9) MB, pooled: 0 MB, 1.36 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: NewSpace::EnsureCurrentCapacity Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5F48EB0 
+ 6: 00007FF6C5F25C30 
+ 7: 00007FF6C5F4FB0B 
+ 8: 00007FF6C5F5211E 
+ 9: 00007FF6C5F41F7D 
+10: 00007FF6C5F3DB35 
+11: 00007FF6C58C5C6D 
+12: 7FF8000000000000 
+
+<--- Last few GCs --->
+
+[27008:000001D1EFB5B000]      103 ms: Scavenge 6.6 (8.1) -> 6.6 (10.9) MB, pooled: 0 MB, 1.16 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+
+
+#
+# Fatal process out of memory: Zone
+#
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5BCEAAB 
+ 6: 00007FF6C60DA5A8 
+ 7: 00007FF6C5CE0A70 
+ 8: 00007FF6C5CDE41A 
+ 9: 00007FF6C5CDE121 
+10: 00007FF6C5CDFA5A 
+11: 00007FF6C5CDD149 
+12: 00007FF6C5CD1974 
+13: 00007FF6C5CDEEE4 
+14: 00007FF6C5CDE51A 
+15: 00007FF6C5CDE121 
+16: 00007FF6C5CDFA5A 
+17: 00007FF6C5CDD149 
+18: 00007FF6C5CD1974 
+19: 00007FF6C5CE4EB9 
+20: 00007FF6C5CE5215 
+21: 00007FF6C5CDA6C8 
+22: 00007FF6C5CD99C7 
+23: 00007FF6C5CDB0EA 
+24: 00007FF6C5CCC58D 
+25: 00007FF6C5CE00DD 
+26: 00007FF6C5CC55FC 
+27: 00007FF6C6067CE0 
+28: 00007FF6C606D804 
+29: 00007FF6C60E73CD 
+30: 00007FF6C60E7124 
+31: 00007FF6C550169D 
+32: 00007FF6C5501BD4 
+33: 00007FF6660CFA64 
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 4: 00007FF6C60EC651 v8::Function::Experimental_IsNopFunction+2801
+ 5: 00007FF6C5BCEAAB v8::SnapshotCreator::GetIsolate+50059
+ 6: 00007FF6C5CEAB71 v8::base::Thread::StartSynchronously+287777
+ 7: 00007FF6C5BD1512 v8::internal::Version::GetString+10002
+ 8: 00007FF6C5BD0C8A v8::internal::Version::GetString+7818
+ 9: 00007FF6C67BE3D1 inflateInit2_+267473
+10: 00007FF6C689CB2D v8::internal::compiler::CompilationDependencies::~CompilationDependencies+885245
+11: 00007FF6C67C2581 inflateInit2_+284289
+12: 00007FF6C67D0A51 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+49441
+13: 00007FF6C6971B6A v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+840714
+14: 00007FF6C6971723 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+839619
+15: 00007FF6C68B6CC7 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+75111
+16: 00007FF6C68894A1 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+805745
+17: 00007FF6C68B68B8 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+74072
+18: 00007FF6C68B706E v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+76046
+19: 00007FF6C68B6D52 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+75250
+20: 00007FF6C688A29F v8::internal::compiler::CompilationDependencies::~CompilationDependencies+809327
+21: 00007FF6C6880F15 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+771557
+22: 00007FF6C6881AE5 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+774581
+23: 00007FF6C60698F4 v8::SharedValueConveyor::SharedValueConveyor+30324
+24: 00007FF6C6030402 v8::Private::Name+42834
+25: 00007FF6C62F2BB6 v8::PropertyDescriptor::writable+2002518
+26: 00007FF6C5467640 X509_STORE_CTX_get_lookup_certs+784
+27: 00007FF6C55F2DB3 uv_poll_stop+371
+28: 00007FF6C6E7FC5B inflateValidate+186203
+29: 00007FFE2054E957 BaseThreadInitThunk+23
+30: 00007FFE21A8427C RtlUserThreadStart+44
+
+
+
+#
+
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+----- Native stack trace -----
+#
+
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+16: 00007FF6C55D1EAD node::NewContext+397
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+21: 00007FF6C6E7FC5B inflateValidate+186203
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C546489F 
+ 3: 00007FF6C67676C6 
+ 4: 00007FF6C60FFDE3 
+ 5: 00007FF6C60EC846 
+ 6: 00007FF6C5F48EB0 
+ 7: 00007FF6C5F10021 
+ 8: 00007FF6C5F10640 
+ 9: 00007FF6C5F10346 
+10: 00007FF6C5EFFE2B 
+11: 00007FF6C5EFF45A 
+12: 00007FF6C5F56CB0 
+13: 00007FF6C5FBADF3 
+14: 00007FF6C5BED983 
+15: 00007FF6C60F5971 
+16: 00007FF6C55D1EAD 
+17: 00007FF6C53A9361 
+18: 00007FF6C53AF64D 
+19: 00007FF6C53A2DC5 
+20: 00007FF6C55F2DB3 
+21: 00007FF6C6E7FC5B 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+10: 00007FF6C5EF5F8C v8::StackTrace::GetFrameCount+86812
+11: 00007FF6C5F369E6 v8::CpuProfileNode::GetScriptResourceNameStr+161270
+12: 00007FF6C5F36670 v8::CpuProfileNode::GetScriptResourceNameStr+160384
+13: 00007FF6C5F35D58 v8::CpuProfileNode::GetScriptResourceNameStr+158056
+14: 00007FF6C5F354D1 v8::CpuProfileNode::GetScriptResourceNameStr+155873
+15: 00007FF6C5C08532 v8::base::AddressSpaceReservation::AddressSpaceReservation+121554
+16: 00007FF6C5C09E22 v8::base::AddressSpaceReservation::AddressSpaceReservation+127938
+17: 00007FF6C5C049E9 v8::base::AddressSpaceReservation::AddressSpaceReservation+106377
+18: 00007FF6C5C096FC v8::base::AddressSpaceReservation::AddressSpaceReservation+126108
+19: 00007FF6C5C09F32 v8::base::AddressSpaceReservation::AddressSpaceReservation+128210
+20: 00007FF6C5C049E9 v8::base::AddressSpaceReservation::AddressSpaceReservation+106377
+21: 00007FF6C5C096FC v8::base::AddressSpaceReservation::AddressSpaceReservation+126108
+22: 00007FF6C5C09F32 v8::base::AddressSpaceReservation::AddressSpaceReservation+128210
+23: 00007FF6C5C049E9 v8::base::AddressSpaceReservation::AddressSpaceReservation+106377
+24: 00007FF6C5C096FC v8::base::AddressSpaceReservation::AddressSpaceReservation+126108
+25: 00007FF6C5C09F32 v8::base::AddressSpaceReservation::AddressSpaceReservation+128210
+26: 00007FF6C5C05915 v8::base::AddressSpaceReservation::AddressSpaceReservation+110261
+27: 00007FF6C5C0A4BF v8::base::AddressSpaceReservation::AddressSpaceReservation+129631
+28: 00007FF6C5F4EE78 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+58424
+29: 00007FF6C5BE5A90 v8::internal::Version::GetString+93328
+30: 00007FF6C5FBB245 v8::base::CPU::has_sse41+74789
+31: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+32: 00007FF6C60F5971 v8::Isolate::Initialize+433
+33: 00007FF6C55D1EAD node::NewContext+397
+34: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+35: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+36: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+37: 00007FF6C55F2DB3 uv_poll_stop+371
+38: 00007FF6C6E7FC5B inflateValidate+186203
+39: 00007FFE2054E957 BaseThreadInitThunk+23
+40: 00007FFE21A8427C RtlUserThreadStart+44
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C546489F 
+ 3: 00007FF6C67676C6 
+ 4: 00007FF6C60FFDE3 
+ 5: 00007FF6C60EC846 
+ 6: 00007FF6C5F48EB0 
+ 7: 00007FF6C5F10021 
+ 8: 00007FF6C5F10640 
+ 9: 00007FF6C5F10346 
+10: 00007FF6C5EF5F8C 
+11: 00007FF6C5F369E6 
+12: 00007FF6C5F36670 
+13: 00007FF6C5F35D58 
+14: 00007FF6C5F354D1 
+15: 00007FF6C5F5BA14 
+16: 00007FF6C5F5C35A 
+17: 00007FF6C5C085AF 
+18: 00007FF6C5C09E22 
+19: 00007FF6C5C05915 
+20: 00007FF6C5C0A4BF 
+21: 00007FF6C5BE5653 
+22: 00007FF6C5F4EF69 
+23: 00007FF6C5BE5A90 
+24: 00007FF6C5FBB245 
+25: 00007FF6C5BED983 
+26: 00007FF6C60F5971 
+27: 00007FF6C55D1EAD 
+28: 00007FF6C53A9361 
+29: 00007FF6C53AF64D 
+30: 00007FF6C53A2DC5 
+31: 00007FF6C55F2DB3 
+32: 00007FF6C6E7FC5B 
+33: 00007FFE2054E957 BaseThreadInitThunk+23
+34: 00007FFE21A8427C RtlUserThreadStart+44
+
+thread 'tokio-runtime-worker' (16280) panicked at C:\Users\runneradmin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.43.0\src\io\blocking.rs:76:46:
+OS can't spawn worker thread: Insufficient system resources exist to complete the requested service. (os error 1450)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+#
+# Fatal error in , line 0
+# Out of memory: HashMap::Initialize
+#
+#
+#
+#FailureMessage Object: 0000001E83BF9720
+----- Native stack trace -----
+
+
+<--- Last few GCs --->
+
+[28488:00000171039F4000]     2175 ms: Scavenge 6.6 (8.1) -> 6.5 (11.1) MB, pooled: 0 MB, 1.27 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: NewSpace::EnsureCurrentCapacity Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+ 3: 00007FF6C6767A65 V8_Fatal+197
+ 4: 00007FF6C60DE163 v8::SharedValueConveyor::SharedValueConveyor+507619
+ 5: 00007FF6C60DDBF6 v8::SharedValueConveyor::SharedValueConveyor+506230
+ 6: 00007FF6C60DDE9C v8::SharedValueConveyor::SharedValueConveyor+506908
+ 7: 00007FF6C60DDD38 v8::SharedValueConveyor::SharedValueConveyor+506552
+ 8: 00007FF6C5CA6E40 v8::base::Thread::StartSynchronously+9968
+ 9: 00007FF6C5CE4B8F v8::base::Thread::StartSynchronously+263231
+10: 00007FF6C5CE5215 v8::base::Thread::StartSynchronously+264901
+11: 00007FF6C5CDA6C8 v8::base::Thread::StartSynchronously+221048
+12: 00007FF6C5CD15BD v8::base::Thread::StartSynchronously+183917
+13: 00007FF6C5CD1B31 v8::base::Thread::StartSynchronously+185313
+14: 00007FF6C5CD19C1 v8::base::Thread::StartSynchronously+184945
+15: 00007FF6C5CD6F3E v8::base::Thread::StartSynchronously+206830
+16: 00007FF6C5CDFB77 v8::base::Thread::StartSynchronously+242727
+17: 00007FF6C5CDD149 v8::base::Thread::StartSynchronously+231929
+18: 00007FF6C5CD1974 v8::base::Thread::StartSynchronously+184868
+19: 00007FF6C5CD6F3E v8::base::Thread::StartSynchronously+206830
+20: 00007FF6C5CD73EE v8::base::Thread::StartSynchronously+208030
+21: 00007FF6C5CE317F v8::base::Thread::StartSynchronously+256559
+22: 00007FF6C5CDA6C8 v8::base::Thread::StartSynchronously+221048
+23: 00007FF6C5CD15BD v8::base::Thread::StartSynchronously+183917
+24: 00007FF6C5CD1B31 v8::base::Thread::StartSynchronously+185313
+25: 00007FF6C5CD19C1 v8::base::Thread::StartSynchronously+184945
+26: 00007FF6C5CD6F3E v8::base::Thread::StartSynchronously+206830
+27: 00007FF6C5CDFB77 v8::base::Thread::StartSynchronously+242727
+28: 00007FF6C5CDD149 v8::base::Thread::StartSynchronously+231929
+29: 00007FF6C5CD1974 v8::base::Thread::StartSynchronously+184868
+30: 00007FF6C5CD6F3E v8::base::Thread::StartSynchronously+206830
+31: 00007FF6C5CD73EE v8::base::Thread::StartSynchronously+208030
+32: 00007FF6C5CE317F v8::base::Thread::StartSynchronously+256559
+33: 00007FF6C5CDA6C8 v8::base::Thread::StartSynchronously+221048
+34: 00007FF6C5CD99C7 v8::base::Thread::StartSynchronously+217719
+35: 00007FF6C5CDB0EA v8::base::Thread::StartSynchronously+223642
+36: 00007FF6C5CCC58D v8::base::Thread::StartSynchronously+163389
+37: 00007FF6C5CE00DD v8::base::Thread::StartSynchronously+244109
+38: 00007FF6C5CC55FC v8::base::Thread::StartSynchronously+134828
+39: 00007FF6C6067CE0 v8::SharedValueConveyor::SharedValueConveyor+23136
+40: 00007FF6C606D804 v8::SharedValueConveyor::SharedValueConveyor+46468
+41: 00007FF6C60E73CD v8::ScriptCompiler::CompileFunctionInternal+669
+42: 00007FF6C60E7124 v8::ScriptCompiler::CompileFunction+84
+43: 00007FF6C550169D node::OnFatalError+55773
+44: 00007FF6C5501BD4 node::OnFatalError+57108
+45: 00007FF6660CFA64 
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5F48EB0 
+ 6: 00007FF6C5F25C30 
+ 7: 00007FF6C5F4FB0B 
+ 8: 00007FF6C5F5211E 
+ 9: 00007FF6C5F41F7D 
+10: 00007FF6C5F3DB35 
+11: 00007FF6C58C5C6D 
+12: 7FF8000000000000 
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+
+
+
+#
+<--- Last few GCs --->
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+
+
+<--- Last few GCs --->
+<--- Last few GCs --->
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+#
+
+
+
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+----- Native stack trace -----
+<--- JS stacktrace --->
+[26444:0000023DA1F3A000]       32 ms: Scavenge 3.6 (5.1) -> 3.2 (5.6) MB, pooled: 0 MB, 0.94 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+
+
+
+<--- JS stacktrace --->
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 1: 00007FF6C5593A37 
+
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+
+
+ 2: 00007FF6C546489F 
+
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+<--- JS stacktrace --->
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+ 3: 00007FF6C67676C6 
+
+----- Native stack trace -----
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+#
+ 4: 00007FF6C60FFDE3 
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+
+FATAL ERROR: NewSpace::EnsureCurrentCapacity Allocation failed - JavaScript heap out of memory
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+ 5: 00007FF6C60EC846 
+#
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+----- Native stack trace -----
+ 2: 00007FF6C54F3C8B v8::base::CPU::num_virtual_address_bits+102587
+ 6: 00007FF6C5F48EB0 
+----- Native stack trace -----
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+ 7: 00007FF6C5F10021 
+
+ 3: 00007FF6C60FFD91 v8::Isolate::ReportExternalAllocationLimitReached+65
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+ 8: 00007FF6C5F10640 
+ 1: 00007FF6C5593A37 
+ 9: 00007FF6C5F10346 
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+ 4: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+ 2: 00007FF6C546489F 
+ 5: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+10: 00007FF6C5EFFE2B 
+ 3: 00007FF6C67676C6 
+11: 00007FF6C5EFF45A 
+ 6: 00007FF6C5F00C5D v8::StackTrace::GetFrameCount+131053
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+ 4: 00007FF6C60FFDE3 
+ 7: 00007FF6C5F520B3 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+71283
+16: 00007FF6C55D1EAD node::NewContext+397
+12: 00007FF6C5F56CB0 
+ 5: 00007FF6C60EC846 
+ 8: 00007FF6C5F41F7D v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+5437
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+13: 00007FF6C5FBADF3 
+ 6: 00007FF6C5F48EB0 
+ 9: 00007FF6C5F3DB35 v8::CpuProfileNode::GetScriptResourceNameStr+190277
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+14: 00007FF6C5BED983 
+ 7: 00007FF6C5F10021 
+10: 00007FF6C58C5C6D BIO_ssl_shutdown+189
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+15: 00007FF6C60F5971 
+ 8: 00007FF6C5F10640 
+16: 00007FF6C55D1EAD 
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+ 9: 00007FF6C5F100C2 
+21: 00007FF6C6E7FC5B inflateValidate+186203
+10: 00007FF6C5F389EB 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+17: 00007FF6C53A9361 
+18: 00007FF6C53AF64D 
+11: 00007FF6C5F38C55 
+23: 00007FFE21A8427C RtlUserThreadStart+44
+19: 00007FF6C53A2DC5 
+12: 00007FF6C5F38DA6 
+20: 00007FF6C55F2DB3 
+13: 00007FF6C5F5B232 
+21: 00007FF6C6E7FC5B 
+14: 00007FF6C5C084F6 
+22: 00007FFE2054E957 
+15: 00007FF6C5C09E22 
+23: 00007FFE21A8427C 
+16: 00007FF6C5C05915 
+17: 00007FF6C5C0A4BF 
+18: 00007FF6C5F4EE78 
+19: 00007FF6C5BE5A90 
+20: 00007FF6C5FBB245 
+21: 00007FF6C5BED983 
+22: 00007FF6C60F5971 
+23: 00007FF6C55D1EAD 
+24: 00007FF6C53A9361 
+25: 00007FF6C53AF64D 
+26: 00007FF6C53A2DC5 
+27: 00007FF6C55F2DB3 
+28: 00007FF6C6E7FC5B 
+29: 00007FFE2054E957 BaseThreadInitThunk+23
+30: 00007FFE21A8427C RtlUserThreadStart+44
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5F48EB0 
+ 6: 00007FF6C5F25C30 
+ 7: 00007FF6C5F4FB0B 
+ 8: 00007FF6C5F5211E 
+ 9: 00007FF6C5F41F7D 
+10: 00007FF6C5F3DB35 
+11: 00007FF6C58C5C6D 
+
+
+#
+# Fatal process out of memory: Zone
+#
+----- Native stack trace -----
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+
+
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+#
+
+<--- Last few GCs --->
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+#
+
+ 4: 00007FF6C60EC651 v8::Function::Experimental_IsNopFunction+2801
+----- Native stack trace -----
+ 5: 00007FF6C5BCEAAB v8::SnapshotCreator::GetIsolate+50059
+<--- JS stacktrace --->
+
+
+ 6: 00007FF6C67D4D51 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+66593
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+
+ 7: 00007FF6C67D57F3 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+69315
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+
+ 8: 00007FF6C69CBAD5 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+1209205
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+#
+ 9: 00007FF6C69C7F16 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+1193910
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+10: 00007FF6C68B68B8 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+74072
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+#
+11: 00007FF6C68B706E v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+76046
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+----- Native stack trace -----
+12: 00007FF6C68B6D52 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+75250
+
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+13: 00007FF6C69C8190 v8::internal::compiler::CompilationDependencies::TransitionDependencyOffTheRecord+1194544
+ 1: 00007FF6C5593A37 node::SetCppgcReference+21127
+14: 00007FF6C687B203 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+747731
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+ 2: 00007FF6C546489F node::TriggerNodeReport+71423
+15: 00007FF6C6886C20 v8::internal::compiler::CompilationDependencies::~CompilationDependencies+795376
+10: 00007FF6C5EFFE2B v8::StackTrace::GetFrameCount+127419
+16: 00007FF6C6881B0A v8::internal::compiler::CompilationDependencies::~CompilationDependencies+774618
+ 3: 00007FF6C67676C6 v8::base::FatalOOM+54
+11: 00007FF6C5EFF45A v8::StackTrace::GetFrameCount+124906
+ 4: 00007FF6C60FFDE3 v8::Isolate::ReportExternalAllocationLimitReached+147
+17: 00007FF6C60698F4 v8::SharedValueConveyor::SharedValueConveyor+30324
+12: 00007FF6C5F56CB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+90736
+ 5: 00007FF6C60EC846 v8::Function::Experimental_IsNopFunction+3302
+18: 00007FF6C6030402 v8::Private::Name+42834
+13: 00007FF6C5FBADF3 v8::base::CPU::has_sse41+73683
+ 6: 00007FF6C5F48EB0 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+19: 00007FF6C62F2BB6 v8::PropertyDescriptor::writable+2002518
+14: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+20: 00007FF6C5467640 X509_STORE_CTX_get_lookup_certs+784
+ 7: 00007FF6C5F10021 v8::CpuProfileNode::GetScriptResourceNameStr+3121
+15: 00007FF6C60F5971 v8::Isolate::Initialize+433
+ 8: 00007FF6C5F10640 v8::CpuProfileNode::GetScriptResourceNameStr+4688
+21: 00007FF6C55F2DB3 uv_poll_stop+371
+16: 00007FF6C55D1EAD node::NewContext+397
+22: 00007FF6C6E7FC5B inflateValidate+186203
+ 9: 00007FF6C5F10346 v8::CpuProfileNode::GetScriptResourceNameStr+3926
+17: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+10: 00007FF6C5EF5F8C v8::StackTrace::GetFrameCount+86812
+23: 00007FFE2054E957 BaseThreadInitThunk+23
+18: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+11: 00007FF6C5F369E6 v8::CpuProfileNode::GetScriptResourceNameStr+161270
+24: 00007FFE21A8427C RtlUserThreadStart+44
+19: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+12: 00007FF6C5F36670 v8::CpuProfileNode::GetScriptResourceNameStr+160384
+20: 00007FF6C55F2DB3 uv_poll_stop+371
+13: 00007FF6C5F35D58 v8::CpuProfileNode::GetScriptResourceNameStr+158056
+21: 00007FF6C6E7FC5B inflateValidate+186203
+14: 00007FF6C5F354D1 v8::CpuProfileNode::GetScriptResourceNameStr+155873
+ 1: 00007FF6C5593A37 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+15: 00007FF6C5C08532 v8::base::AddressSpaceReservation::AddressSpaceReservation+121554
+23: 00007FFE21A8427C RtlUserThreadStart+44
+16: 00007FF6C5C09E22 v8::base::AddressSpaceReservation::AddressSpaceReservation+127938
+ 2: 00007FF6C546489F 
+17: 00007FF6C5C05915 v8::base::AddressSpaceReservation::AddressSpaceReservation+110261
+ 3: 00007FF6C67676C6 
+18: 00007FF6C5C0A4BF v8::base::AddressSpaceReservation::AddressSpaceReservation+129631
+ 4: 00007FF6C60FFDE3 
+19: 00007FF6C5BE5653 v8::internal::Version::GetString+92243
+ 5: 00007FF6C60EC846 
+20: 00007FF6C5BFDD6A v8::base::AddressSpaceReservation::AddressSpaceReservation+78602
+ 6: 00007FF6C5F48EB0 
+21: 00007FF6C5BEF48B v8::base::AddressSpaceReservation::AddressSpaceReservation+18987
+ 7: 00007FF6C5F10021 
+22: 00007FF6C5FBB1ED v8::base::CPU::has_sse41+74701
+ 8: 00007FF6C5F10640 
+23: 00007FF6C5BED983 v8::base::AddressSpaceReservation::AddressSpaceReservation+12067
+ 9: 00007FF6C5F10346 
+24: 00007FF6C60F5971 v8::Isolate::Initialize+433
+10: 00007FF6C5EFFE2B 
+25: 00007FF6C55D1EAD node::NewContext+397
+11: 00007FF6C5EFF45A 
+26: 00007FF6C53A9361 X509_CRL_get_meth_data+148993
+12: 00007FF6C5F56CB0 
+27: 00007FF6C53AF64D X509_CRL_get_meth_data+174317
+13: 00007FF6C5FBADF3 
+28: 00007FF6C53A2DC5 X509_CRL_get_meth_data+122981
+14: 00007FF6C5BED983 
+29: 00007FF6C55F2DB3 uv_poll_stop+371
+15: 00007FF6C60F5971 
+30: 00007FF6C6E7FC5B inflateValidate+186203
+16: 00007FF6C55D1EAD 
+31: 00007FFE2054E957 BaseThreadInitThunk+23
+17: 00007FF6C53A9361 
+32: 00007FFE21A8427C RtlUserThreadStart+44
+18: 00007FF6C53AF64D 
+19: 00007FF6C53A2DC5 
+20: 00007FF6C55F2DB3 
+21: 00007FF6C6E7FC5B 
+22: 00007FFE2054E957 BaseThreadInitThunk+23
+23: 00007FFE21A8427C RtlUserThreadStart+44
+
+<--- Last few GCs --->
+
+[16400:000001EAC5728000]     6248 ms: Scavenge 6.5 (7.1) -> 6.5 (8.6) MB, pooled: 0 MB, 26.46 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[16400:000001EAC5728000]     6349 ms: Scavenge 7.1 (8.6) -> 6.9 (11.1) MB, pooled: 0 MB, 1.01 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6C5593A37 
+ 2: 00007FF6C54F3C8B 
+ 3: 00007FF6C60FFD91 
+ 4: 00007FF6C60EC846 
+ 5: 00007FF6C5BCEAAB 
+ 6: 00007FF6C596E6C6 
+ 7: 00007FF6C5C75DBF 
+ 8: 00007FF6C5C7857C 
+ 9: 00007FF6C5C7A6B5 
+10: 00007FF6C5C64D20 
+11: 00007FF6C5C4B1FD 
+12: 00007FF6C5C4B661 
+13: 00007FF6C5C4BCDA 
+14: 00007FF6C5C4CD8E 
+15: 00007FF6C5C4C8A1 
+16: 00007FF6C5C4C1B6 
+17: 00007FF6C5C29942 
+18: 00007FF66616DAFA 

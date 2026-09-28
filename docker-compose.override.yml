@@ -1,0 +1,8 @@
+# Local-only override (untracked): a native Windows postgresql-x64-16 service
+# squats host port 5432 on this machine, silently shadowing the container's
+# IPv4 binding there. Remap the container to 5433 instead — matches
+# DATABASE_URL in .env.local. See memory: local-db-unreachable.
+services:
+  postgres:
+    ports: !override
+      - "5433:5432"

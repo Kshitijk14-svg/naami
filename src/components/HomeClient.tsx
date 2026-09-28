@@ -25,7 +25,6 @@ import { useCartStore } from "@/models/cartStore";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 import { useDesignSettings } from "@/lib/useDesignSettings";
-import { useFitBox, isFitBoxMeasured } from "@/lib/useFitBox";
 
 type CarouselProduct = {
   id: number;
@@ -211,8 +210,6 @@ export default function HomeClient({
 
   const heroTitleRef = useRef<HTMLDivElement>(null);
   const heroSubRef = useRef<HTMLDivElement>(null);
-  const heroFitBox = useFitBox(heroTitleRef, heroSlides[0].width / heroSlides[0].height);
-  const heroFitMeasured = isFitBoxMeasured(heroFitBox);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -308,12 +305,8 @@ export default function HomeClient({
           {heroSlides.map((slide, idx) => (
             <div
               key={idx}
-              className="absolute transition-opacity duration-700 ease-in-out"
-              style={
-                heroFitMeasured
-                  ? { top: heroFitBox.top, left: heroFitBox.left, width: heroFitBox.width, height: heroFitBox.height, opacity: idx === currentSlide ? 1 : 0, zIndex: idx === currentSlide ? 10 : 0 }
-                  : { inset: 0, opacity: idx === currentSlide ? 1 : 0, zIndex: idx === currentSlide ? 10 : 0 }
-              }
+              className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+              style={{ opacity: idx === currentSlide ? 1 : 0, zIndex: idx === currentSlide ? 10 : 0 }}
             >
               <Image
                 src={slide.image}

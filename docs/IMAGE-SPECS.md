@@ -20,33 +20,23 @@ Input limit is **15MB**. Anything `sharp` can decode is accepted (JPEG, PNG, Web
 TIFF, AVIF); prefer **PNG or high-quality JPEG** as the source since it gets
 re-encoded anyway.
 
-**2. Fixed-ratio slots vs. variable-crop slots vs. letterboxed slots.**
+**2. Fixed-ratio slots vs. variable-crop slots.**
 Most slots have a CSS `aspect-ratio`, so the crop is identical on every device —
-just match the ratio (§B). The loom panels and journal cover are sized in a way
-that still varies by device or by placement, so a single file is cropped
-differently in different spots — those get a **safe zone** (§A).
+just match the ratio (§B). But the hero slider, lookbook banner and loom panels are
+sized in **viewport height** (`h-[65vh] md:h-[75vh]`, `height: 90vh`), so a single
+file is cropped to landscape on desktop and portrait on mobile. Those slots get a
+**safe zone** (§A).
 
-The hero slider and lookbook banner used to crop with plain `object-cover` on a
-viewport-height box — the original bug: even an upload matching the "deliver"
-size exactly still got cropped, since the box's ratio depends on the visitor's
-screen, not the image. Fixed by **letterboxing** instead of cropping: the
-sections still stay at their fixed viewport height (`h-[65vh] md:h-[75vh]`,
-`height: 90vh`, unchanged, so the page's cinematic full-height look is
-preserved), but now center the image at its true aspect ratio inside that
-fixed-height box, showing the section's background color in the bars on
-whichever axis doesn't match (§A2). There's no "required size" for these two
-slots anymore, only a recommendation (4:3-ish for the hero, square-ish for the
-lookbook banner) to minimise how much bar shows — and the 3 hero slides must
-all share the same ratio, since they crossfade in one shared box.
-
-**3. How the loom/journal safe-zone numbers were derived.**
+**3. How the safe-zone numbers were derived.**
 Under `object-cover`, the visible fraction of a source image is
 `boxRatio / sourceRatio` when the box is wider than the source, and the inverse
-when it's taller. Picking the source ratio as the **geometric mean** of the
-relevant box ratios equalises the loss at both ends. The **safe zone** is the
-intersection of those crops: the region guaranteed visible everywhere. Everything
-critical — faces, garment detail — must sit inside it. Reference viewports:
-desktop 1920x1080, mobile 390x844.
+when it's taller. Picking the source ratio as the **geometric mean** of the desktop
+and mobile box ratios equalises the loss at both ends — for the hero that's
+`sqrt(2.25 x 0.62) = 1.18`, for the lookbook banner `sqrt(1.98 x 0.51) = 1.00`.
+The **safe zone** is the intersection of the desktop and mobile crops: the region
+guaranteed visible on every device. Everything critical — faces, garment detail,
+hotspot targets — must sit inside it. Reference viewports: desktop 1920x1080,
+mobile 390x844.
 
 There is **one asset per slot** — no separate mobile uploads anywhere in the CMS.
 
@@ -56,52 +46,31 @@ There is **one asset per slot** — no separate mobile uploads anywhere in the C
 
 | Slot | CMS key | Desktop box | Mobile box | Deliver | Safe zone (centered) |
 | --- | --- | --- | --- | --- | --- |
+| Hero slides **x3** | `hero_image_1/2/3` | 1824x810 (2.25:1) | 342x549 (0.62:1) | **1920 x 1440** (4:3) | **900 x 850** |
+| Lookbook / hotspot banner | `lookbook_banner_image` | 1920x972 (1.98:1) | 390x760 (0.51:1) | **1600 x 1600** (1:1) | **816 x 816** |
 | Loom panel 1 | `loom_panel1_image` | 864x648 (1.33:1) | 294x422 (0.70:1) | **1600 x 1600** (1:1) | **1120 x 1200** |
 | Loom panel 2 | `loom_panel2_image` | 864x648 (1.33:1) | 294x422 (0.70:1) | **1600 x 1600** (1:1) | **1120 x 1200** |
 | Journal / blog cover | `blog_posts.cover_image` | 1920x520 hero (3.7:1) **+** 570x428 card (4:3) **+** 1200x630 OG | 390x422 (0.92:1) | **1920 x 1080** (16:9) | **1000 x 520** |
+
+**Hero slides** — text overlays render bottom-left (`bottom-8 left-8 md:bottom-12
+md:left-12` in `src/components/HomeClient.tsx`). Keep that corner visually quiet.
+Slide 1 is `priority`-loaded, so it's the largest single contributor to LCP.
+
+**Lookbook banner** — GSAP parallax scales the image to **1.06** at scroll end
+(`src/components/HotspotBanner.tsx`), so it renders ~6% larger than the box. It is
+also full-bleed (no horizontal padding, unlike the hero). Hotspots are stored as
+`top%`/`left%` of the *image* (matching what the admin's hotspot editor previews),
+and `src/lib/useCoverCrop.ts` remaps those percentages onto whatever slice of the
+image survives the crop on every resize (`ResizeObserver`), so placement stays
+correct on every viewport — a hotspot that falls in the cropped-off region simply
+clamps to the nearest visible edge instead of drifting off-target. Still keep
+hotspots inside the safe zone as best practice: a clamped hotspot is visually
+correct but sits pinned to an edge on aggressive crops, which reads as slightly off.
 
 **Journal cover** — the hardest-working asset on the site: one file serves a 3.7:1
 page hero, a 4:3 index card, and the 1.91:1 OpenGraph share image (used unresized).
 Shoot for 16:9 with the subject dead-center. There is no thumbnail column on
 `blog_posts`, so the index grid loads the full-size file.
-
-**Loom panels** use the same viewport-height crop the hero/lookbook banner used to.
-They weren't part of the fix below — same underlying issue, just not yet applied
-here.
-
----
-
-## A2. Letterboxed slots — fixed-height section, full image always shown
-
-| Slot | CMS key | Suggested ratio | Notes |
-| --- | --- | --- | --- |
-| Hero slides **x3** | `hero_image_1/2/3` | ~4:3 | All 3 slides must share the same ratio — they crossfade in one shared box, so mismatched ratios would jump the letterboxed frame between slides. |
-| Lookbook / hotspot banner | `lookbook_banner_image` | ~1:1 | Hotspots are stored as `top%`/`left%` of the *image*, not the section — see below. |
-
-Upload width/height are captured at upload time (`src/app/api/admin/upload/route.ts`)
-and stored alongside the image URL as `${key}_w` / `${key}_h` design settings. The
-public page (`src/app/page.tsx`) reads them and passes them to `useFitBox`
-(`src/lib/useFitBox.ts`), a small hook that computes — via `ResizeObserver` — the
-pixel rectangle an `object-fit: contain` image of that ratio would occupy inside
-the fixed-height section (the same math the browser uses for `object-fit`, exposed
-so other elements can be positioned against it). The image renders inside that
-rectangle; the section's own background color fills the rest. Nothing is ever
-cropped, and the "suggested ratio" above only affects how much bar shows, not
-whether the image displays.
-
-**Hero slides** — text overlays render bottom-left (`bottom-8 left-8 md:bottom-12
-md:left-12` in `src/components/HomeClient.tsx`), anchored to the section corner
-(not the letterboxed image), same as before. Keep that corner visually quiet.
-Slide 1 is `priority`-loaded, so it's the largest single contributor to LCP.
-
-**Lookbook banner** — hotspots are positioned by `top%`/`left%` of the *image*
-(matching what the admin's hotspot editor previews), then mapped onto the
-letterboxed image's actual on-screen rectangle from `useFitBox` — so placement
-stays accurate on every device, letterboxed or not. This replaces the old
-crop-based "safe zone" approach, which only guaranteed accuracy in the region
-visible on every viewport. GSAP parallax scales the image to **1.06** at scroll
-end (`src/components/HotspotBanner.tsx`), so it renders ~6% larger than its
-letterboxed frame. It is also full-bleed (no horizontal padding, unlike the hero).
 
 ---
 
@@ -213,9 +182,8 @@ These are accepted trade-offs, documented so they aren't rediscovered as bugs:
 - **Full-bleed banners cap at 1920px**, so the hero and lookbook banner are slightly
   soft on 2x-DPR desktop displays. Raising `FULL_IMAGE_MAX_EDGE` per upload type
   would fix it at the cost of page weight.
-- **No separate mobile assets.** Loom panels and the journal cover are handled by
-  the safe-zone rule in §A rather than art direction. The hero and lookbook banner
-  no longer need this — see §A2.
+- **No separate mobile assets.** Hero, lookbook banner, loom panels and the journal
+  cover are all handled by the safe-zone rule in §A rather than art direction.
 - **Hero/lookbook width & height are only captured on upload through the admin UI.**
   Settings rows written before this fix, or edited directly (not via
   `ImageUploadField`), won't have a `_w`/`_h` pair and fall back to the seeded
