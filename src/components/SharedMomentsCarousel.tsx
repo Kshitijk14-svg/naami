@@ -114,17 +114,6 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
     if (video) video.muted = next;
   };
 
-  const handleNavClick = (direction: "prev" | "next") => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    gsap.killTweensOf(track);
-    const scrollAmount = window.innerWidth >= 768 ? 380 : 300;
-    const target = direction === "prev" ? track.scrollLeft - scrollAmount : track.scrollLeft + scrollAmount;
-
-    gsap.to(track, { scrollLeft: target, duration: 0.6, ease: "power3.out" });
-  };
-
   // Mouse-only drag-to-scroll; touch/pen keep the native overflow-x scroll
   // path untouched so they never fight the IntersectionObserver above.
   //
@@ -218,29 +207,6 @@ export default function SharedMomentsCarousel({ items, kicker, title, background
           <h2 className={TITLE_CLASS} style={titleStyle("clamp(2rem, 4vw, 3rem)")}>
             {title}
           </h2>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => handleNavClick("prev")}
-            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#5B1C1C] transition-colors cursor-pointer"
-            aria-label="Previous"
-            data-cursor-text="PREV"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => handleNavClick("next")}
-            className="w-10 h-10 flex items-center justify-center border border-black/10 hover:border-black/35 hover:text-[#5B1C1C] transition-colors cursor-pointer"
-            aria-label="Next"
-            data-cursor-text="NEXT"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M5 12h14M12 5l7 7 7 7" />
-            </svg>
-          </button>
         </div>
       </div>
 
