@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, useRef } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { PRODUCT_NAME_CLASS } from "@/lib/typography";
@@ -27,6 +27,9 @@ interface Props {
   backgroundImageFit?: SectionBackgroundFit;
 }
 
+// Distance (px) the mouse must travel before a press becomes a drag.
+const DRAG_THRESHOLD = 5;
+
 const DEFAULT_KICKER = "NAAMI // THE ARCHIVAL SERIES";
 const DEFAULT_TITLE = "Seasonal";
 const DEFAULT_TITLE_ACCENT = "Collections";
@@ -42,10 +45,68 @@ export default function CollectionsShowcase({
   backgroundImageFit,
 }: Props) {
   const items = collections ?? [];
-  // Repeat the bento pattern (2 portrait tiles + 1 full-width landscape tile)
-  // in groups of 3 so any number of homepage collections lays out cleanly.
-  const groups: CollectionItem[][] = [];
-  for (let i = 0; i < items.length; i += 3) groups.push(items.slice(i, i + 3));
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef({
+    pressed: false,
+    dragging: false,
+    suppressClick: false,
+    pointerId: -1,
+    startX: 0,
+    startScrollLeft: 0,
+  });
+
+  // Mouse-only drag-to-scroll (touch uses native scrolling). Pointer capture is
+  // deferred until the mouse passes DRAG_THRESHOLD so plain clicks still reach
+  // the card links.
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const track = trackRef.current;
+    if (!track) return;
+    dragState.current = {
+      pressed: true,
+      dragging: false,
+      suppressClick: false,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startScrollLeft: track.scrollLeft,
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const state = dragState.current;
+    if (!state.pressed) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const delta = e.clientX - state.startX;
+    if (!state.dragging) {
+      if (Math.abs(delta) < DRAG_THRESHOLD) return;
+      state.dragging = true;
+      track.setPointerCapture(state.pointerId);
+      track.setAttribute("data-cursor-text", "DRAGGING");
+    }
+    track.scrollLeft = state.startScrollLeft - delta;
+  };
+
+  const endDrag = () => {
+    const state = dragState.current;
+    if (!state.pressed) return;
+    const track = trackRef.current;
+    if (state.dragging && track?.hasPointerCapture(state.pointerId)) {
+      track.releasePointerCapture(state.pointerId);
+    }
+    track?.setAttribute("data-cursor-text", "DRAG");
+    // A real drag ends with a click that must not navigate; swallow just that one.
+    state.suppressClick = state.dragging;
+    state.pressed = false;
+    state.dragging = false;
+  };
+
+  const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!dragState.current.suppressClick) return;
+    dragState.current.suppressClick = false;
+    e.stopPropagation();
+    e.preventDefault();
+  };
 
   const headerKicker = kicker || DEFAULT_KICKER;
   const headerTitle = title || DEFAULT_TITLE;
@@ -78,10 +139,21 @@ export default function CollectionsShowcase({
         </div>
       </div>
 
-      {/* Mobile: horizontal swipe carousel — uniform portrait cards */}
-      <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-none px-4 pb-4 reveal-stagger-container">
+      {/* Horizontal carousel — swipe on touch, drag-to-scroll with a mouse */}
+      <div
+        ref={trackRef}
+        className="flex items-stretch gap-3 md:gap-8 overflow-x-auto scrollbar-none px-4 md:px-0 pb-4 reveal-stagger-container"
+        data-cursor-text="DRAG"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
+        onPointerCancel={endDrag}
+        onClickCapture={handleClickCapture}
+        onDragStart={(e) => e.preventDefault()}
+      >
         {items.map((item) => (
-          <div key={item.number} className="w-[82vw] flex-shrink-0 flex flex-col reveal-stagger-item">
+          <div key={item.number} className="w-[82vw] md:w-[380px] lg:w-[420px] flex-shrink-0 flex flex-col reveal-stagger-item">
             <PortraitCollectionCard
               id={item.id}
               number={item.number}
@@ -92,42 +164,6 @@ export default function CollectionsShowcase({
             />
           </div>
         ))}
-      </div>
-
-      {/* Desktop: asymmetric editorial grid — bento pattern repeats per group of 3 */}
-      <div className="hidden md:grid md:grid-cols-12 gap-12 items-stretch reveal-stagger-container">
-        {groups.map((group, groupIdx) => {
-          const portraitItems = group.slice(0, 2);
-          const landscapeItem = group[2];
-          return (
-            <Fragment key={group[0].number}>
-              {portraitItems.map((item) => (
-                <div key={item.number} className={`md:col-span-6 flex flex-col reveal-stagger-item ${groupIdx > 0 ? "mt-3 md:mt-6" : ""}`}>
-                  <PortraitCollectionCard
-                    id={item.id}
-                    number={item.number}
-                    name={item.name}
-                    tag={item.tag}
-                    description={item.description}
-                    image={item.image}
-                  />
-                </div>
-              ))}
-              {landscapeItem && (
-                <div className="md:col-span-12 mt-3 md:mt-6 reveal-stagger-item">
-                  <LandscapeCollectionCard
-                    id={landscapeItem.id}
-                    number={landscapeItem.number}
-                    name={landscapeItem.name}
-                    tag={landscapeItem.tag}
-                    description={landscapeItem.description}
-                    image={landscapeItem.image}
-                  />
-                </div>
-              )}
-            </Fragment>
-          );
-        })}
       </div>
     </section>
   );
@@ -239,129 +275,6 @@ function PortraitCollectionCard({ id, name, tag, description, image }: PortraitC
             }}
           >
             DISCOVER SERIES
-          </span>
-          <svg
-            className="transform group-hover:translate-x-1 transition-transform"
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#5B1C1C"
-            strokeWidth={3}
-          >
-            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/* ========================================================================= */
-/* Landscape Collection Card (Row 2)                                         */
-/* ========================================================================= */
-interface LandscapeCardProps {
-  id?: number;
-  number: string;
-  name: string;
-  tag: string;
-  description: string;
-  image: string;
-}
-
-function LandscapeCollectionCard({ id, name, tag, description, image }: LandscapeCardProps) {
-  const imageRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseEnter = () => {
-    if (imageRef.current) {
-      gsap.to(imageRef.current, {
-        scale: 1.03,
-        duration: 0.8,
-        ease: "power2.out",
-      });
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (imageRef.current) {
-      gsap.to(imageRef.current, {
-        scale: 1,
-        duration: 0.7,
-        ease: "power2.out",
-      });
-    }
-  };
-
-  return (
-    <Link
-      href={id != null ? `/collection?collection=${id}` : "/collection"}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="flex flex-col md:flex-row border border-black/5 bg-[#F8F1E5] hover:border-black/15 transition-colors duration-300 cursor-pointer group"
-      data-cursor-text="DISCOVER"
-    >
-      {/* Image Block (Left/Top) */}
-      <div
-        className="relative overflow-hidden w-full md:w-7/12 bg-[#F8F1E5]"
-        style={{ aspectRatio: "16/10" }}
-      >
-        <div ref={imageRef} className="absolute inset-0 w-full h-full">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover"
-            style={{ filter: "brightness(0.94)" }}
-            sizes="(max-width: 768px) 100vw, 60vw"
-            quality={90}
-          />
-        </div>
-      </div>
-
-      {/* Details Block (Right/Bottom) */}
-      <div className="w-full md:w-5/12 p-8 md:p-12 flex flex-col justify-between relative">
-        <div>
-          <span
-            className="font-sans font-bold uppercase tracking-[0.25em] mb-4 block"
-            style={{ fontSize: "9px", color: "#5B1C1C" }}
-          >
-            {tag}
-          </span>
-          <h3
-            className={`${PRODUCT_NAME_CLASS} mb-4`}
-            style={{
-              fontSize: "1.85rem",
-              color: "#5B1C1C",
-              letterSpacing: "0.03em",
-              lineHeight: 1.1,
-            }}
-          >
-            {name}
-          </h3>
-          <p
-            className="font-sans mb-8"
-            style={{
-              fontSize: "12px",
-              color: "rgba(17,17,17,0.6)",
-              lineHeight: 1.6,
-              maxWidth: "360px",
-            }}
-          >
-            {description}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span
-            className="font-sans font-bold uppercase tracking-widest"
-            style={{
-              fontSize: "8.5px",
-              color: "#1A1212",
-              borderBottom: "1px solid #1A1212",
-              paddingBottom: "2px",
-            }}
-          >
-            EXPLORE DETAILS
           </span>
           <svg
             className="transform group-hover:translate-x-1 transition-transform"
