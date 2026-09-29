@@ -1,3 +1,4 @@
+import { BANNER_SPECS } from "@/lib/imageRatios";
 import { getHomeContent } from "@/db/queries/home";
 import { getAllDesignSettings } from "@/db/queries/designSettings";
 import { getHomepageExtras } from "@/db/queries/homepageContent";
@@ -53,7 +54,7 @@ const DEFAULT_HERO_SLIDES = [
   },
 ];
 
-const DEFAULT_HERO_RATIO = { width: 1920, height: 1440 };
+const DEFAULT_HERO_RATIO = BANNER_SPECS.hero;
 const DEFAULT_LOOKBOOK_RATIO = { width: 1600, height: 1600 };
 
 export default async function Home() {

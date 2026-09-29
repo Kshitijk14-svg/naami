@@ -60,7 +60,6 @@ interface HotspotBannerProps {
 // Matches the seeded fallback banner's own dimensions.
 const FALLBACK_WIDTH = 1600;
 const FALLBACK_HEIGHT = 1600;
-
 export default function HotspotBanner({ image, label, hotspots, imageWidth, imageHeight, backgroundImage, backgroundImageFit }: HotspotBannerProps) {
   const bannerImage = image || FALLBACK_IMAGE;
   const bannerLabel = label || FALLBACK_LABEL;
@@ -93,7 +92,7 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
     <section
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ height: "90vh", backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
+      style={{ aspectRatio: bannerWidth / bannerHeight, backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
     >
       {/* Parallax Image Container — full-bleed; the image itself is object-fit: cover,
           cropped and centered to fill the section with no letterbox bars. */}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { bannerRatio } from "@/lib/imageRatios";
 
 export interface LoomTimelineContent {
   panel1: { image: string; kicker: string; title: string; body: string; label: string };
@@ -131,7 +132,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
           </div>
 
           {/* Right editorial image */}
-          <div className="w-full md:w-6/12 h-[36vh] md:h-[60vh] flex items-center justify-center relative">
+          <div className="h-[36vh] md:h-[60vh] flex items-center justify-center relative" style={{ aspectRatio: bannerRatio("loom") }}>
             <div
               className="relative w-full h-full overflow-hidden border border-black/5"
               style={{ backgroundColor: "#EDE8DC" }}
@@ -182,7 +183,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
           </div>
 
           {/* Right editorial image */}
-          <div className="w-full md:w-6/12 h-[36vh] md:h-[60vh] flex items-center justify-center relative">
+          <div className="h-[36vh] md:h-[60vh] flex items-center justify-center relative" style={{ aspectRatio: bannerRatio("loom") }}>
             <div
               ref={slide2ImageRef}
               className="relative w-full h-full overflow-hidden border border-black/5"

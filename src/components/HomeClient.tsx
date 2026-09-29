@@ -24,6 +24,7 @@ import SharedMomentsCarousel from "@/components/SharedMomentsCarousel";
 import { useCartStore } from "@/models/cartStore";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
+import { bannerRatio } from "@/lib/imageRatios";
 import { useDesignSettings } from "@/lib/useDesignSettings";
 
 type CarouselProduct = {
@@ -299,8 +300,8 @@ export default function HomeClient({
       >
         <div
           ref={heroTitleRef}
-          className="relative w-full h-[65vh] md:h-[75vh] overflow-hidden border border-black/5"
-          style={{ opacity: 0 }}
+          className="relative w-full overflow-hidden border border-black/5"
+          style={{ opacity: 0, aspectRatio: bannerRatio("hero") }}
         >
           {heroSlides.map((slide, idx) => (
             <div

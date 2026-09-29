@@ -24,7 +24,7 @@ export function LookbookBannerSection({
       <div style={{ borderLeft: "2px solid rgba(139,26,26,0.2)", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <ImageUploadField
           type="banner"
-          hint="Upload at whatever ratio you like — the image fills the section edge-to-edge, cropped and centered as needed; hotspots stay pinned to the visible part of the image either way. Keep the subject centered since the sides/top/bottom may be trimmed."
+          hint="1920 × 1080 (16:9). The banner takes the image's own ratio, so nothing is cropped and hotspots stay pinned. Other ratios work but change the banner height."
           image={settings.lookbook_banner_image ?? ""}
           onUploaded={(image, _thumb, width, height) => {
             update("lookbook_banner_image", image);
