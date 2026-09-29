@@ -26,7 +26,7 @@ export function HeroBannerSection({ settings, update, heroError, heroSaving, her
             </p>
             <ImageUploadField
               type="banner"
-              hint="1920 × 1080 (16:9). The banner keeps this ratio at every screen size, so it is never cropped. Use the same size for all 3 slides. Keep the bottom-left corner clear (text overlay)."
+              hint="1920 × 720 (8:3). The banner keeps this ratio at every screen size, so it is never cropped. Use the same size for all 3 slides. Keep the bottom-left corner clear (text overlay)."
               image={settings[`hero_image_${n}`] ?? ""}
               onUploaded={(image, _thumb, width, height) => {
                 update(`hero_image_${n}`, image);
