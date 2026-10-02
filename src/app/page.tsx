@@ -73,6 +73,8 @@ export default async function Home() {
     width: Number(designSettings[`hero_image_${n}_w`]) || DEFAULT_HERO_RATIO.width,
     height: Number(designSettings[`hero_image_${n}_h`]) || DEFAULT_HERO_RATIO.height,
     mobileImage: designSettings[`hero_image_${n}_mobile`] || undefined,
+    mobileWidth: Number(designSettings[`hero_image_${n}_mobile_w`]) || BANNER_SPECS.heroMobile.width,
+    mobileHeight: Number(designSettings[`hero_image_${n}_mobile_h`]) || BANNER_SPECS.heroMobile.height,
   }));
 
   const loomContent = {

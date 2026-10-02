@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { useRef, useState } from "react";
+import { gsap } from "@/lib/gsap";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/models/cartStore";
@@ -88,26 +88,10 @@ export default function HotspotBanner({
   const mobilePins = mobileHotspots ?? [];
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((state) => state.addItem);
 
   const coverCrop = useCoverCrop(containerRef, bannerWidth / bannerHeight);
   const mobileCoverCrop = useCoverCrop(containerRef, mobileWidth / mobileHeight);
-
-  useEffect(() => {
-    if (!containerRef.current || !imageRef.current) return;
-
-    gsap.to(imageRef.current, {
-      scale: 1.06,
-      ease: "none",
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true,
-      },
-    });
-  }, []);
 
   return (
     <section
@@ -122,13 +106,9 @@ export default function HotspotBanner({
         } as React.CSSProperties
       }
     >
-      {/* Parallax Image Container — full-bleed; the image itself is object-fit: cover,
-          cropped and centered to fill the section with no letterbox bars. */}
-      <div
-        ref={imageRef}
-        className="absolute inset-0 hw-accelerate"
-        style={{ scale: 1, transformOrigin: "center center" }}
-      >
+      {/* Image container — the box takes the artwork's own ratio, so object-cover
+          fills it edge to edge with nothing cropped (no zoom/parallax). */}
+      <div className="absolute inset-0">
         {mobileImage && (
           <Image
             src={mobileImage}

@@ -60,6 +60,8 @@ type HeroSlide = {
   width: number;
   height: number;
   mobileImage?: string;
+  mobileWidth?: number;
+  mobileHeight?: number;
 };
 
 type ResolvedProduct = { id: number; name: string; priceInr: number; image: string };
@@ -195,7 +197,12 @@ export default function HomeClient({
 
   const [currentSlide, setCurrentSlide] = useState(0);
   // With any mobile artwork uploaded, the mobile hero box switches to its 4:5 ratio.
-  const hasMobileHero = heroSlides.some((s) => s.mobileImage);
+  // The box follows the uploaded mobile artwork's real ratio so any size shows whole.
+  const mobileHeroSlide = heroSlides.find((s) => s.mobileImage);
+  const mobileHeroRatio =
+    mobileHeroSlide?.mobileWidth && mobileHeroSlide?.mobileHeight
+      ? mobileHeroSlide.mobileWidth / mobileHeroSlide.mobileHeight
+      : bannerRatio("heroMobile");
   const slideTextRef = useRef<HTMLDivElement>(null);
 
   const handleNextSlide = () => {
@@ -307,12 +314,12 @@ export default function HomeClient({
       >
         <div
           ref={heroTitleRef}
-          className="banner-box relative w-full overflow-hidden border border-black/5"
+          className="banner-box relative w-full overflow-hidden"
           style={
             {
               opacity: 0,
               "--ar-desktop": bannerRatio("hero"),
-              "--ar-mobile": hasMobileHero ? bannerRatio("heroMobile") : bannerRatio("hero"),
+              "--ar-mobile": mobileHeroSlide ? mobileHeroRatio : bannerRatio("hero"),
             } as React.CSSProperties
           }
         >
