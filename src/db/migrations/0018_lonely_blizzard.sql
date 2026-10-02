@@ -1,0 +1,1 @@
+ALTER TABLE "homepage_hotspots" ADD COLUMN "variant" varchar(10) DEFAULT 'desktop' NOT NULL;

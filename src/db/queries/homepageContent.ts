@@ -70,7 +70,12 @@ function resolveRow(r: {
   };
 }
 
-async function resolveHotspots(lookCardId: number | null): Promise<ResolvedHotspot[]> {
+export type BannerVariant = "desktop" | "mobile";
+
+async function resolveHotspots(
+  lookCardId: number | null,
+  variant: BannerVariant = "desktop"
+): Promise<ResolvedHotspot[]> {
   const rows = await dbRead
     .select({
       id: homepageHotspots.id,
@@ -86,7 +91,7 @@ async function resolveHotspots(lookCardId: number | null): Promise<ResolvedHotsp
     .leftJoin(products, eq(homepageHotspots.productId, products.id))
     .where(
       lookCardId === null
-        ? isNull(homepageHotspots.lookCardId)
+        ? and(isNull(homepageHotspots.lookCardId), eq(homepageHotspots.variant, variant))
         : eq(homepageHotspots.lookCardId, lookCardId)
     )
     .orderBy(asc(homepageHotspots.sortOrder));
@@ -122,13 +127,17 @@ async function resolveHotspotsBatch(lookCardIds: number[]): Promise<Record<numbe
   return result;
 }
 
-async function replaceHotspots(lookCardId: number | null, hotspots: HotspotInput[]) {
+async function replaceHotspots(
+  lookCardId: number | null,
+  hotspots: HotspotInput[],
+  variant: BannerVariant = "desktop"
+) {
   await db.transaction(async (tx) => {
     await tx
       .delete(homepageHotspots)
       .where(
         lookCardId === null
-          ? isNull(homepageHotspots.lookCardId)
+          ? and(isNull(homepageHotspots.lookCardId), eq(homepageHotspots.variant, variant))
           : eq(homepageHotspots.lookCardId, lookCardId)
       );
     if (hotspots.length > 0) {
@@ -137,6 +146,7 @@ async function replaceHotspots(lookCardId: number | null, hotspots: HotspotInput
           const link = typeof h.linkUrl === "string" ? h.linkUrl.trim() : "";
           return {
             lookCardId,
+            variant,
             productId: h.productId,
             linkUrl: link === "" ? null : link,
             topPct: h.topPct,
@@ -247,13 +257,16 @@ export async function deleteLookCard(id: number) {
   return !!deleted;
 }
 
-export async function getBannerHotspots() {
-  return getCached(CACHE_KEYS.HOMEPAGE_BANNER_HOTSPOTS, CACHE_TTL.HOME, () => resolveHotspots(null));
+const bannerHotspotsCacheKey = (variant: BannerVariant) =>
+  variant === "mobile" ? CACHE_KEYS.HOMEPAGE_BANNER_HOTSPOTS_MOBILE : CACHE_KEYS.HOMEPAGE_BANNER_HOTSPOTS;
+
+export async function getBannerHotspots(variant: BannerVariant = "desktop") {
+  return getCached(bannerHotspotsCacheKey(variant), CACHE_TTL.HOME, () => resolveHotspots(null, variant));
 }
 
-export async function replaceBannerHotspots(hotspots: HotspotInput[]) {
-  await replaceHotspots(null, hotspots);
-  await redisDel(CACHE_KEYS.HOMEPAGE_BANNER_HOTSPOTS);
+export async function replaceBannerHotspots(hotspots: HotspotInput[], variant: BannerVariant = "desktop") {
+  await replaceHotspots(null, hotspots, variant);
+  await redisDel(bannerHotspotsCacheKey(variant));
 }
 
 // ─── Shared Moments videos ──────────────────────────────────────────────────
@@ -327,9 +340,10 @@ export async function deleteSharedMomentVideo(id: number) {
 }
 
 export async function getHomepageExtras() {
-  const [lookCards, bannerHotspots] = await Promise.all([
+  const [lookCards, bannerHotspots, bannerHotspotsMobile] = await Promise.all([
     getPublishedLookCardsWithHotspots(),
-    getBannerHotspots(),
+    getBannerHotspots("desktop"),
+    getBannerHotspots("mobile"),
   ]);
-  return { lookCards, bannerHotspots };
+  return { lookCards, bannerHotspots, bannerHotspotsMobile };
 }

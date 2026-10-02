@@ -127,6 +127,13 @@
       "when": 1789792709848,
       "tag": "0017_tired_outlaw_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790923455848,
+      "tag": "0018_lonely_blizzard",
+      "breakpoints": true
     }
   ]
 }

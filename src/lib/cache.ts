@@ -40,6 +40,7 @@ export const CACHE_KEYS = {
   HOMEPAGE_LOOK_CARDS: "homepage:look-cards",
   HOMEPAGE_LOOK_CARDS_PUBLISHED: "homepage:look-cards:published",
   HOMEPAGE_BANNER_HOTSPOTS: "homepage:banner-hotspots",
+  HOMEPAGE_BANNER_HOTSPOTS_MOBILE: "homepage:banner-hotspots:mobile",
   HOMEPAGE_SHARED_MOMENTS: "homepage:shared-moments",
   HOMEPAGE_SHARED_MOMENTS_PUBLISHED: "homepage:shared-moments:published",
 } as const;

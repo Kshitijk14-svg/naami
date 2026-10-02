@@ -284,6 +284,9 @@ export const homepageHotspots = pgTable(
     linkUrl: text("link_url"),
     topPct: integer("top_pct").notNull(),
     leftPct: integer("left_pct").notNull(),
+    // Which banner image the pin belongs to: 'desktop' (default) or 'mobile'.
+    // Only meaningful for lookbook-banner rows (lookCardId IS NULL).
+    variant: varchar("variant", { length: 10 }).notNull().default("desktop"),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

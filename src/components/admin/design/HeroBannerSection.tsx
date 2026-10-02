@@ -26,12 +26,30 @@ export function HeroBannerSection({ settings, update, heroError, heroSaving, her
             </p>
             <ImageUploadField
               type="banner"
-              hint="1920 × 720 (8:3). The banner keeps this ratio at every screen size, so it is never cropped. Use the same size for all 3 slides. Keep the bottom-left corner clear (text overlay)."
+              label="Desktop image"
+              hint="1920 × 720 (8:3), shown on tablets and desktops. The banner keeps this ratio, so it is never cropped. Use the same size for all 3 slides. Keep the bottom-left corner clear (text overlay)."
               image={settings[`hero_image_${n}`] ?? ""}
               onUploaded={(image, _thumb, width, height) => {
                 update(`hero_image_${n}`, image);
                 update(`hero_image_${n}_w`, String(width));
                 update(`hero_image_${n}_h`, String(height));
+              }}
+            />
+            <ImageUploadField
+              type="banner"
+              label="Mobile image"
+              hint="1080 × 1350 (4:5), shown on phones. Never cropped. Use the same size for all 3 slides; if left empty the desktop image is used. Keep the bottom-left corner clear (text overlay)."
+              image={settings[`hero_image_${n}_mobile`] ?? ""}
+              allowClear
+              onClear={() => {
+                update(`hero_image_${n}_mobile`, "");
+                update(`hero_image_${n}_mobile_w`, "");
+                update(`hero_image_${n}_mobile_h`, "");
+              }}
+              onUploaded={(image, _thumb, width, height) => {
+                update(`hero_image_${n}_mobile`, image);
+                update(`hero_image_${n}_mobile_w`, String(width));
+                update(`hero_image_${n}_mobile_h`, String(height));
               }}
             />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>

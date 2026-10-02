@@ -67,6 +67,18 @@ body,
   transform: translate3d(0, 0, 0);
 }
 
+/* ─── Banner Aspect Ratios ───────────────────────────────────────
+   Banner boxes take their ratio from the uploaded artwork so nothing is cropped.
+   Set --ar-mobile / --ar-desktop inline; the ratio switches at the md breakpoint. */
+.banner-box {
+  aspect-ratio: var(--ar-mobile);
+}
+@media (min-width: 768px) {
+  .banner-box {
+    aspect-ratio: var(--ar-desktop);
+  }
+}
+
 /* ─── Text Selection ─────────────────────────────────────────── */
 ::selection {
   background-color: #5B1C1C;

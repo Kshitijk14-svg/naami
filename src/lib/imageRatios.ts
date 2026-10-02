@@ -3,6 +3,8 @@
 export const BANNER_SPECS = {
   hero: { width: 1920, height: 720 },
   hotspot: { width: 1920, height: 720 },
+  heroMobile: { width: 1080, height: 1350 },
+  hotspotMobile: { width: 1080, height: 1350 },
   loom: { width: 1600, height: 2000 },
 } as const;
 

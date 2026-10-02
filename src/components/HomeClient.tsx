@@ -59,6 +59,7 @@ type HeroSlide = {
   tag: string;
   width: number;
   height: number;
+  mobileImage?: string;
 };
 
 type ResolvedProduct = { id: number; name: string; priceInr: number; image: string };
@@ -79,6 +80,10 @@ type LookbookBanner = {
   hotspots: HotspotData[];
   imageWidth?: number;
   imageHeight?: number;
+  mobileImage?: string;
+  mobileHotspots?: HotspotData[];
+  mobileImageWidth?: number;
+  mobileImageHeight?: number;
 };
 
 type Manifesto = {
@@ -189,6 +194,8 @@ export default function HomeClient({
   const cms = useDesignSettings();
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  // With any mobile artwork uploaded, the mobile hero box switches to its 4:5 ratio.
+  const hasMobileHero = heroSlides.some((s) => s.mobileImage);
   const slideTextRef = useRef<HTMLDivElement>(null);
 
   const handleNextSlide = () => {
@@ -300,8 +307,14 @@ export default function HomeClient({
       >
         <div
           ref={heroTitleRef}
-          className="relative w-full overflow-hidden border border-black/5"
-          style={{ opacity: 0, aspectRatio: bannerRatio("hero") }}
+          className="banner-box relative w-full overflow-hidden border border-black/5"
+          style={
+            {
+              opacity: 0,
+              "--ar-desktop": bannerRatio("hero"),
+              "--ar-mobile": hasMobileHero ? bannerRatio("heroMobile") : bannerRatio("hero"),
+            } as React.CSSProperties
+          }
         >
           {heroSlides.map((slide, idx) => (
             <div
@@ -309,11 +322,24 @@ export default function HomeClient({
               className="absolute inset-0 transition-opacity duration-700 ease-in-out"
               style={{ opacity: idx === currentSlide ? 1 : 0, zIndex: idx === currentSlide ? 10 : 0 }}
             >
+              {/* Mobile artwork (4:5) — only shown below md when this slide has one. */}
+              {slide.mobileImage && (
+                <Image
+                  src={slide.mobileImage}
+                  alt={slide.title}
+                  fill
+                  className="object-cover md:hidden"
+                  style={{ filter: "brightness(0.9)" }}
+                  priority={idx === 0}
+                  sizes="100vw"
+                  quality={90}
+                />
+              )}
               <Image
                 src={slide.image}
                 alt={slide.title}
                 fill
-                className="object-cover"
+                className={`object-cover ${slide.mobileImage ? "hidden md:block" : ""}`}
                 style={{ filter: "brightness(0.9)" }}
                 priority={idx === 0}
                 sizes="100vw"
@@ -448,6 +474,10 @@ export default function HomeClient({
             hotspots={lookbookBanner.hotspots}
             imageWidth={lookbookBanner.imageWidth}
             imageHeight={lookbookBanner.imageHeight}
+            mobileImage={lookbookBanner.mobileImage}
+            mobileHotspots={lookbookBanner.mobileHotspots}
+            mobileImageWidth={lookbookBanner.mobileImageWidth}
+            mobileImageHeight={lookbookBanner.mobileImageHeight}
             backgroundImage={sectionBackgrounds.lookbookBanner?.image}
             backgroundImageFit={sectionBackgrounds.lookbookBanner?.fit}
           />

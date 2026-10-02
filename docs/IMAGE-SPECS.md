@@ -5,6 +5,25 @@ aspect ratio each slot renders at, and how many assets are needed.
 
 ---
 
+## Banner sizes (hero + lookbook) — use these
+
+Hero and lookbook banners have separate desktop and mobile artwork. Each box takes
+the artwork's own aspect ratio (CSS `aspect-ratio`), so a correctly sized upload is
+never cropped. Phones (< 768px) show the mobile image; if no mobile image is uploaded,
+the desktop image is used on phones.
+
+| Banner | Desktop (>= 768px) | Mobile (< 768px) |
+| --- | --- | --- |
+| Hero slides **x3** | **1920 x 720** (8:3) | **1080 x 1350** (4:5) |
+| Lookbook banner | **1920 x 720** (8:3) | **1080 x 1350** (4:5) |
+
+- Keep all 3 hero slides the same size per device. Keep the bottom-left corner clear (text overlay).
+- Lookbook hotspots are set separately for the desktop and mobile images (Admin → Design → Lookbook Banner), so pins stay on the right spot.
+- CMS keys: `hero_image_N` / `hero_image_N_mobile`, `lookbook_banner_image` / `lookbook_banner_image_mobile`.
+- The §A rows below for hero and lookbook banner describe the old cropped behaviour and are superseded by this table.
+
+---
+
 ## How to read this
 
 **1. The pipeline caps every upload at 1920px.**
@@ -182,8 +201,8 @@ These are accepted trade-offs, documented so they aren't rediscovered as bugs:
 - **Full-bleed banners cap at 1920px**, so the hero and lookbook banner are slightly
   soft on 2x-DPR desktop displays. Raising `FULL_IMAGE_MAX_EDGE` per upload type
   would fix it at the cost of page weight.
-- **No separate mobile assets.** Hero, lookbook banner, loom panels and the journal
-  cover are all handled by the safe-zone rule in §A rather than art direction.
+- **Separate mobile assets exist only for the hero and lookbook banner.** Loom panels and
+  the journal cover are still handled by the safe-zone rule in §A rather than art direction.
 - **Hero/lookbook width & height are only captured on upload through the admin UI.**
   Settings rows written before this fix, or edited directly (not via
   `ImageUploadField`), won't have a `_w`/`_h` pair and fall back to the seeded

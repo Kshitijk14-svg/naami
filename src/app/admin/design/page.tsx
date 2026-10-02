@@ -71,6 +71,7 @@ export default function AdminDesignPage() {
 
   // ── Lookbook banner ────────────────────────────────────────────────────────
   const [bannerHotspots, setBannerHotspots] = useState<HotspotRow[]>([]);
+  const [mobileBannerHotspots, setMobileBannerHotspots] = useState<HotspotRow[]>([]);
   const [bannerSaving, setBannerSaving] = useState(false);
   const [bannerSaved, setBannerSaved] = useState(false);
   const [bannerError, setBannerError] = useState<string | null>(null);
@@ -157,18 +158,21 @@ export default function AdminDesignPage() {
     Promise.all([
       get("/api/admin/design"),
       get("/api/admin/homepage-banner-hotspots"),
+      get("/api/admin/homepage-banner-hotspots?variant=mobile"),
       get("/api/admin/homepage-look-cards"),
       get("/api/admin/homepage-shared-moments"),
     ])
       .then(
-        ([designSettings, banner, cards, videos]: [
+        ([designSettings, banner, mobileBanner, cards, videos]: [
           Record<string, string>,
+          ResolvedHotspot[],
           ResolvedHotspot[],
           (LookCard & { hotspots: ResolvedHotspot[] })[],
           SharedMomentVideo[],
         ]) => {
           setSettings(designSettings);
           setBannerHotspots(toHotspotRows(banner));
+          setMobileBannerHotspots(toHotspotRows(mobileBanner));
           setLookCards(
             cards.map((c) => ({
               id: c.id,
@@ -216,6 +220,7 @@ export default function AdminDesignPage() {
     try {
       const heroKeys = [1, 2, 3].flatMap((n) => [
         `hero_image_${n}`, `hero_image_${n}_w`, `hero_image_${n}_h`,
+        `hero_image_${n}_mobile`, `hero_image_${n}_mobile_w`, `hero_image_${n}_mobile_h`,
         `hero_title_${n}`, `hero_subtitle_${n}`, `hero_tag_${n}`,
       ]);
       const body: Record<string, string> = {};
@@ -252,16 +257,23 @@ export default function AdminDesignPage() {
           lookbook_banner_image: settings.lookbook_banner_image ?? "",
           lookbook_banner_image_w: settings.lookbook_banner_image_w ?? "",
           lookbook_banner_image_h: settings.lookbook_banner_image_h ?? "",
+          lookbook_banner_image_mobile: settings.lookbook_banner_image_mobile ?? "",
+          lookbook_banner_image_mobile_w: settings.lookbook_banner_image_mobile_w ?? "",
+          lookbook_banner_image_mobile_h: settings.lookbook_banner_image_mobile_h ?? "",
           lookbook_banner_label: settings.lookbook_banner_label ?? "",
         }),
       });
-      const hotspotsRes = await fetch("/api/admin/homepage-banner-hotspots", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hotspots: bannerHotspots }),
-      });
-      if (!settingsRes.ok || !hotspotsRes.ok) {
-        const data = await (!settingsRes.ok ? settingsRes : hotspotsRes).json();
+      const putHotspots = (variant: "desktop" | "mobile", hotspots: HotspotRow[]) =>
+        fetch("/api/admin/homepage-banner-hotspots", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hotspots, variant }),
+        });
+      const hotspotsRes = await putHotspots("desktop", bannerHotspots);
+      const mobileHotspotsRes = await putHotspots("mobile", mobileBannerHotspots);
+      const failed = [settingsRes, hotspotsRes, mobileHotspotsRes].find((r) => !r.ok);
+      if (failed) {
+        const data = await failed.json().catch(() => ({}));
         setBannerError(data.error ?? "Failed to save.");
         return;
       }
@@ -652,6 +664,8 @@ export default function AdminDesignPage() {
               update={update}
               bannerHotspots={bannerHotspots}
               setBannerHotspots={setBannerHotspots}
+              mobileBannerHotspots={mobileBannerHotspots}
+              setMobileBannerHotspots={setMobileBannerHotspots}
               bannerError={bannerError}
               bannerSaving={bannerSaving}
               bannerSaved={bannerSaved}

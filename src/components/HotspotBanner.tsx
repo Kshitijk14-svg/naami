@@ -8,6 +8,7 @@ import { useCartStore } from "@/models/cartStore";
 import { formatINR } from "@/lib/format";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { PRICE_CLASS } from "@/lib/typography";
+import { BANNER_SPECS } from "@/lib/imageRatios";
 import { useCoverCrop, mapPctToCoverCrop, type CoverCrop } from "@/lib/useCoverCrop";
 
 interface ResolvedProduct {
@@ -53,25 +54,45 @@ interface HotspotBannerProps {
   hotspots?: HotspotData[];
   imageWidth?: number;
   imageHeight?: number;
+  /** Separate artwork (+ its own pins) for phones; falls back to the desktop banner when absent. */
+  mobileImage?: string;
+  mobileHotspots?: HotspotData[];
+  mobileImageWidth?: number;
+  mobileImageHeight?: number;
   backgroundImage?: string;
   backgroundImageFit?: SectionBackgroundFit;
 }
 
-// Matches the seeded fallback banner's own dimensions.
-const FALLBACK_WIDTH = 1600;
-const FALLBACK_HEIGHT = 1600;
-export default function HotspotBanner({ image, label, hotspots, imageWidth, imageHeight, backgroundImage, backgroundImageFit }: HotspotBannerProps) {
+const FALLBACK_WIDTH = BANNER_SPECS.hotspot.width;
+const FALLBACK_HEIGHT = BANNER_SPECS.hotspot.height;
+export default function HotspotBanner({
+  image,
+  label,
+  hotspots,
+  imageWidth,
+  imageHeight,
+  mobileImage,
+  mobileHotspots,
+  mobileImageWidth,
+  mobileImageHeight,
+  backgroundImage,
+  backgroundImageFit,
+}: HotspotBannerProps) {
   const bannerImage = image || FALLBACK_IMAGE;
   const bannerLabel = label || FALLBACK_LABEL;
   const bannerHotspots = hotspots && hotspots.length > 0 ? hotspots : FALLBACK_HOTSPOTS;
   const bannerWidth = imageWidth || FALLBACK_WIDTH;
   const bannerHeight = imageHeight || FALLBACK_HEIGHT;
+  const mobileWidth = mobileImageWidth || BANNER_SPECS.hotspotMobile.width;
+  const mobileHeight = mobileImageHeight || BANNER_SPECS.hotspotMobile.height;
+  const mobilePins = mobileHotspots ?? [];
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((state) => state.addItem);
 
   const coverCrop = useCoverCrop(containerRef, bannerWidth / bannerHeight);
+  const mobileCoverCrop = useCoverCrop(containerRef, mobileWidth / mobileHeight);
 
   useEffect(() => {
     if (!containerRef.current || !imageRef.current) return;
@@ -91,8 +112,15 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
   return (
     <section
       ref={containerRef}
-      className="relative w-full overflow-hidden"
-      style={{ aspectRatio: bannerWidth / bannerHeight, backgroundColor: "#F8F1E5", ...sectionBackgroundStyle(backgroundImage, backgroundImageFit) }}
+      className="banner-box relative w-full overflow-hidden"
+      style={
+        {
+          "--ar-desktop": bannerWidth / bannerHeight,
+          "--ar-mobile": mobileImage ? mobileWidth / mobileHeight : bannerWidth / bannerHeight,
+          backgroundColor: "#F8F1E5",
+          ...sectionBackgroundStyle(backgroundImage, backgroundImageFit),
+        } as React.CSSProperties
+      }
     >
       {/* Parallax Image Container — full-bleed; the image itself is object-fit: cover,
           cropped and centered to fill the section with no letterbox bars. */}
@@ -101,11 +129,22 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
         className="absolute inset-0 hw-accelerate"
         style={{ scale: 1, transformOrigin: "center center" }}
       >
+        {mobileImage && (
+          <Image
+            src={mobileImage}
+            alt="NAAMI — AW26 Campaign Lookbook"
+            fill
+            className="object-cover md:hidden"
+            style={{ filter: "brightness(0.92)" }}
+            sizes="100vw"
+            quality={90}
+          />
+        )}
         <Image
           src={bannerImage}
           alt="NAAMI — AW26 Campaign Lookbook"
           fill
-          className="object-cover"
+          className={`object-cover ${mobileImage ? "hidden md:block" : ""}`}
           style={{ filter: "brightness(0.92)" }}
           sizes="100vw"
           quality={90}
@@ -123,9 +162,18 @@ export default function HotspotBanner({ image, label, hotspots, imageWidth, imag
 
       {/* Hotspot nodes — topPct/leftPct are stored as percent of the original image,
           remapped onto the visible (cropped) portion so they track the cover-cropped image. */}
-      {bannerHotspots.map((spot, idx) => (
-        <HotspotNode key={spot.id} data={spot} number={String(idx + 1).padStart(2, "0")} onAdd={addItem} coverCrop={coverCrop} />
-      ))}
+      <div className={mobileImage ? "hidden md:block" : undefined}>
+        {bannerHotspots.map((spot, idx) => (
+          <HotspotNode key={spot.id} data={spot} number={String(idx + 1).padStart(2, "0")} onAdd={addItem} coverCrop={coverCrop} />
+        ))}
+      </div>
+      {mobileImage && (
+        <div className="md:hidden">
+          {mobilePins.map((spot, idx) => (
+            <HotspotNode key={spot.id} data={spot} number={String(idx + 1).padStart(2, "0")} onAdd={addItem} coverCrop={mobileCoverCrop} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
