@@ -9,6 +9,8 @@ import EvanliteFooter from "@/components/EvanliteFooter";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
 import BrandLoader from "@/components/BrandLoader";
 import HeroSwipeHint from "@/components/HeroSwipeHint";
+import CarouselArrows from "@/components/CarouselArrows";
+import { useAutoAdvance } from "@/lib/useAutoAdvance";
 // LoomTimeline, HotspotCards, and CoinPocketReveal all stay as regular
 // top-level imports rather than next/dynamic: this file's global scroll-reveal
 // effect (below) scans the whole document for .reveal-fade-up/.reveal-stagger-*
@@ -213,6 +215,8 @@ export default function HomeClient({
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
+  const heroHover = useAutoAdvance(handleNextSlide, currentSlide, heroSlides.length);
+
   useEffect(() => {
     if (!slideTextRef.current) return;
     gsap.killTweensOf(slideTextRef.current);
@@ -314,6 +318,7 @@ export default function HomeClient({
       >
         <div
           ref={heroTitleRef}
+          {...heroHover}
           className="banner-box relative w-full overflow-hidden"
           style={
             {
@@ -390,6 +395,7 @@ export default function HomeClient({
             data-cursor-text="NEXT"
             onClick={handleNextSlide}
           />
+          <CarouselArrows onPrev={handlePrevSlide} onNext={handleNextSlide} />
 
           {/* Slide Text details */}
           <div

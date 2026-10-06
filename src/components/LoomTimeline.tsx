@@ -6,6 +6,8 @@ import { gsap } from "@/lib/gsap";
 import { sectionBackgroundStyle, type SectionBackgroundFit } from "@/lib/sectionBackground";
 import { TITLE_CLASS, titleStyle } from "@/lib/typography";
 import { bannerRatio } from "@/lib/imageRatios";
+import CarouselArrows from "@/components/CarouselArrows";
+import { useAutoAdvance } from "@/lib/useAutoAdvance";
 
 export interface LoomTimelineContent {
   panel1: { image: string; kicker: string; title: string; body: string; label: string };
@@ -45,6 +47,8 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
 
   // Re-plays each panel's reveal animation whenever it becomes the active
   // slide (mirrors Hero's slideTextRef effect keyed on currentSlide).
+  const hover = useAutoAdvance(handleNextSlide, currentSlide, PANELS);
+
   useEffect(() => {
     const img2 = slide2ImageRef.current;
     const vat = vatOverlayRef.current;
@@ -101,6 +105,7 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
     <div className="relative w-full px-0 md:px-12" style={sectionBackgroundStyle(backgroundImage, backgroundImageFit)}>
       <div
         ref={containerRef}
+        {...hover}
         // h-screen is the 100vh fallback: if a browser does not support svh the
         // inline height below is dropped and the section would lose its height.
         className="relative w-full h-screen [height:80svh] md:[height:100svh] overflow-hidden border border-black/5"
@@ -312,6 +317,11 @@ export default function LoomTimeline({ content, backgroundImage, backgroundImage
           className="absolute right-0 top-0 bottom-0 w-1/2 z-20 cursor-pointer"
           data-cursor-text="NEXT"
           onClick={handleNextSlide}
+        />
+        <CarouselArrows
+          onPrev={handlePrevSlide}
+          onNext={handleNextSlide}
+          variant={currentSlide === 2 ? "light" : "dark"}
         />
       </div>
 
