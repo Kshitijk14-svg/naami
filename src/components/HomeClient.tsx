@@ -480,7 +480,7 @@ export default function HomeClient({
 
       {/* ── Hotspot Banner ─────────────────────────────────────── */}
       {sectionsEnabled.lookbookBanner && (
-        <div className="reveal-fade-up">
+        <div className="reveal-fade-up px-0 md:px-12">
           <HotspotBanner
             image={lookbookBanner.image}
             label={lookbookBanner.label}

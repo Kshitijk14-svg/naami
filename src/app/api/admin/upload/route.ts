@@ -13,7 +13,7 @@ import {
 } from "@/lib/imageProcessing";
 import { checkRateLimit } from "@/lib/redis";
 
-const ALLOWED_TYPES = new Set(["product", "collection", "lookcard", "banner", "blog", "section", "journey"]);
+const ALLOWED_TYPES = new Set(["product", "collection", "lookcard", "banner", "blog", "section", "journey", "team"]);
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdminRequest(request, ["admin", "super_admin"]);

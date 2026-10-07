@@ -32,6 +32,7 @@ export interface JourneyStop {
 export interface AboutTeamMember {
   name: string;
   title: string;
+  image?: string;
 }
 
 export interface FooterLink {

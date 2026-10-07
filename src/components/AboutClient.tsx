@@ -190,12 +190,22 @@ export default function AboutClient({ content }: { content: AboutContent }) {
           {content.team.map((member, i) => (
             <div key={`${member.name}-${i}`} className="flex flex-col">
               <div
-                className="w-full bg-[#FFF9EF] border border-black/5 mb-5 flex items-center justify-center"
+                className="relative w-full overflow-hidden bg-[#FFF9EF] border border-black/5 mb-5 flex items-center justify-center"
                 style={{ aspectRatio: "1/1" }}
               >
-                <div className="font-serif text-4xl font-light" style={{ color: "rgba(139,26,26,0.15)" }}>
-                  {member.name.split(" ").map((n) => n[0]).join("")}
-                </div>
+                {member.image ? (
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="font-serif text-4xl font-light" style={{ color: "rgba(139,26,26,0.15)" }}>
+                    {member.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
               </div>
               <h4 className={`${PRODUCT_NAME_CLASS} mb-1`} style={{ fontSize: "1rem", color: "#1A1212", letterSpacing: "0.03em" }}>
                 {member.name}

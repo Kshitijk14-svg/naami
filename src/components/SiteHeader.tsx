@@ -18,9 +18,9 @@ function subscribeReducedMotion(onChange: () => void) {
  * the combined height as --site-header-h, so pt-[var(--site-header-h)] sites
  * clear both without hardcoding the announcement bar's height.
  *
- * The navbar hides on scroll-down and reappears on scroll-up (the announcement
- * bar stays pinned). Only the navbar wrapper is translated, so --site-header-h
- * stays constant and page content never jumps.
+ * The whole stack (announcement bar + navbar) hides on scroll-down and
+ * reappears on scroll-up. It is translated rather than resized, so
+ * --site-header-h stays constant and page content never jumps.
  */
 export default function SiteHeader() {
   const ref = useRef<HTMLDivElement>(null);
@@ -81,21 +81,18 @@ export default function SiteHeader() {
   }, []);
 
   return (
-    <div ref={ref} className="fixed top-0 left-0 right-0" style={{ zIndex: 40 }}>
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <AnnouncementBar />
-      </div>
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          transform: hidden ? "translateY(-100%)" : "translateY(0)",
-          transition: reduced ? "none" : "transform 320ms ease",
-          willChange: "transform",
-        }}
-      >
-        <Navbar />
-      </div>
+    <div
+      ref={ref}
+      className="fixed top-0 left-0 right-0"
+      style={{
+        zIndex: 40,
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
+        transition: reduced ? "none" : "transform 320ms ease",
+        willChange: "transform",
+      }}
+    >
+      <AnnouncementBar />
+      <Navbar />
     </div>
   );
 }

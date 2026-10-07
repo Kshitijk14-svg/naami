@@ -99,8 +99,11 @@ export default function HotspotBanner({
       className="banner-box relative w-full overflow-hidden"
       style={
         {
-          "--ar-desktop": bannerWidth / bannerHeight,
-          "--ar-mobile": mobileImage ? mobileWidth / mobileHeight : bannerWidth / bannerHeight,
+          // Same fixed box as the hero slide, regardless of the uploaded artwork's own size.
+          "--ar-desktop": FALLBACK_WIDTH / FALLBACK_HEIGHT,
+          "--ar-mobile": mobileImage
+            ? BANNER_SPECS.hotspotMobile.width / BANNER_SPECS.hotspotMobile.height
+            : FALLBACK_WIDTH / FALLBACK_HEIGHT,
           backgroundColor: "#F8F1E5",
           ...sectionBackgroundStyle(backgroundImage, backgroundImageFit),
         } as React.CSSProperties

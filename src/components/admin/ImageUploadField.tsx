@@ -14,7 +14,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 interface ImageUploadFieldProps {
-  type: "product" | "collection" | "lookcard" | "banner" | "blog" | "section" | "journey";
+  type: "product" | "collection" | "lookcard" | "banner" | "blog" | "section" | "journey" | "team";
   image: string;
   onUploaded: (image: string, thumbnailImage: string, width: number, height: number) => void;
   label?: string;

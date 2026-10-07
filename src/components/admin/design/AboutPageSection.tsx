@@ -106,7 +106,9 @@ export function AboutPageSection({ settings, update, aboutError, aboutSaving, ab
               value={settings.about_team_json ?? "[]"}
               onChange={(json) => update("about_team_json", json)}
               itemLabel="Member"
+              imageType="team"
               fields={[
+                { key: "image", label: "Photo (square)", type: "image" },
                 { key: "name", label: "Name" },
                 { key: "title", label: "Role" },
               ]}
